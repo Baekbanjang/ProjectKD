@@ -1,0 +1,64 @@
+# ==========================================================
+# UE5.6 프로젝트 .gitignore (솔로 로컬, 2026-06-22 Perforce→Git 전환)
+# 빌드/캐시는 제외(자동 재생성), 자산/소스/설정만 추적
+# ==========================================================
+
+# === 자산/바이너리 전부 제외 (소스코드만 GitHub, 자산은 로컬 따로 백업) ===
+# 주의: 블루프린트(.uasset)도 여기 포함 → BP는 git에 안 올라감. 로컬 백업 필수.
+Content/
+
+# === UE5 빌드/캐시 (자동 재생성, 추적 X) ===
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+obj/
+FileOpenOrder/
+
+# === Visual Studio / Rider / IDE (자동 생성 또는 개인 설정) ===
+.vs/
+.vscode/
+.idea/
+.vsconfig
+*.sln
+*.suo
+*.user
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.VC.db
+*.VC.opendb
+*.DotSettings.user
+*.opensdf
+*.sdf
+
+# === 디버그 심볼 (대용량) ===
+*.pdb
+*.idb
+
+# === Claude / OMC 개인 상태 (머신 종속) ===
+.claude/
+.omc/
+
+# === 비밀/토큰 (절대 커밋 금지) ===
+*.env
+*.env.local
+secrets/
+*.token
+*.apikey
+*.key
+*.pem
+.discord-token
+.anthropic-key
+.p4config
+p4config.txt
+*.p4config
+
+# === OS 잡파일 ===
+*.tmp
+*.bak
+*.log
+Thumbs.db
+.DS_Store
+desktop.ini

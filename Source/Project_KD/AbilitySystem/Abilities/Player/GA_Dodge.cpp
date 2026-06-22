@@ -1,0 +1,235 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "AbilitySystem/Abilities/Player/GA_Dodge.h"
+
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "EngineUtils.h"
+#include "KDGameplayTags.h"
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "AbilitySystem/Library/KDAbilityStatics.h"
+#include "Combat/KDProjectile.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
+UGA_Dodge::UGA_Dodge()
+{
+	bRetriggerInstancedAbility = true;
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
+
+void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+        return;
+    }
+
+    // InstancedPerActor 잔류 방지 — 매 활성화 시 명시 리셋.
+    ActiveInvincibleHandle = FActiveGameplayEffectHandle();
+
+    UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+    if (!IsValid(ASC))
+    {
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    // Perfect 윈도우 판정 — 근접 적 ASC에 EnemyAttackHitWindow 태그 있나.
+    const bool bPerfect = IsInPerfectDodgeWindow(ActorInfo);
+    if (!bPerfect)
+    {
+        if (!UKDAbilityStatics::TryConsumeStamina(ASC, StaminaCostGE, StaminaRegenBlockGE, DodgeStaminaCost))
+        {
+            EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+            return;
+        }
+    }
+
+    
+#if !UE_BUILD_SHIPPING
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(-1, 2.0f,
+            bPerfect ? FColor::Green : FColor::Silver,
+            bPerfect ? TEXT("PERFECT DODGE") : TEXT("Normal Dodge"));
+    }
+#endif
+
+
+    // GE 적용: Perfect는 강한 i-frame + CounterReady, Normal은 짧은 i-frame + Stamina 소모.
+    auto ApplyGE = [ASC](TSubclassOf<UGameplayEffect> GEClass, FActiveGameplayEffectHandle& OutHandle)
+    {
+        if (!GEClass) return;
+        const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
+        const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GEClass, 1.0f, Ctx);
+        if (Spec.IsValid())
+        {
+            OutHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+        }
+    };
+
+    if (bPerfect)
+    {
+        ApplyGE(PerfectInvincibleGE, ActiveInvincibleHandle);
+        FActiveGameplayEffectHandle DummyCounterHandle;
+        ApplyGE(CounterWindowGE, DummyCounterHandle);
+
+        // 퍼펙트 성공 보상 연출(슬로우+FX)
+        if (UAbilitySystemComponent* RewardASC = GetAbilitySystemComponentFromActorInfo())
+        {
+            RewardASC->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_PerfectDodge);
+        }
+    }
+    else
+    {
+        ApplyGE(NormalInvincibleGE, ActiveInvincibleHandle);
+    }
+
+    // 방향 -> Montage 인덱스.
+    EDodgeDirection Direction = ResolveDodgeDirection();
+    
+    ACharacter* DodgeChar = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+    if (ASC->HasMatchingGameplayTag(GameplayTags::State_Character_LockOn))
+    {
+        Direction = ResolveDodgeDirection(); // 락온: 현행 유지(타겟 기준 strafe)
+    }
+    else if (DodgeChar && DodgeChar->GetCharacterMovement())
+    {
+        // 프리: 카메라 기준 입력 방향으로 캐릭터를 돌린 뒤 전진 회피 
+        const FVector InputVec = DodgeChar->GetCharacterMovement()->GetLastInputVector();
+        if (!InputVec.IsNearlyZero())
+        {
+            DodgeChar->SetActorRotation(FRotator(0.f, InputVec.Rotation().Yaw, 0.f));
+            Direction = EDodgeDirection::Forward;
+        }
+        // 입력 없으면 Backward(백스텝) 유지 — 회전 없음
+    }
+    
+    const int32 Idx = static_cast<int32>(Direction);
+    UAnimMontage* SelectedMontage = DodgeMontages.IsValidIndex(Idx) ? DodgeMontages[Idx].Get() : nullptr;
+
+    if (!IsValid(SelectedMontage))
+    {
+        // Montage 없으면 안전하게 종료. GE는 OnCleanup에서 자동 정리.
+        EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+        return;
+    }
+
+    // PlayMontageAndWait — 종료 콜백 4종 묶기.
+    UAbilityTask_PlayMontageAndWait* PlayTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+        this, NAME_None, SelectedMontage, MontagePlayRate, NAME_None, true, 1.0f);
+
+    PlayTask->OnCompleted.AddDynamic(this, &UGA_Dodge::OnMontageCompleted);
+    PlayTask->OnInterrupted.AddDynamic(this, &UGA_Dodge::OnMontageInterrupted);
+    PlayTask->OnCancelled.AddDynamic(this, &UGA_Dodge::OnMontageCancelled);
+    PlayTask->OnBlendOut.AddDynamic(this, &UGA_Dodge::OnMontageBlendOut);
+    PlayTask->ReadyForActivation();
+
+    // 베이스의 무한 GA 방지 타이머.
+    StartSafetyTimer(SelectedMontage->GetPlayLength(), MontagePlayRate);
+
+    Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+}
+
+void UGA_Dodge::OnCleanup(bool bWasCancelled)
+{
+    // 무적 GE 명시 제거 — Duration 끝나기 전에 GA 종료되면 leak 방지.
+    if (ActiveInvincibleHandle.IsValid())
+    {
+        if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+        {
+            ASC->RemoveActiveGameplayEffect(ActiveInvincibleHandle);
+        }
+        ActiveInvincibleHandle = FActiveGameplayEffectHandle();
+    }
+}
+
+EDodgeDirection UGA_Dodge::ResolveDodgeDirection() const
+{
+    const AActor* Avatar = GetAvatarActorFromActorInfo();
+    if (!IsValid(Avatar)) return EDodgeDirection::Backward;
+
+    const ACharacter* Character = Cast<ACharacter>(Avatar);
+    if (!IsValid(Character) || !Character->GetCharacterMovement()) return EDodgeDirection::Backward;
+
+    // 캐릭터 이동 입력 벡터 (월드 좌표).
+    const FVector InputVec = Character->GetCharacterMovement()->GetLastInputVector();
+    if (InputVec.IsNearlyZero()) return EDodgeDirection::Backward; // 입력 없으면 뒤로
+
+    // 캐릭터 정면/우측 기준 dot 계산.
+    const FVector Forward = Character->GetActorForwardVector();
+    const FVector Right = Character->GetActorRightVector();
+    const float DotForward = FVector::DotProduct(InputVec, Forward);
+    const float DotRight = FVector::DotProduct(InputVec, Right);
+
+    // 절댓값 큰 축이 주방향.
+    if (FMath::Abs(DotForward) >= FMath::Abs(DotRight))
+    {
+        return DotForward > 0 ? EDodgeDirection::Forward : EDodgeDirection::Backward;
+    }
+    return DotRight > 0 ? EDodgeDirection::Right : EDodgeDirection::Left;
+}
+
+bool UGA_Dodge::IsInPerfectDodgeWindow(const FGameplayAbilityActorInfo* ActorInfo) const
+{
+    if (!ActorInfo) return false;
+    const AActor* Avatar = ActorInfo->AvatarActor.Get();
+    if (!IsValid(Avatar)) return false;
+
+    UWorld* World = Avatar->GetWorld();
+    if (!World) return false;
+
+    // 근접 적(5m) ASC에 EnemyAttackHitWindow 태그 있나 검사. 적 시스템 완성 전엔 항상 false.
+    const float CheckRadiusSq = PerfectDodgeCheckRadius * PerfectDodgeCheckRadius;
+    const FVector PlayerLoc = Avatar->GetActorLocation();
+
+    for (TActorIterator<AActor> It(World); It; ++It)
+    {
+        AActor* Other = *It;
+        if (Other == Avatar) continue;
+        if (FVector::DistSquared(PlayerLoc, Other->GetActorLocation()) > CheckRadiusSq) continue;
+
+        if (const AKDProjectile* Proj = Cast<AKDProjectile>(Other))
+        {
+            if (Proj->IsPerfectDodgeable())
+            {
+                return true;
+            }
+            continue; // 발사체는 ASC 경로 안 탐
+        }
+
+        UAbilitySystemComponent* OtherASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Other);
+        if (!OtherASC) continue;
+
+        if (OtherASC->HasMatchingGameplayTag(GameplayTags::State_Combat_EnemyAttackHitWindow))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void UGA_Dodge::OnMontageCompleted()
+{
+    EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void UGA_Dodge::OnMontageInterrupted()
+{
+    EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+void UGA_Dodge::OnMontageCancelled()
+{
+    EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+
+void UGA_Dodge::OnMontageBlendOut()
+{
+    EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
