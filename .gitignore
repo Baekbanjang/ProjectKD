@@ -62,3 +62,6 @@ p4config.txt
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# MCP 클라이언트 설정 (capability token 포함 — 커밋 금지)
+.mcp.json
