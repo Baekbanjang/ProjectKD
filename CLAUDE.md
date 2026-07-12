@@ -1,19 +1,23 @@
-﻿# 프로젝트 CLAUDE.md — 2인 페어 UE5.6 + GAS
+﻿# 프로젝트 CLAUDE.md — 1인 솔로 UE5.6 + GAS
 
 전역 `~/.claude/CLAUDE.md` 적용 (UE5 컨벤션 + Karpathy 4원칙). 본 파일 = **본 프로젝트 고유 룰**.
 
-마스터 룰셋 = 본 파일 (단일 진실). 변경은 페어 합의 후.
+마스터 룰셋 = 본 파일 (단일 진실). 변경 시 본 파일에 날짜와 함께 기록 후 진행.
 
 ---
 
 ## 0. 작업 영역
 
 - **`.h` / `.cpp` = AI** — 작성자 의도 1~2줄 → AI draft → 작성자 30초 review → 승인/수정 1줄. architecture 통제권은 작성자 (의도 = 계약)
-- **BP / 에셋 / Editor 작업 = 사람**
+- **BP / 에셋 / Editor = 사람 원칙** — 단, 아래는 Unreal MCP로 AI 허용 (2026-07-12 결정):
+  - 테스트맵/그레이박스 생성, 몽타주 노티파이 배치, 일괄 반복작업(수치 일괄 변경 등), 조회/스크린샷/PIE 검증
+  - **본편 레벨·핵심 BP 로직·아트 에셋은 사람 유지**
+  - **MCP 에셋 작업 전 Content 커밋 의무** (`cd Content && git add -A && git commit`)
+  - MCP 세션 중 자동승인(bypassPermissions) 금지 / `bAllowNonLoopback` 금지
 - **운영매뉴얼 = `docs/specs/<현재 마일스톤>-spec.md` (답안지)**
-- 스펙 §결정사항 임의 변경 금지. 변경 시 페어 confirm → 스펙 patch → 진행
+- 스펙 §결정사항 임의 변경 금지. 변경 시 스펙 patch + 1줄 기록 → 진행
 
-### 페어 프로그래밍 프로토콜 (의도 중심) ★
+### 코딩 프로토콜 (의도 중심) ★
 
 1. **작성자 의도** (1~2줄) — 클래스명 + 책임 + 핵심 노출
    - 예: `"HitStop 컴포넌트, 0.05~0.15s 시간 제어, BP에서 Duration 노출"`
@@ -22,15 +26,17 @@
 4. **AI `.cpp`** — 헤더 시그니처 그대로. 1회용 인라인 OK, 2회+ 시 함수 분리 (Karpathy YAGNI)
 
 **Edge cases:**
+
 - 의도 모호 → AI가 1줄 질문 (다중 질문 X)
 - "알아서" → AI가 최선 추측 + 가정 명시 보고
-- UE5 API 불확실 → Context7 MCP 조회 (`/websites/dev_epicgames_en-us_unreal-engine`)
+- UE5 API 불확실 → ① 로컬 엔진 소스 확인 (`D:\epicStore\UE_5.6\Engine\Source`) ② Context7/웹 문서 (개념·사용법 — UE 색인 얕음, 과신 금지)
 
 ---
 
 ## 1. 아키텍처 룰 — 슈퍼 싱글톤 방지 ★
 
 ### 1-1. 금지 패턴
+
 - 싱글톤 금지 (UE5 Subsystem 제외)
 - `*Manager` 이름 클래스 금지
 - GameInstance에 게임 로직 추가 금지 (런칭/영속성 관심사만)
@@ -41,6 +47,7 @@
 - AttributeSet 어트리뷰트 8개 초과 시 분리
 
 ### 1-2. 필수 패턴
+
 - 비주얼 / 오디오 효과 → **GameplayCue**
 - 데미지 계산 → **ExecCalc** (인라인 금지) — 단, 단순 케이스는 `SetByCaller` 1회성
 - 카메라 / HitStop / HitReact → **전용 Component**
@@ -51,18 +58,21 @@
 ### 1-3. 의존성 방향 (단방향 강제)
 
 **허용:**
+
 - Pawn → Component
 - Component → ASC (읽기)
 - GA → ASC, GE
 - GC → Component (위임만)
 
 **금지:**
+
 - Component → Pawn (Owner 캐스팅 금지)
 - Component → Component (직접 참조 금지, 메시지/델리게이트 사용)
 - GA → Component (GC 경유)
 - AS → 다른 시스템 (데이터만)
 
 ### 1-4. 슈퍼 싱글톤 방지 의식
+
 - 매 코딩 세션 끝 5분 리뷰: 줄 수 + 의존성 방향 확인
 - "어디 둘지 모르면 Pawn에" 금지 → 컴포넌트 후보 먼저 검토
 - 주 1회 SOLID / God Class 점검
@@ -78,12 +88,13 @@
 1. **`ATTRIBUTE_ACCESSORS` 매크로** — 엔진 미제공. 새 `UAS_*` 헤더마다 `#define` 직접 추가
 2. **`PreAttributeChange` 클램프** (예: Health 0~MaxHealth) / **`PostGameplayEffectExecute` 후처리**
 3. **GAS 모듈 의존성 3개** — `GameplayAbilities`, `GameplayTags`, `GameplayTasks` 셋 다 `Build.cs PublicDependencyModuleNames`에 추가
-4. **Tags 중앙 선언** — `NativeGameplayTags.h` 1개 파일. BP 등록 금지(머지 충돌). `UGameplayTagsSettings`는 `DefaultGameplayTags.ini`만 유효
+4. **Tags 중앙 선언** — `NativeGameplayTags.h` 1개 파일. BP 등록 금지. `UGameplayTagsSettings`는 `DefaultGameplayTags.ini`만 유효
 5. **AT 깊이 2단계 이하** — AbilityTask 안에서 또 AT 호출 시 Call Stack 안 잡힘
 6. **GameplayCue 5~10개만** — 모든 비주얼 GC 금지 (디버깅 끔찍). 나머지는 BP / AnimNotify
 7. **GE 자식 CDO `AddComponent<>()` 금지** — UE5.6 fatal. `CreateDefaultSubobject` + `GEComponents.Add` 패턴 필수
+8. **ASC 초기화 = `InitAbilityActorInfo`** — Player: `PossessedBy`에서 `(PS, this)` / Enemy: `(this, this)` (현행 코드 패턴 유지). 멀티 전환 시 클라 쪽 `OnRep_PlayerState`에서도 호출 필수 (현재 싱글이라 미구현 — 의도적)
 
-> **Replication (멀티 대응)** — 멀티 확장이 결정된 시점부터 `UPROPERTY(Replicated)` / `OnRep_*` / `GetLifetimeReplicatedProps` / `GAMEPLAYATTRIBUTE_REPNOTIFY` 적용. 싱글 프로토타입 단계에서는 생략 가능 (페어 합의 후).
+> **Replication (멀티 대응)** — 멀티 확장이 결정된 시점부터 `UPROPERTY(Replicated)` / `OnRep_*` / `GetLifetimeReplicatedProps` / `GAMEPLAYATTRIBUTE_REPNOTIFY` 적용. 싱글 프로토타입 단계에서는 생략 (결정 시 본 파일에 기록).
 
 ---
 
@@ -92,7 +103,7 @@
 - **YAGNI**: 2회 이상 사용되는 코드만 함수 분리. 1회용은 인라인
 - **수동 데이터 우선**: DataAsset / CurveTable 셋업은 후순위. 초기 마일스톤은 코드 안 상수
 - **Editor 튜닝 우선**: 수치 변경 빈도 높은 값은 `UPROPERTY(EditAnywhere)` 노출 → BP에서 즉시 변경
-- **ASC 모드 일관성**: 페어 합의 모드 1택 (예: Player = PlayerState / Enemy = Pawn 직결). 도중 변경 X
+- **ASC 모드 일관성**: 1택 고정 후 도중 변경 X — 현행: Player = PlayerState / Enemy = Pawn 직결 (변경 필요 시 본 파일에 기록 후)
 - **액션 우선순위 (참고)**: 입력 반응(1) > 타격 표시(2) > 시각 폴리싱(3)
 
 → 본 룰셋과 §1 슈퍼 싱글톤 방지 룰은 **공존**. 단순함과 분리는 다른 차원.
@@ -106,69 +117,167 @@
 
 ---
 
-## 5. 2인 협업 룰 ★
+## 5. 솔로 운영 룰 ★ (2026-06-22 솔로 전환, 2026-07-12 개정)
 
-### 5-1. 코드 / 헤더 권한
-- **`.h` 설계 권한 = 도메인 오너 1명** (Combat / AI / 입력 / 카메라 / GAS Core / UI 영역 분담)
-- 타 도메인 `.h` 변경 필요 시 → 오너 confirm 1줄
-- `.cpp`는 둘 다 자유 (인터페이스 깨지 않는 범위)
-- `CLAUDE.md` / 스펙 변경 = 둘 다 합의
+### 5-1. 버전 관리 (Git 이중 구조)
 
-### 5-2. Perforce
-- Workspace 네이밍: `<이름>_<PC명>`
-- Stream: `//<프로젝트>/main` 1개 (개인 dev branch 없음, 페어 합의로 변경 가능)
-- **체크아웃 충돌**: 먼저 한 쪽 우선. 늦은 쪽은 페어 채널 ping
-- **Exclusive lock 풀기**: 퇴근 전 `Revert if Unchanged` + 작업 마무리한 `.uasset` / `.umap` submit
-- **CL 단위**: 1기능 / 1CL. 24h 이상 보유 금지
-- **빌드 바이너리** (`Binaries/`): depot 공유 안 함, 각자 로컬 빌드. `.p4ignore`로 제외 (2026-05-21 결정 — 바이너리 공유가 페어 환경에서 비효율로 판명)
-- **CL 메시지**: `[태그] 한 줄 요약` + 본문(왜). 태그 예: `[Combat] [GAS] [Input] [Camera] [BP] [fix] [refactor] [doc] [chore]`
+- **코드 repo** (`Project_KD\.git`): Source/Config/docs만 추적 → GitHub 푸시
+- **에셋 repo** (`Content\.git`): 로컬 전용 세이브 포인트. **원격 푸시 금지** (13GB)
+- **커밋 단위**: 1기능 / 1커밋. 메시지 = `[태그] 한 줄 요약` + 본문(왜)
+  - 태그: `[Combat] [GAS] [Input] [Camera] [Anim] [BP] [fix] [refactor] [doc] [chore]`
+- **Content 커밋 시점**: MCP/AI 에셋 작업 전(의무) + 에셋 대량 변경 후 + 마일스톤 종료 시
+- 비밀(토큰·API key) 커밋 금지 — `.mcp.json`은 gitignore 유지
 
-### 5-3. 페어 리뷰
-- **Submit 전 셀프 리뷰 필수** (Diff Against Have)
-- **페어 리뷰 트리거**: 아키텍처 변경 / 새 Component / 새 GA / 새 `.h` / 200줄+ CL
-- 자잘한 수정은 셀프만 OK
-- 리뷰 SLA: 24h 안
+### 5-2. 리뷰 게이트 (페어 리뷰 대체) ★
 
-### 5-4. P4에 올리는 프로젝트 자산
-- 프로젝트 `CLAUDE.md`, `docs/specs/`, `docs/design/`, `docs/reference/` = P4 submit
-- **`.claude/` 전체 = P4 X (`.p4ignore`)** — skills · hooks · `settings.local.json` · state 전부 개인. 머신 절대경로(빌드 경로 등)는 워크스페이스마다 달라 공유 불가 → 각자 로컬 보유 (예: `ue-build-check` 는 각자 자기 워크스페이스 경로로)
-- 개인 비밀 (`access.json`, API key, token) / 개인 글로벌 `~/.claude/` = P4 X
-- 개인 워크플로우는 본인 스타일대로 — 강요 X
+**대상**: 아키텍처 변경 / 새 Component / 새 GA / 새 `.h` / 200줄+ 변경
 
-### 5-5. 싱크 / 블로커
-- **데일리 싱크** (5분): 어제 / 오늘 / 블로커
-- **30분 막힘 룰**: 30분 막히면 페어 / AI ping
-- **단독 결정 시**: 본 CLAUDE.md / 스펙에 1줄 기록 (결정 비대칭 방지)
+1. **AI 코드 작성** (§0 프로토콜)
+2. **AI 설계 브리핑** — 클래스 목록+책임 / 의존성 방향 / 줄 수(§1 한도 대비)
+3. **본인 리뷰** — 설계가 의도에 맞는지 판단 (승인 / 수정 지시)
+4. **code-reviewer agent 검수** — §1·§2 위반, 잠재 버그 기계 검출
+5. **본인 최종 판단** (지적 수용/기각) → 커밋
+
+- 자잘한 수정(수치·오타·1회용): 2~3 생략, 커밋 전 diff 셀프 리뷰만
+- 커밋 전 `git diff` 셀프 리뷰는 항상 필수
+
+### 5-3. Claude 자산
+
+- `.claude/` = 로컬 개인 (커밋 X) — skills·hooks·settings 전부
+- 개인 비밀 / `~/.claude/` = 커밋 절대 금지
+
+### 5-4. 블로커
+
+- **30분 막힘 룰**: 30분 막히면 AI에게 ping (debugger agent / 웹 조사)
+- **단독 결정 기록**: 아키텍처·스펙 결정은 본 CLAUDE.md 또는 스펙에 1줄 기록 (미래의 나 = 팀원)
 
 ---
 
 ## 6. 참조 자료
 
 - 본 `CLAUDE.md` — 프로젝트 룰 단일 진실
-- `docs/specs/<현재>-spec.md` — 현재 마일스톤 답안지 (페어 작성, 검증 게이트) ★
+- `docs/specs/<현재>-spec.md` — 현재 마일스톤 답안지 (검증 게이트) ★
 - `docs/design/` — 기획 문서 (GDD, 메커닉, 시스템 설계)
-- `docs/reference/` — Perforce 가이드 pptx, typemap 원본 등 외부 자료
-- `~/.claude/CLAUDE.md` — UE5 + Karpathy 전역 (각자 개인 환경)
+- `docs/reference/` — 외부 자료 (구 Perforce 자료 포함 — 참고용)
+- `docs/dev-logs/` — 기능별 개발 기록
+- `~/.claude/CLAUDE.md` — UE5 + Karpathy 전역 (개인 환경)
 
 ---
 
-## 7. 작업 라우팅 (OMC agent + skill)
+## 7. 작업 라우팅 (OMC agent + skill + MCP)
 
-슬래시 커맨드는 두지 않음 — OMC agent와 중복(Karpathy §2 YAGNI). 도메인 지식(§1~3)은 본 CLAUDE.md에 박혀 있어 agent 호출 시 자동 주입.
+슬래시 커맨드는 두지 않음 — OMC agent와 중복(Karpathy §2 YAGNI). 도메인 지식(§1~3, §8~9)은 본 CLAUDE.md에 박혀 있어 agent 호출 시 자동 주입.
 
 ### OMC agent 위임 (컨텍스트 격리 + 모델 선택)
-| 작업 | 위임 대상 | 비고 |
-|---|---|---|
-| 설계 검토 | `architect` agent (READ-ONLY) | 구현 전 대안 비교 |
-| `.cpp` 구현 | `executor` agent (`model=opus` 복잡 시) | 작성자 `.h` 시그니처 준수 |
-| 결함 검출 | `code-reviewer` agent | GAS · Authority · 아키텍처 체크 |
-| 에러 진단 | `debugger` agent | 빌드 / 런타임 근본 원인 |
-| 구조 개선 | `code-simplifier` agent | 동작 변경 X |
-| 검증 | `verifier` agent | 변경이 실제로 작동하는지 |
+
+| 작업        | 위임 대상                               | 비고                        |
+| ----------- | --------------------------------------- | --------------------------- |
+| 설계 검토   | `architect` agent (READ-ONLY)           | 구현 전 대안 비교           |
+| `.cpp` 구현 | `executor` agent (`model=opus` 복잡 시) | 작성자 `.h` 시그니처 준수   |
+| 결함 검출   | `code-reviewer` agent                   | §5-2 리뷰 게이트 4단계 담당 |
+| 에러 진단   | `debugger` agent                        | 빌드 / 런타임 근본 원인     |
+| 구조 개선   | `code-simplifier` agent                 | 동작 변경 X                 |
+| 검증        | `verifier` agent                        | 변경이 실제로 작동하는지    |
 
 ### 프로젝트 skill (`.claude/skills/`)
-| skill | 시점 | 역할 |
-|---|---|---|
+
+| skill            | 시점                  | 역할                                           |
+| ---------------- | --------------------- | ---------------------------------------------- |
 | `ue-build-check` | `.h`/`.cpp` 수정 직후 | UE5.6 Build.bat 자동 호출, 에러/경고 분리 보고 |
 
-> `.h` = 사람 영역. agent도 `.h` 수정 금지 — 시그니처 변경 필요 시 도메인 오너에게 보고.
+### Unreal MCP (에디터 자동화 — McpAutomationBridge)
+
+- 용도: §0의 제한적 허용 범위(테스트맵·노티파이·일괄작업·조회) 내에서만
+- 연결: 에디터 실행 + `● MCP :3000` 확인 → `.mcp.json` 자동 인식
+- 안전: 토큰 인증 켜짐 / loopback 전용 / **작업 전 Content 커밋**
+
+> `.h` = 사람 승인 영역. agent도 `.h` 수정 금지 — 시그니처 변경 필요 시 작성자 승인 후.
+
+---
+
+## 8. 애니메이션 룰 ★ (2026-07-12 신설)
+
+### 8-1. 역할 분담
+
+- **이동/로코모션 = 모션매칭(MM)** — ABP의 PoseSearch 노드 + PSD. 이동 애니를 스테이트머신으로 짜지 않음
+- **전투/액션 = 몽타주(AM\_)** — 공격·회피·패링·리액션. **MM 검색 대상(PSD)에 전투 애니 넣지 않기** (DB 오염 = 이동 중 공격모션 튀어나옴)
+- **PSD 분리 원칙**: 용도별 DB (예: Idles / Stops / Loops) — 하나의 거대 DB 금지
+
+### 8-2. 히트 판정 = AnimNotify가 단일 진실
+
+- 공격 판정 프레임 = 몽타주의 **AnimNotify(State)** 로만 정의 (코드에 하드코딩 금지)
+- 노티파이 → GameplayEvent(태그) → GA가 수신 (§1 의존성 방향 준수: 애니가 GA를 직접 호출하지 않음)
+- 판정 타이밍 수정 = 몽타주에서만 (코드 재컴파일 없이 튜닝)
+
+### 8-3. ABP 구조
+
+- **상하체 분리 = Layered blend per bone** — 하체 MM 이동 + 상체 몽타주 (이동 중 공격)
+- 슬롯 표준: `DefaultSlot`(전신) / `UpperBody`(상체) 2개만 — 슬롯 난립 금지
+- 루트모션: **전투 몽타주 = 루트모션 사용** (공격 전진·회피 이동) / 일반 이동 = CMC. 변경 시 본 파일에 기록
+
+### 8-4. 리타게팅 파이프라인
+
+- 외부 애니(Mixamo 등) → SKEL*UE5_F 리타겟 → 결과물만 프로젝트 네이밍(`AS*버터\_동작`) 적용
+- 원본 소스 애니는 별도 폴더 보존 (재리타겟 대비)
+- 리타겟 후 필수 확인: 루트 위치 / 발 슬라이딩 / 손목 뒤틀림
+
+---
+
+## 9. 네이밍 컨벤션 (실사용 기준 명문화, 2026-07-12 신설)
+
+**원칙**: 우리가 만드는 에셋만 적용. 외부 팩(GhostSamurai 등) 원본은 리네임하지 않음 (레퍼런스 깨짐).
+
+### 코어 / BP
+
+| 접두사      | 대상                    | 예                 |
+| ----------- | ----------------------- | ------------------ |
+| `BP_`       | Blueprint 액터/컴포넌트 | BP_Butter          |
+| `WBP_`      | 위젯 BP (UI)            | WBP_HealthBar      |
+| `BPI_`      | BP 인터페이스           | BPI_Interactable   |
+| `BPFL_`     | 함수 라이브러리         | BPFL_CombatHelpers |
+| `E_` / `F_` | 열거형 / 구조체         | E_WeaponType       |
+
+### GAS
+
+| 접두사 | 대상                      | 예                                    |
+| ------ | ------------------------- | ------------------------------------- |
+| `GA_`  | GameplayAbility           | GA_Dash                               |
+| `GE_`  | GameplayEffect            | GE_Damage_Base                        |
+| `GC_`  | GameplayCue Notify        | GC_HitSpark                           |
+| `UAS_` | AttributeSet (C++ 클래스) | UAS*Health — ※에셋 `AS*`(애니)와 다름 |
+
+### 애니메이션
+
+| 접두사                   | 대상                      | 예                   |
+| ------------------------ | ------------------------- | -------------------- |
+| `ABP_`                   | Animation Blueprint       | ABP_Butter           |
+| `AS_`                    | Anim Sequence             | AS_Butter_Run_Loop_F |
+| `AM_`                    | Anim Montage              | AM_Butter_Combo1     |
+| `BS_`                    | Blend Space               | BS_Butter_Locomotion |
+| `PSD_` / `PSS_`          | 포즈서치 DB / 스키마 (MM) | PSD_Butter_Idles     |
+| `SKEL_` / `SK_` / `SKM_` | 스켈레톤 / 스켈레탈메시   | SKEL_UE5_F           |
+| `PA_`                    | Physics Asset             | PA_Butter            |
+| `CR_`                    | Control Rig               | CR_Butter            |
+
+### 아트 / 이펙트
+
+| 접두사                       | 대상                                | 예               |
+| ---------------------------- | ----------------------------------- | ---------------- |
+| `SM_`                        | Static Mesh                         | SM_Rock01        |
+| `M_` / `MI_` / `MF_` / `ML_` | 머티리얼 / 인스턴스 / 함수 / 레이어 | M_Butter_Body    |
+| `T_`                         | 텍스처 (+접미사 `_D`/`_N`/`_R`)     | T_Butter_Body_D  |
+| `NS_`                        | Niagara System                      | NS_HitSpark      |
+| `VFX_`                       | (팩 관례) 이펙트 그룹               | 신규는 NS\_ 사용 |
+
+### 사운드 / 데이터 / AI / 입력 / 레벨
+
+| 접두사                 | 대상                           | 예               |
+| ---------------------- | ------------------------------ | ---------------- |
+| `SFX_` / `SC_` / `SW_` | 사운드 이펙트 / 큐 / 웨이브    | SFX_Slash        |
+| `DA_`                  | Data Asset                     | DA_EnemyDef_Komi |
+| `DT_` / `CT_`          | Data Table / Curve Table       | DT_DropTable     |
+| `BT_` / `BB_`          | Behavior Tree / Blackboard     | BT_Komi          |
+| `AIC_`                 | AI Controller                  | AIC_EnemyBase    |
+| `EQS_`                 | EQS 쿼리                       | EQS_FlankPos     |
+| `IA_` / `IMC_`         | Input Action / Mapping Context | IA_Dash          |
+| `L_`                   | 레벨(맵)                       | L_TestArena      |
