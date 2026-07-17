@@ -85,6 +85,7 @@
 | 2026-07-09 | [motion-matching-research](dev-logs/2026-07-09-motion-matching-research.md)       | 모션매칭 자료조사 (개념+에셋 구조+URL 모음)                                            |
 | 2026-07-11 | [butter-lockon-strafe](dev-logs/2026-07-11-butter-lockon-strafe.md)               | 버터 락온 스트레이프 (Sword 리타게팅 + BS 8방향 + ABP 리페어런팅, Idle 오염 해결)      |
 | 2026-06-25 | [버터맵 작업기록 통합](dev-logs/버터맵_작업기록_통합_2026-06-25.md)               | 버터 맵 배경 에셋 작업 기록 통합본 (바탕화면에서 이관)                                 |
+| 2026-07-17 | [melee-trace-refactor](dev-logs/2026-07-17-melee-trace-refactor.md) | 트레이스 무기중립화 (WeaponTrace→MeleeTrace + ETraceMeshSource + 창단위 히트리셋) |
 
 ## handoffs/ — 인수인계
 
