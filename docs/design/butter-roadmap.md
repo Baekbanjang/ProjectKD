@@ -14,11 +14,12 @@
 
 **목표**: 버터 전용 전투 모션 세팅 + ABP 전투 레이어 추가
 
-### 2-1. PSD_Combat 구성 (락온 스트레이프)
-- 8방향 전투 이동 DB 구성 (Step 2에서 리타게팅한 Box/Arc 스트레이프 세트 = 재료 확보됨)
-- IsInCombat 플래그로 로코모션 DB ↔ PSD_Combat 전환
-- 각도 처리: 몸은 락온 타겟 방향 고정(Facing=타겟), 8방향 strafe 애니(0/45/90/135/180°), OrientationWarping 미사용(락온 우선)
-- 애니 상세 표는 [butter-anim-pipeline](butter-anim-pipeline.md) §락온 스트레이프 설계
+### 2-1. 락온 스트레이프 — ✅ 완료 (2026-07-11)
+- ~~PSD_Combat(MM) 구성~~ **폐기** → 길동 방식(BS 스왑, Blend Poses by Bool) 채택
+- 애니 소스: Sword_Animations 번들 Run_Combat 10방향 리타게팅 (GS는 검든 자세라 배제)
+- `BS_Butter_LockOn` (2D BlendSpace, VelocityX/Y 축) + ABP 2단 Blend Poses by Bool 분기
+- 각도 처리: 몸은 락온 타겟 방향 고정(bUseControllerDesiredRotation), 8방향 strafe, OrientationWarping 미사용
+- 상세 = [dev-log 2026-07-11](../dev-logs/2026-07-11-butter-lockon-strafe.md)
 
 ### 2-2. 전투 ABP 레이어
 ```
@@ -27,10 +28,10 @@ Layer: Slot 'DefaultSlot' → Layered Blend Per Bone (spine_01 이상)
 Post: AimOffset (락온 시 상체 타겟 추적)
 ```
 
-### 2-3. GA 몽타주 정리
-- GA_LightCombo / GA_HeavyCombo 버터 GhostSamurai 버전으로 확정
-- DA_ComboTree 재구성 (맨손 LLL / LLH / HHL 분기)
-- Dodge / Parry / CounterThrust / SprintAttack 버터 몽타주 최종 연결
+### 2-3. GA 몽타주 정리 — ⬜ 방향 전환 (2026-07-11)
+- ~~GA_LightCombo / GA_HeavyCombo GhostSamurai 버전으로 확정~~ **보류** — GS는 버터 전투 톤에 무리 판단, 신규 애니(구매/직접 제작)로 교체 예정. 소스 미정 → 착수 시 결정
+- DA_ComboTree 재구성 (맨손 LLL / LLH / HHL 분기) — 유효, 소스 애니 확정 후 진행
+- Dodge / Parry / CounterThrust / SprintAttack 버터 몽타주 최종 연결 — 유효
 
 ### 2-4. 검증
 - 이동 중 공격 시 하체 이동 유지되는지 (상하체 분리)
