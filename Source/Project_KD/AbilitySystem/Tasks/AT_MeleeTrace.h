@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "AT_WeaponTrace.generated.h"
+#include "AT_MeleeTrace.generated.h"
 
 class USkeletalMeshComponent;
 
@@ -15,21 +15,29 @@ enum class ETraceMode : uint8
 	TipLine  UMETA(DisplayName = "Tip LineTrace (thin weapons)")
 };
 
+// 판정 출처
+UENUM(BlueprintType)
+enum class ETraceMeshSource : uint8
+{
+	Weapon    UMETA(DisplayName = "Weapon Mesh"),
+	OwnerBody UMETA(DisplayName = "Owner Body Mesh"),
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponTraceHitDelegate, const FHitResult&, Hit);
 
 // StartSocket↔EndSocket 축을 따라 prev→cur 프레임 궤적을 캡슐 스윕.
 // SubSteps(1~8) 보간으로 고속 스윙 터널링 방지. 태스크 수명 동안 액터당 OnHit 1회.
 UCLASS()
-class PROJECT_KD_API UAT_WeaponTrace : public UAbilityTask
+class PROJECT_KD_API UAT_MeleeTrace : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
-	UAT_WeaponTrace(const FObjectInitializer& ObjectInitializer);
+	UAT_MeleeTrace(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UAT_WeaponTrace* WeaponTrace(
+	static UAT_MeleeTrace* MeleeTrace(
 		UGameplayAbility* OwningAbility,
 		USkeletalMeshComponent* WeaponMesh,
 		FName StartSocket,

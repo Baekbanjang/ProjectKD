@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/Player/GA_PlayerWeaponAttackBase.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_PlayerOneShotAttack.generated.h"
 
 class UHitConfirmProfile;
@@ -11,7 +11,7 @@ class UHitConfirmProfile;
  * 
  */
 UCLASS()
-class PROJECT_KD_API UGA_PlayerOneShotAttack : public UGA_PlayerWeaponAttackBase
+class PROJECT_KD_API UGA_PlayerOneShotAttack : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
 

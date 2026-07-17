@@ -1,11 +1,11 @@
-#include "AbilitySystem/Abilities/GA_WeaponTraceBase.h"
+#include "AbilitySystem/Abilities/GA_MeleeTraceBase.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/AS_Combat.h"
 #include "KDGameplayTags.h"
-#include "AbilitySystem/AnimNotifies/ANS_WeaponTrace.h"
-#include "AbilitySystem/Tasks/AT_WeaponTrace.h"
+#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
+#include "AbilitySystem/Tasks/AT_MeleeTrace.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Animation/AnimInstance.h"
@@ -13,13 +13,13 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "TimerManager.h"
 
-UGA_WeaponTraceBase::UGA_WeaponTraceBase()
+UGA_MeleeTraceBase::UGA_MeleeTraceBase()
 {
 	// Default Sweep covers the whole blade so point-blank hits land (TipLine whiffs inside the tip arc).
 	TraceMode = ETraceMode::Sweep;
 }
 
-void UGA_WeaponTraceBase::ActivateAbility(
+void UGA_MeleeTraceBase::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
@@ -54,19 +54,19 @@ void UGA_WeaponTraceBase::ActivateAbility(
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	MontageTask->OnCompleted.AddDynamic(this, &UGA_WeaponTraceBase::OnMontageCompleted);
-	MontageTask->OnInterrupted.AddDynamic(this, &UGA_WeaponTraceBase::OnMontageInterrupted);
-	MontageTask->OnCancelled.AddDynamic(this, &UGA_WeaponTraceBase::OnMontageInterrupted);
+	MontageTask->OnCompleted.AddDynamic(this, &UGA_MeleeTraceBase::OnMontageCompleted);
+	MontageTask->OnInterrupted.AddDynamic(this, &UGA_MeleeTraceBase::OnMontageInterrupted);
+	MontageTask->OnCancelled.AddDynamic(this, &UGA_MeleeTraceBase::OnMontageInterrupted);
 	MontageTask->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayEvent* TraceBeginTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this, GameplayTags::Event_Montage_TraceBegin, nullptr, false, true);
-	TraceBeginTask->EventReceived.AddDynamic(this, &UGA_WeaponTraceBase::OnTraceBeginEvent);
+	TraceBeginTask->EventReceived.AddDynamic(this, &UGA_MeleeTraceBase::OnTraceBeginEvent);
 	TraceBeginTask->ReadyForActivation();
 
 	UAbilityTask_WaitGameplayEvent* TraceEndTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this, GameplayTags::Event_Montage_TraceEnd, nullptr, false, true);
-	TraceEndTask->EventReceived.AddDynamic(this, &UGA_WeaponTraceBase::OnTraceEndEvent);
+	TraceEndTask->EventReceived.AddDynamic(this, &UGA_MeleeTraceBase::OnTraceEndEvent);
 	TraceEndTask->ReadyForActivation();
 
 	StartSafetyTimer(AttackMontage->GetPlayLength(), EffRate);
@@ -76,65 +76,89 @@ void UGA_WeaponTraceBase::ActivateAbility(
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UGA_WeaponTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
+void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 {
-	// Race guard: cancel chain may EndAbility before this notify fires — skip to avoid a stray 1-frame trace.
+	// Race guard: cancel chain may EndAbility before this notify fires
 	if (!IsActive()) return;
-
 	AActor* Avatar = GetAvatarActorFromActorInfo();
+	
 	if (!IsValid(Avatar)) return;
-
-	USkeletalMeshComponent* WeaponMesh = nullptr;
-	TArray<UActorComponent*> Components;
-	Avatar->GetComponents(USkeletalMeshComponent::StaticClass(), Components);
-	for (UActorComponent* Comp : Components)
+	
+	// 판정 구간마다 "액터당 1히트" 초기화 — 한 몽타주의 2연타(속4 바디->헤드)가 같은 적에게 각각 들어가게
+	AlreadyHitActors.Reset();
+	
+	// 이번 창의 유효 설정 — 노티 오버라이드가 GA 기본값을 이김
+	FName EffStartSocket = StartSocket;
+	FName EffEndSocket = EndSocket;
+	ETraceMode EffMode = TraceMode;
+	float EffRadius = CapsuleRadius;
+	ETraceMeshSource EffSource = MeshSource;
+	if (const UANS_MeleeTrace* Window = Cast<UANS_MeleeTrace>(Payload.OptionalObject))
 	{
-		if (Comp->ComponentHasTag(WeaponMeshComponentTag))
+		if (Window->StartSocketOverride != NAME_None) EffStartSocket = Window->StartSocketOverride;
+		if (Window->EndSocketOverride != NAME_None) EffEndSocket = Window->EndSocketOverride;
+		if (Window->CapsuleRadiusOverride > 0.f) EffRadius = Window->CapsuleRadiusOverride;
+		if (Window->bOverrideTraceMode) EffMode = Window->TraceModeOverride;
+		if (Window->bOverrideMeshSource) EffSource = Window->MeshSourceOverride;
+	}
+	
+	// 출처별 트레이스 메쉬 해석
+	USkeletalMeshComponent* TraceMesh = nullptr;
+	if (EffSource == ETraceMeshSource::OwnerBody)
+	{
+		// 맨손/킥 — 아바타 본체 메쉬의 본(hand_l, foot_r 등)으로 트레이스
+		TraceMesh = GetCurrentActorInfo()->SkeletalMeshComponent.Get();
+
+		// 본체엔 무기 소켓(Spear_*) 없음 — 노티 hand_l/foot_r 오버라이드 빠지면 몸통 원점서 잘못된 트레이스
+		if (IsValid(TraceMesh) && !TraceMesh->DoesSocketExist(EffStartSocket))
 		{
-			WeaponMesh = Cast<USkeletalMeshComponent>(Comp);
-			break;
+			UE_LOG(LogTemp, Warning,
+				TEXT("[KD] OwnerBody 트레이스인데 '%s' 소켓/본 없음 — 노티 소켓 오버라이드 누락"),
+				*EffStartSocket.ToString());
+			return;
 		}
 	}
-
-	if (!IsValid(WeaponMesh))
+	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[KD] Weapon mesh with tag '%s' not found on %s"),
-			*WeaponMeshComponentTag.ToString(), *Avatar->GetName());
+		// 무기 메쉬 — Weapon 태그 스켈레탈 컴포넌트 검색(기존 로직)
+		TArray<UActorComponent*> Components;
+		Avatar->GetComponents(USkeletalMeshComponent::StaticClass(), Components);
+		for (UActorComponent* Comp : Components)
+		{
+			if (Comp->ComponentHasTag(WeaponMeshComponentTag))
+			{
+				TraceMesh = Cast<USkeletalMeshComponent>(Comp);
+				break;
+			}
+		}
+	}
+	
+	if (!IsValid(TraceMesh))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KD] Trace mesh not found (source=%d) on %s"),
+			(int32)EffSource, *Avatar->GetName());
 		return;
 	}
-
+	
 	// Defensive: end any prior trace from a previous notify pair within the same activation.
 	if (ActiveTraceTask)
 	{
 		ActiveTraceTask->EndTask();
 		ActiveTraceTask = nullptr;
 	}
-
-	// Per-window notify overrides win over GA defaults (empty/zero = inherit) → one montage traces
-	// different shapes per swing.
-	FName EffStartSocket = StartSocket;
-	FName EffEndSocket = EndSocket;
-	ETraceMode EffMode = TraceMode;
-	float EffRadius = CapsuleRadius;
-	if (const UANS_WeaponTrace* Window = Cast<UANS_WeaponTrace>(Payload.OptionalObject))
-	{
-		if (Window->StartSocketOverride != NAME_None) EffStartSocket = Window->StartSocketOverride;
-		if (Window->EndSocketOverride != NAME_None) EffEndSocket = Window->EndSocketOverride;
-		if (Window->CapsuleRadiusOverride > 0.f) EffRadius = Window->CapsuleRadiusOverride;
-		if (Window->bOverrideTraceMode) EffMode = Window->TraceModeOverride;
-	}
-
-	ActiveTraceTask = UAT_WeaponTrace::WeaponTrace(
-		this, WeaponMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug);
+	
+	ActiveTraceTask = UAT_MeleeTrace::MeleeTrace(
+		this, TraceMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug);
 	if (!IsValid(ActiveTraceTask))
 	{
 		return;
 	}
-	ActiveTraceTask->OnHit.AddDynamic(this, &UGA_WeaponTraceBase::OnWeaponHit);
+	
+	ActiveTraceTask->OnHit.AddDynamic(this, &UGA_MeleeTraceBase::OnWeaponHit);
 	ActiveTraceTask->ReadyForActivation();
 }
 
-void UGA_WeaponTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
+void UGA_MeleeTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
 {
 	if (ActiveTraceTask)
 	{
@@ -143,7 +167,7 @@ void UGA_WeaponTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
 	}
 }
 
-void UGA_WeaponTraceBase::OnWeaponHit(const FHitResult& Hit)
+void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 {
 	AActor* HitActor = Hit.GetActor();
 	if (!IsValid(HitActor)) return;
@@ -199,13 +223,13 @@ void UGA_WeaponTraceBase::OnWeaponHit(const FHitResult& Hit)
 	OnTargetHit(HitActor, TargetASC, Hit);
 }
 
-void UGA_WeaponTraceBase::OnMontageCompleted()
+void UGA_MeleeTraceBase::OnMontageCompleted()
 {
 	UE_LOG(LogTemp, Log, TEXT("[KD-Montage] %s: Completed"), *GetName());
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), false, false);
 }
 
-void UGA_WeaponTraceBase::OnMontageInterrupted()
+void UGA_MeleeTraceBase::OnMontageInterrupted()
 {
 	FString NowPlaying = TEXT("<none>");
 	if (const FGameplayAbilityActorInfo* Info = GetCurrentActorInfo())
@@ -223,12 +247,12 @@ void UGA_WeaponTraceBase::OnMontageInterrupted()
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), false, true);
 }
 
-void UGA_WeaponTraceBase::OnActivated()
+void UGA_MeleeTraceBase::OnActivated()
 {
 	// No-op base. Overridden by subclasses (e.g. player auto lock-on in GA_PlayerAttackBase).
 }
 
-void UGA_WeaponTraceBase::OnCleanup(bool bWasCancelled)
+void UGA_MeleeTraceBase::OnCleanup(bool bWasCancelled)
 {
 	if (ActiveTraceTask)
 	{

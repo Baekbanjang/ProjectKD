@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/GA_WeaponTraceBase.h"
-#include "GA_PlayerWeaponAttackBase.generated.h"
+#include "AbilitySystem/Abilities/GA_MeleeTraceBase.h"
+#include "GA_PlayerMeleeAttackBase.generated.h"
 
 /**
  * 
  */
 UCLASS(Abstract)
-class PROJECT_KD_API UGA_PlayerWeaponAttackBase : public UGA_WeaponTraceBase
+class PROJECT_KD_API UGA_PlayerMeleeAttackBase : public UGA_MeleeTraceBase
 {
 	GENERATED_BODY()
 

@@ -2,22 +2,22 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/GA_ActionBase.h"
-#include "AbilitySystem/Tasks/AT_WeaponTrace.h"
-#include "GA_WeaponTraceBase.generated.h"
+#include "AbilitySystem/Tasks/AT_MeleeTrace.h"
+#include "GA_MeleeTraceBase.generated.h"
 
 class UAnimMontage;
-class UAT_WeaponTrace;
+class UAT_MeleeTrace;
 class UGameplayEffect;
 
-// Melee weapon-trace base (player LightAttack, enemy attacks). Plays a montage, runs AT_WeaponTrace on
+// Melee weapon-trace base (player LightAttack, enemy attacks). Plays a montage, runs AT_MeleeTrace on
 // TraceBegin/End notifies, applies DamageEffectClass to hit ASCs. Hooks: OnActivated / OnTargetHit / OnCleanup.
 UCLASS(Abstract)
-class PROJECT_KD_API UGA_WeaponTraceBase : public UGA_ActionBase
+class PROJECT_KD_API UGA_MeleeTraceBase : public UGA_ActionBase
 {
 	GENERATED_BODY()
 
 public:
-	UGA_WeaponTraceBase();
+	UGA_MeleeTraceBase();
 
 protected:
 	// Engine (ASC) calls this via the base pointer — keep base's protected visibility.
@@ -38,6 +38,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	FName WeaponMeshComponentTag = TEXT("Weapon");
+	
+	// 판정 출처 기본값
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
+	ETraceMeshSource MeshSource = ETraceMeshSource::Weapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	FName StartSocket = TEXT("Spear_Bottom");
@@ -75,7 +79,7 @@ private:
 	UFUNCTION() void OnMontageInterrupted();
 
 	UPROPERTY()
-	TObjectPtr<UAT_WeaponTrace> ActiveTraceTask;
+	TObjectPtr<UAT_MeleeTrace> ActiveTraceTask;
 
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> AlreadyHitActors;

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/Abilities/Player/GA_PlayerWeaponAttackBase.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_PlayerAttackBase.generated.h"
 
 class UHitConfirmProfile;
 class UAnimMontage;
 class UGameplayEffect;
 
-// 플레이어 공격 GA 공통 베이스. 순수 공용 WeaponTraceBase 위에 플레이어 전용을 얹음:
+// 플레이어 공격 GA 공통 베이스. 순수 공용 MeleeTraceBase 위에 플레이어 전용을 얹음:
 // 콤보 입력 처리(ActivateAbility) + 타격감 큐(OnTargetHit) + 락온 자동조준(OnActivated).
 // 자식(Light/Heavy/Charge)은 생성자에서 ComboInputTag만 지정.
 UCLASS(Abstract)
-class PROJECT_KD_API UGA_PlayerAttackBase : public UGA_PlayerWeaponAttackBase
+class PROJECT_KD_API UGA_PlayerAttackBase : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
 

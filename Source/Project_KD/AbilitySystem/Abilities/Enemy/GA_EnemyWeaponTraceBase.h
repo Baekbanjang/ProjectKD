@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/GA_WeaponTraceBase.h"
+#include "AbilitySystem/Abilities/GA_MeleeTraceBase.h"
 #include "GameplayTagContainer.h"
 #include "GA_EnemyWeaponTraceBase.generated.h"
 
 // 적 근접 공격 GA 베이스. 발동 시 플랜트(braking glide 제거) + 전조 큐.
 // 자식은 소켓·몽타주·공격별 거동만 추가.
 UCLASS(Abstract)
-class PROJECT_KD_API UGA_EnemyWeaponTraceBase : public UGA_WeaponTraceBase
+class PROJECT_KD_API UGA_EnemyWeaponTraceBase : public UGA_MeleeTraceBase
 {
 	GENERATED_BODY()
 

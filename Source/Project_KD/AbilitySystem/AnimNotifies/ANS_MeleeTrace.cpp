@@ -1,18 +1,18 @@
-#include "AbilitySystem/AnimNotifies/ANS_WeaponTrace.h"
+#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
 
-UANS_WeaponTrace::UANS_WeaponTrace()
+UANS_MeleeTrace::UANS_MeleeTrace()
 {
 #if WITH_EDITORONLY_DATA
 	NotifyColor = FColor::Red;
 #endif
 }
 
-void UANS_WeaponTrace::NotifyBegin(
+void UANS_MeleeTrace::NotifyBegin(
 	USkeletalMeshComponent* MeshComp,
 	UAnimSequenceBase* Animation,
 	float TotalDuration,
@@ -35,7 +35,7 @@ void UANS_WeaponTrace::NotifyBegin(
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
-void UANS_WeaponTrace::NotifyEnd(
+void UANS_MeleeTrace::NotifyEnd(
 	USkeletalMeshComponent* MeshComp,
 	UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
@@ -53,7 +53,7 @@ void UANS_WeaponTrace::NotifyEnd(
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
-FString UANS_WeaponTrace::GetNotifyName_Implementation() const
+FString UANS_MeleeTrace::GetNotifyName_Implementation() const
 {
-	return TEXT("WeaponTrace");
+	return TEXT("MeleeTrace");
 }

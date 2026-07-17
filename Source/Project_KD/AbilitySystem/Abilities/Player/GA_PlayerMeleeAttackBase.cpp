@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/Abilities/Player/GA_PlayerWeaponAttackBase.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 
 #include "GameFramework/Character.h"
 
-void UGA_PlayerWeaponAttackBase::ApplyHitStop(AActor* Target, float Duration) const
+void UGA_PlayerMeleeAttackBase::ApplyHitStop(AActor* Target, float Duration) const
 {
 	ACharacter* Char = Cast<ACharacter>(Target);
 	if (!Char || Duration <= 0.f) return;
