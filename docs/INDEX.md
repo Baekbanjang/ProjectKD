@@ -2,6 +2,10 @@
 
 프로젝트 전체 문서 카탈로그. 새 문서 추가 시 여기에 한 줄 등록.
 
+> ★ **[PROJECT_OVERVIEW](PROJECT_OVERVIEW.md)** — 프로젝트 전체 개관(현재 방향·코드 아키텍처·에셋 맵·진행상황). **새 세션 부트 문서, 여기부터 읽을 것.**
+
+최신 dev-log: [2026-07-23 발검/납검 몽타주 + 로코 Stop 게이팅](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) · [2026-07-22 홀스터 소켓](dev-logs/2026-07-22-gunsword-holster-socket.md)
+
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
 - **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
 - **reference/** — 외부 자료·컨벤션·팀 셋업
@@ -86,6 +90,7 @@
 | 2026-07-11 | [butter-lockon-strafe](dev-logs/2026-07-11-butter-lockon-strafe.md)               | 버터 락온 스트레이프 (Sword 리타게팅 + BS 8방향 + ABP 리페어런팅, Idle 오염 해결)      |
 | 2026-06-25 | [버터맵 작업기록 통합](dev-logs/버터맵_작업기록_통합_2026-06-25.md)               | 버터 맵 배경 에셋 작업 기록 통합본 (바탕화면에서 이관)                                 |
 | 2026-07-17 | [melee-trace-refactor](dev-logs/2026-07-17-melee-trace-refactor.md) | 트레이스 무기중립화 (WeaponTrace→MeleeTrace + ETraceMeshSource + 창단위 히트리셋) |
+| 2026-07-22 | [gunsword-holster-socket](dev-logs/2026-07-22-gunsword-holster-socket.md) | 검+총 홀스터 소켓 셋업 + DA 교차오염 정정 (Holder 본 붕괴 우회, 발검/납검·PIE는 다음) |
 
 ## handoffs/ — 인수인계
 
@@ -94,3 +99,4 @@
 | [2026-06-15-kildong-execution-contextual-anim](handoffs/2026-06-15-kildong-execution-contextual-anim.md) | [길동 보류] 처형 Contextual Anim 도입 — 스니펫 6건 적용 전 중단, 재개용 |
 | [2026-06-15-kildong-backlog](handoffs/2026-06-15-kildong-backlog.md)                                     | [길동 보류] 대기 백로그 — 마지막 적 슬로우모션 + 휘젓기 폴리싱          |
 | [2026-07-06-claudian-env-setup](handoffs/2026-07-06-claudian-env-setup.md)                               | Claudian 환경 셋업 인수인계                                             |
+| [2026-07-21-pivot-gunsword](handoffs/2026-07-21-pivot-gunsword.md)                                       | ★프로젝트 피벗 — 버터 맨손 폐기 → 9CG Gun&Sword 팩 기반 SB 스타일 액션  |
