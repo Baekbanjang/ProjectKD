@@ -6,8 +6,25 @@
 #include "Engine/DataAsset.h"
 #include "WeaponDataAsset.generated.h"
 
+class UStaticMesh;
+class UAnimMontage;
+
+USTRUCT(BlueprintType)
+struct FEquipMontageSet
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Anim")
+	TObjectPtr<UAnimMontage> Idle;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Anim")
+	TObjectPtr<UAnimMontage> Walk;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Anim")
+	TObjectPtr<UAnimMontage> Run;
+};
 /**
- * 
+ *
  */
 UCLASS()
 class PROJECT_KD_API UWeaponDataAsset : public UPrimaryDataAsset
@@ -20,6 +37,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TObjectPtr<USkeletalMesh> WeaponMesh;
 
+	// 스태틱메시 무기(총/검 팩 에셋)용 — WeaponMesh(스켈레탈)와 둘 중 하나만 지정
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TObjectPtr<UStaticMesh> WeaponStaticMesh;
+
 	// 손에 쥘 소켓 (캐릭터 메시 소켓명)
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName HandSocketName = TEXT("weapon_r");
@@ -28,11 +49,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName SheathSocketName = TEXT("weapon_back");
 
+
+	// 각 속도별 
 	// 장착 몽타주
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Anim")
-	TObjectPtr<UAnimMontage> DrawMontage;
+	FEquipMontageSet DrawMontages;
 
 	// 해제 몽타주
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon|Anim")
-	TObjectPtr<UAnimMontage> SheathMontage;
+	FEquipMontageSet SheathMontages;
 };

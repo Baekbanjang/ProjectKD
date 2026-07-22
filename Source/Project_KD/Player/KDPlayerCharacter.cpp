@@ -46,6 +46,7 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 
 	SprintComp = CreateDefaultSubobject<USprintComponent>(TEXT("SprintComponent"));
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
+	GunWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("GunWeaponComponent"));
 	ComboComp = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
 	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	CombatStateComp = CreateDefaultSubobject<UCombatStateComponent>(TEXT("CombatStateComp"));

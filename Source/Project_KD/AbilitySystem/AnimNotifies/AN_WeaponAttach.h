@@ -30,4 +30,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	EWeaponAttachTarget Target = EWeaponAttachTarget::ToHand;
+	
+	// 대상 무기의 WeaponComponentTag. None이면 모든 무기에 적용(동시 발검)
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	FName TargetWeaponTag;
 };

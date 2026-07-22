@@ -14,17 +14,21 @@ void UAN_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
 	AActor* Owner = MeshComp->GetOwner();
 	if (!Owner) return;
 
-	// 메시 소유자에서 무기 컴포넌트를 찾아 재부착
-	UWeaponComponent* WeaponComp = Owner->FindComponentByClass<UWeaponComponent>();
-	if (!WeaponComp) return;
+	// 메시 소유자에서 무기 컴포넌트를 찾아 재부여
+	TInlineComponentArray<UWeaponComponent*> WeaponComps(Owner);
 
-	if (Target == EWeaponAttachTarget::ToHand)
+	for (UWeaponComponent* WeaponComp : WeaponComps)
 	{
-		WeaponComp->AttachWeaponToHand();
-	}
-	else
-	{
-		WeaponComp->AttachWeaponToSheath();
+		if (!TargetWeaponTag.IsNone() && WeaponComp->GetWeaponComponentTag() != TargetWeaponTag) continue;
+		
+		if (Target == EWeaponAttachTarget::ToHand)
+		{
+			WeaponComp->AttachWeaponToHand();
+		}
+		else
+		{
+			WeaponComp->AttachWeaponToSheath();
+		}
 	}
 }
 

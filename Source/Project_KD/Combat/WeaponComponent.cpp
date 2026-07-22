@@ -3,6 +3,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
+#include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Data/WeaponDataAsset.h"
 
@@ -47,7 +48,7 @@ void UWeaponComponent::AttachWeaponToSocket(FName SocketName)
 	USkeletalMeshComponent* OwnerMesh = Owner->FindComponentByClass<USkeletalMeshComponent>();
 	if (!OwnerMesh) return;
 
-	WeaponMesh->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+	WeaponMesh->AttachToComponent(OwnerMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
 
 	// GripPoint 자동 정렬 — attach 끝난 다음에 실행해야 트랜스폼이 정확히 반영
 	if (WeaponMesh->DoesSocketExist(TEXT("GripPoint")))
@@ -93,8 +94,23 @@ void UWeaponComponent::OnInCombatTagChanged(const FGameplayTag Tag, int32 NewCou
 	Data.EventTag = GameplayTags::Event_Combat_WeaponToggle;
 	Data.Instigator = GetOwner();
 	Data.EventMagnitude = bDraw ? 1.0f : 0.0f;
-	Data.OptionalObject = bDraw ? CurrentWeapon->DrawMontage : CurrentWeapon->SheathMontage; 
-	ASC->HandleGameplayEvent(Data.EventTag, &Data);
+	const FEquipMontageSet& MontageSet = bDraw ? CurrentWeapon->DrawMontages : CurrentWeapon->SheathMontages;
+	Data.OptionalObject = SelectEquipMontage(MontageSet);
+	
+	// 다중 무기: 몽타주 재생 트리거는 1개 컴포넌트만 (총 쪽 false). 부착은 노티가 전체 순회
+	if (bBroadcastsToggleEvent)
+	{
+		ASC->HandleGameplayEvent(Data.EventTag, &Data);
+	}
+}
+
+UAnimMontage* UWeaponComponent::SelectEquipMontage(const FEquipMontageSet& Set) const
+{
+	const AActor* Owner = GetOwner();
+	const float Speed = Owner ? Owner->GetVelocity().Size2D() : 0.f;
+	if (Speed < WalkSpeedThreshold) return Set.Idle;
+	if (Speed < RunSpeedThreshold)  return Set.Walk;
+	return Set.Run;
 }
 
 void UWeaponComponent::BeginPlay()
@@ -107,22 +123,37 @@ void UWeaponComponent::BeginPlay()
 	USkeletalMeshComponent* OwnerMesh = Owner->FindComponentByClass<USkeletalMeshComponent>();
 	if (!OwnerMesh) return;
 
-	WeaponMesh = NewObject<USkeletalMeshComponent>(Owner, TEXT("WeaponMesh"));
-	if (!WeaponMesh) return;
+	// 무기 컴포넌트 2개면 서브오브젝트 이름 충돌 방지 — 태그 기반 유니크 이름
+	const FName MeshName(*FString::Printf(TEXT("WeaponMesh_%s"), *WeaponComponentTag.ToString()));
 
-	USkeletalMesh* MeshToUse = CurrentWeapon ? CurrentWeapon->WeaponMesh.Get() : WeaponMeshAsset.Get();
-	if (MeshToUse)
+	// 스태틱에서 무기면 StaticMeshComponent, 아니면 기존 스켈레탈 경로
+	UStaticMesh* StaticToUse = CurrentWeapon ? CurrentWeapon->WeaponStaticMesh.Get() : nullptr;
+
+	if (StaticToUse)
 	{
-		WeaponMesh->SetSkeletalMesh(MeshToUse);
+		UStaticMeshComponent* SMComp = NewObject<UStaticMeshComponent>(Owner, MeshName);
+		if (!SMComp) return;
+		SMComp->SetStaticMesh(StaticToUse);
+		WeaponMesh = SMComp;
 	}
+	else
+	{
+		USkeletalMeshComponent* SkelComp = NewObject<USkeletalMeshComponent>(Owner, MeshName);
+		if (!SkelComp) return;
 
+		USkeletalMesh* MeshToUse = CurrentWeapon ? CurrentWeapon->WeaponMesh.Get() : WeaponMeshAsset.Get();
+		if (MeshToUse)
+		{
+			SkelComp->SetSkeletalMesh(MeshToUse);
+		}
+		WeaponMesh = SkelComp;
+	}
 
 	WeaponMesh->ComponentTags.Add(WeaponComponentTag);
 	WeaponMesh->RegisterComponent();
-	
 	if (bUseSheathing)
 	{
-		AttachWeaponToSheath();  
+		AttachWeaponToSheath();
 		RegisterCombatTagListener();
 	}
 	else

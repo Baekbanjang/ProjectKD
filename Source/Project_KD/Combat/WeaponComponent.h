@@ -5,8 +5,9 @@
 #include "Components/ActorComponent.h"
 #include "WeaponComponent.generated.h"
 
+struct FEquipMontageSet;
 class UWeaponDataAsset;
-class USkeletalMeshComponent;
+class UMeshComponent;
 
 UCLASS(ClassGroup=(Weapon), meta=(BlueprintSpawnableComponent))
 class PROJECT_KD_API UWeaponComponent : public UActorComponent
@@ -16,7 +17,10 @@ class PROJECT_KD_API UWeaponComponent : public UActorComponent
 public:
 	UWeaponComponent();
 
-	USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	UMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+
+	// 노티가 무기 식별에 사용
+	FName GetWeaponComponentTag() const { return WeaponComponentTag; }
 
 	void AttachWeaponToHand();   
 	void AttachWeaponToSheath();
@@ -43,12 +47,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	FName WeaponComponentTag = TEXT("Weapon");
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	// 다중 무기 시 발검 이벤트는 1개 컴포넌트만 발사(총 쪽은 false)
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	bool bBroadcastsToggleEvent = true;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+	// 이동 속도
+	UPROPERTY(EditAnywhere, Category = "Weapon|Anim")
+	float WalkSpeedThreshold = 10.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Weapon|Anim")
+	float RunSpeedThreshold = 300.f;
 
 private:
 	UPROPERTY()
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+	TObjectPtr<UMeshComponent> WeaponMesh;
 
 	void AttachWeaponToSocket(FName SocketName);                 // 손/등 공용 재부착 (GripPoint 역보정 포함)
 	void RegisterCombatTagListener();                            // ASC 준비되면 InCombat 태그
@@ -57,4 +71,6 @@ private:
 	void OnInCombatTagChanged(const FGameplayTag Tag, int32 NewCount); 
 	
 	FDelegateHandle InCombatTagHandle;
+
+	UAnimMontage* SelectEquipMontage(const FEquipMontageSet& Set) const;
 };
