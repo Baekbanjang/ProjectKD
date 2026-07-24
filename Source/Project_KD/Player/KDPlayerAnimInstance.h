@@ -72,6 +72,9 @@ public:
     UPROPERTY(BlueprintReadOnly, Category = "State")
     bool bIsFullSprinting = false;
 
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsDoubleJumping = false;
+
 private:
 	// 캐시된 소유 객체 (게임스레드 접근).
 	UPROPERTY(Transient)

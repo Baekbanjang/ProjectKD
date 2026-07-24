@@ -85,4 +85,6 @@ void UKDPlayerAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 
 	bDoubleJumpTriggered = (CachedJumpCount >= 2) && (CachedJumpCount > PrevJumpCount);
 	PrevJumpCount = CachedJumpCount;
+
+	bIsDoubleJumping = (CachedJumpCount >= 2) && bIsInAir;
 }
