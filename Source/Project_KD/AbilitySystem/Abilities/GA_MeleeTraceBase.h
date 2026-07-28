@@ -37,17 +37,17 @@ protected:
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
-	FName WeaponMeshComponentTag = TEXT("Weapon");
+	FName WeaponMeshComponentTag = TEXT("Sword");
 	
 	// 판정 출처 기본값
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	ETraceMeshSource MeshSource = ETraceMeshSource::Weapon;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
-	FName StartSocket = TEXT("Spear_Bottom");
+	FName StartSocket = TEXT("Sword_Bottom");
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
-	FName EndSocket = TEXT("Spear_Tip");
+	FName EndSocket = TEXT("Sword_Tip");
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	ETraceMode TraceMode = ETraceMode::TipLine;

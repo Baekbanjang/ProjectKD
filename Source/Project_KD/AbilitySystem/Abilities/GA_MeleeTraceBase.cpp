@@ -11,6 +11,7 @@
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/MeshComponent.h"
 #include "TimerManager.h"
 
 UGA_MeleeTraceBase::UGA_MeleeTraceBase()
@@ -103,7 +104,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 	}
 	
 	// 출처별 트레이스 메쉬 해석
-	USkeletalMeshComponent* TraceMesh = nullptr;
+	UMeshComponent* TraceMesh = nullptr;
 	if (EffSource == ETraceMeshSource::OwnerBody)
 	{
 		// 맨손/킥 — 아바타 본체 메쉬의 본(hand_l, foot_r 등)으로 트레이스
@@ -120,14 +121,14 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 	}
 	else
 	{
-		// 무기 메쉬 — Weapon 태그 스켈레탈 컴포넌트 검색(기존 로직)
+		// 무기 메쉬 — 태그가 일치하는 메쉬 컴포넌트 검색(스태틱/스켈레탈 공용)
 		TArray<UActorComponent*> Components;
-		Avatar->GetComponents(USkeletalMeshComponent::StaticClass(), Components);
+		Avatar->GetComponents(UMeshComponent::StaticClass(), Components);
 		for (UActorComponent* Comp : Components)
 		{
 			if (Comp->ComponentHasTag(WeaponMeshComponentTag))
 			{
-				TraceMesh = Cast<USkeletalMeshComponent>(Comp);
+				TraceMesh = Cast<UMeshComponent>(Comp);
 				break;
 			}
 		}
@@ -137,6 +138,14 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[KD] Trace mesh not found (source=%d) on %s"),
 			(int32)EffSource, *Avatar->GetName());
+		return;
+	}
+
+	// 무기 소켓 존재 체크
+	if (!TraceMesh->DoesSocketExist(EffStartSocket) || !TraceMesh->DoesSocketExist(EffEndSocket))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[KD] 트레이스 소켓 없음 — '%s'/'%s' (mesh=%s)"),
+			*EffStartSocket.ToString(), *EffEndSocket.ToString(), *TraceMesh->GetName());
 		return;
 	}
 	

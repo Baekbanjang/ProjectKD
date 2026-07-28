@@ -4,7 +4,7 @@
 #include "Abilities/Tasks/AbilityTask.h"
 #include "AT_MeleeTrace.generated.h"
 
-class USkeletalMeshComponent;
+class UMeshComponent;
 
 // Sweep    : capsule prev→cur sweep along whole weapon axis (broad, hits along entire shaft)
 // TipLine  : line trace from prev-tip to cur-tip only (thin weapons; ignores shaft body — SB tone)
@@ -39,7 +39,7 @@ public:
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
 	static UAT_MeleeTrace* MeleeTrace(
 		UGameplayAbility* OwningAbility,
-		USkeletalMeshComponent* WeaponMesh,
+		UMeshComponent* WeaponMesh,
 		FName StartSocket,
 		FName EndSocket,
 		ETraceMode Mode = ETraceMode::TipLine,
@@ -57,7 +57,7 @@ protected:
 
 private:
 	UPROPERTY()
-	TObjectPtr<USkeletalMeshComponent> WeaponMesh;
+	TObjectPtr<UMeshComponent> WeaponMesh;
 
 	FName StartSocket = NAME_None;
 	FName EndSocket = NAME_None;

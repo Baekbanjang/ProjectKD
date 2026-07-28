@@ -1,6 +1,6 @@
 #include "AbilitySystem/Tasks/AT_MeleeTrace.h"
 
-#include "Components/SkeletalMeshComponent.h"
+#include "Components/MeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
@@ -13,7 +13,7 @@ UAT_MeleeTrace::UAT_MeleeTrace(const FObjectInitializer& ObjectInitializer)
 
 UAT_MeleeTrace* UAT_MeleeTrace::MeleeTrace(
 	UGameplayAbility* OwningAbility,
-	USkeletalMeshComponent* InWeaponMesh,
+	UMeshComponent* InWeaponMesh,
 	FName InStartSocket,
 	FName InEndSocket,
 	ETraceMode InMode,
