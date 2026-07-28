@@ -93,6 +93,7 @@
 | 2026-07-22 | [gunsword-holster-socket](dev-logs/2026-07-22-gunsword-holster-socket.md) | 검+총 홀스터 소켓 셋업 + DA 교차오염 정정 (Holder 본 붕괴 우회, 발검/납검·PIE는 다음) |
 | 2026-07-23 | [gunsword-equip-montage-loco-gating](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) | 발검/납검 속도대별 상체 몽타주 + 로코모션 Stop 입력 게이팅 |
 | 2026-07-27 | [gunsword-combo-cancel-timing](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) | ★콤보 캔슬 타이밍 실측 (포즈 매칭으로 안무가 의도 역추출) + 루트모션 이동량 |
+| 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
 
 ## handoffs/ — 인수인계
 
