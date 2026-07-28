@@ -8,7 +8,6 @@
 #include "EngineUtils.h"
 #include "KDGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
-#include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/KDProjectile.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -40,14 +39,6 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
     // Perfect 윈도우 판정 — 근접 적 ASC에 EnemyAttackHitWindow 태그 있나.
     const bool bPerfect = IsInPerfectDodgeWindow(ActorInfo);
-    if (!bPerfect)
-    {
-        if (!UKDAbilityStatics::TryConsumeStamina(ASC, StaminaCostGE, StaminaRegenBlockGE, DodgeStaminaCost))
-        {
-            EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-            return;
-        }
-    }
 
     
 #if !UE_BUILD_SHIPPING
@@ -60,7 +51,7 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 #endif
 
 
-    // GE 적용: Perfect는 강한 i-frame + CounterReady, Normal은 짧은 i-frame + Stamina 소모.
+    // GE 적용: Perfect는 강한 i-frame + CounterReady, Normal은 짧은 i-frame
     auto ApplyGE = [ASC](TSubclassOf<UGameplayEffect> GEClass, FActiveGameplayEffectHandle& OutHandle)
     {
         if (!GEClass) return;

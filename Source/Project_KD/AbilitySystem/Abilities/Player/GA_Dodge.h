@@ -52,11 +52,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge", meta = (ClampMin = "100.0", ClampMax = "1000.0"))
 	float PerfectDodgeCheckRadius = 500.0f;
 
-	// Normal 회피 1회 스태미나 소모량. Perfect 회피는 면제
-	// 2026-07-28 스태미나 폐기 — 0이면 TryConsumeStamina가 즉시 통과(KDAbilityStatics.cpp:11)
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge", meta = (ClampMin = "0.0", ClampMax = "100.0"))
-	float DodgeStaminaCost = 0.f;
-
 	// 일반 닷지 무적 GE (짧은 i-frame).
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge")
 	TSubclassOf<UGameplayEffect> NormalInvincibleGE;
@@ -68,13 +63,6 @@ protected:
 	// 퍼펙트 닷지 후 카운터 입력 윈도우
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge")
 	TSubclassOf<UGameplayEffect> CounterWindowGE;
-
-	// 일반 닷지 Stamina 소모 GE. Perfect 닷지엔 적용 X.
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge")
-	TSubclassOf<UGameplayEffect> StaminaCostGE;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge")
-	TSubclassOf<UGameplayEffect> StaminaRegenBlockGE;
 
 	// Montage 재생 속도.
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage", meta = (ClampMin = "0.1", ClampMax = "3.0"))

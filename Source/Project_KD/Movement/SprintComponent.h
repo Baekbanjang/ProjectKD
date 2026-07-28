@@ -3,12 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ActiveGameplayEffectHandle.h"
 #include "Components/ActorComponent.h"
 #include "SprintComponent.generated.h"
 
-class UAbilitySystemComponent;
-class UGameplayEffect;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxWalkSpeedChanged, float, NewSpeed);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -49,8 +46,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category="Sprint", meta=(ClampMin="0.5",ClampMax="10.0"))
 	float SprintInterpSpeed = 6.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Sprint")
-	TSubclassOf<UGameplayEffect> FullSprintStaminaCostGE; // 지속소모 GE
 private:
 	UFUNCTION() void UpdateSprintSpeed(); // 타이머 콜백: CurrentSpeed 보간 → broadcast
 	UFUNCTION() void EnterFullSprint();
@@ -62,8 +57,5 @@ private:
 	FTimerHandle SprintTimerHandle;
 	FTimerHandle FullSprintTimerHandle;
 
-	UFUNCTION() void ExitFullSprint();           
-	UAbilitySystemComponent* ResolveASC() const; 
-
-	FActiveGameplayEffectHandle SprintStaminaCostHandle; // 지속 소모 GE 핸들(삭제용)
+	UFUNCTION() void ExitFullSprint();
 };

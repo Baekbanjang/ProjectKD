@@ -15,23 +15,4 @@ class PROJECT_KD_API UGA_HeavyAttack : public UGA_PlayerAttackBase
 
 public:
 	UGA_HeavyAttack();
-
-	virtual void ActivateAbility(
-	const FGameplayAbilitySpecHandle Handle,
-	const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData) override;
-
-protected:
-	// 강공 1회(=콤보 매 강공 입력) 스태미나 소모량.
-	// 2026-07-28 스태미나 폐기 — 0이면 TryConsumeStamina가 즉시 통과(KDAbilityStatics.cpp:11)
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Heavy", meta = (ClampMin = "0.0", ClampMax = "100.0"))
-	float HeavyStaminaCost = 0.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Stamina")
-	TSubclassOf<UGameplayEffect> StaminaCostGE;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Stamina")
-	TSubclassOf<UGameplayEffect> StaminaRegenBlockGE;
-
 };
