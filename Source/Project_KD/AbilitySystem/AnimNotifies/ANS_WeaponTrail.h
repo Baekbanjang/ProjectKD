@@ -25,8 +25,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail")
 	TObjectPtr<UNiagaraSystem> NiagaraSystem;
 
+	// 트레일을 붙일 무기 메시의 ComponentTag. 비우면 캐릭터 본체 메시(맨손/발차기용)
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail")
-	FName SocketName = TEXT("weapon_trail");
+	FName WeaponMeshComponentTag = TEXT("Sword");
+	
+	UPROPERTY(EditAnywhere, Category = "Weapon Trail")
+	FName SocketName = TEXT("Sword_Bottom");
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail")
 	float SwordLength = 120.f;
