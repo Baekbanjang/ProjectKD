@@ -53,8 +53,9 @@ protected:
 	float PerfectDodgeCheckRadius = 500.0f;
 
 	// Normal 회피 1회 스태미나 소모량. Perfect 회피는 면제
+	// 2026-07-28 스태미나 폐기 — 0이면 TryConsumeStamina가 즉시 통과(KDAbilityStatics.cpp:11)
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge", meta = (ClampMin = "0.0", ClampMax = "100.0"))
-	float DodgeStaminaCost = 25.f;
+	float DodgeStaminaCost = 0.f;
 
 	// 일반 닷지 무적 GE (짧은 i-frame).
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge")
