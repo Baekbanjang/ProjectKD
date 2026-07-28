@@ -4,7 +4,7 @@
 
 > ★ **[PROJECT_OVERVIEW](PROJECT_OVERVIEW.md)** — 프로젝트 전체 개관(현재 방향·코드 아키텍처·에셋 맵·진행상황). **새 세션 부트 문서, 여기부터 읽을 것.**
 
-최신 dev-log: [2026-07-27 콤보 캔슬 타이밍 실측](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) · [2026-07-23 발검/납검 몽타주 + 로코 Stop 게이팅](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) · [2026-07-22 홀스터 소켓](dev-logs/2026-07-22-gunsword-holster-socket.md)
+최신 dev-log: [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md) · [2026-07-27 콤보 캔슬 타이밍 실측](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md)
 
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
 - **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
@@ -88,6 +88,7 @@
 | 2026-07-23 | [gunsword-equip-montage-loco-gating](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) | 발검/납검 속도대별 상체 몽타주 + 로코모션 Stop 입력 게이팅 |
 | 2026-07-27 | [gunsword-combo-cancel-timing](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) | ★콤보 캔슬 타이밍 실측 (포즈 매칭으로 안무가 의도 역추출) + 루트모션 이동량 |
 | 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
+| 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
 
 ## handoffs/ — 인수인계
 
