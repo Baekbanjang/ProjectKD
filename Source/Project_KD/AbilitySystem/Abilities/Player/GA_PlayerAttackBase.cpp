@@ -20,29 +20,34 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
 	UComboComponent* Combo = IsValid(Player) ? Player->GetComboComponent() : nullptr;
 
-	const FComboBranch* Matched = IsValid(Combo)
+	const FComboNode* Node = IsValid(Combo)
 		? Combo->ProcessInput(ComboInputTag)
 		: nullptr;
 
 	// 매 시작에 디폴트 복원 — 직전 분기 값이 다음 활성화에 잔류하는 것 차단.
 	DamageEffectClass = DefaultDamageEffectClass;
 
-	if (Matched)
+	if (Node)
 	{
-		// 정확 매칭 = 분기 마무리. 분기의 Montage/GE로 교체.
-		AttackMontage = IsValid(Matched->Montage) ? Matched->Montage : nullptr;
-		if (Matched->DamageEffectClass)
+		// 노드 = 이번 콤보
+		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr; // 노드의 몽타주 GA 변수에 대입
+		if (!AttackMontage)
 		{
-			DamageEffectClass = Matched->DamageEffectClass;
+			UE_LOG(LogTemp, Warning, TEXT("[KD] Combo node '%s' 몽타주 미지정"), *Node->NodeId.ToString());
+		}
+		
+		if (Node->DamageEffectClass)
+		{
+			DamageEffectClass = Node->DamageEffectClass;
 		}
 	}
 	else
 	{
-		// 미매칭 = 콤보 진행 중. 현재 길이로 디폴트 배열 인덱싱 (1타째->[0], 2타째->[1], …).
+		// 다음 노드 없음 -> 기본 배열로 대신
 		const int32 Num = DefaultAttackMontages.Num();
 		if (Num > 0)
 		{
-			const int32 Length = FMath::Max(IsValid(Combo) ? Combo->GetInputHistoryLength() : 1, 1);
+			const int32 Length = FMath::Max(IsValid(Combo) ? Combo->GetComboDepth() : 1, 1);
 			const int32 Idx = (Length - 1) % Num;
 			AttackMontage = DefaultAttackMontages[Idx];
 		}
@@ -52,7 +57,6 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 			AttackMontage = nullptr;
 		}
 	}
-
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -109,6 +113,7 @@ void UGA_PlayerAttackBase::OnActivated()
 		Attacker->SetActorRotation(FRotator(0.f, ToTarget.Rotation().Yaw, 0.f)); 
 }
 
+/*
 float UGA_PlayerAttackBase::GetEffectiveMontagePlayRate() const
 {
 	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
@@ -116,4 +121,4 @@ float UGA_PlayerAttackBase::GetEffectiveMontagePlayRate() const
 	const float Mult = IsValid(Combo) ? Combo->GetTempoMultiplier() : 1.f;
 	const float Eff = MontagePlayRate * Mult;
 	return Eff;
-}
+}*/

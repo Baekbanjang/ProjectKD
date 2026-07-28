@@ -20,46 +20,44 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
 	UComboComponent* Combo = IsValid(Player) ? Player->GetComboComponent() : nullptr;
 
-	// 공중 컨텍스트로 콤보 입력 처리 (지상 트리 X, AirComboTree만 봄).
-	const FComboBranch* Matched = IsValid(Combo)
+	// 공중 컨텍스트 -> AirComboTree만 봄
+	const FComboNode* Node = IsValid(Combo)
 		? Combo->ProcessInput(ComboInputTag, EComboContext::Air)
 		: nullptr;
-
-	// 매 시작에 디폴트 복원 — 직전 분기 값 잔류 차단.
+	// 매 시작에 디폴트 복원 — 직전 노드 값 잔류 차단
 	DamageEffectClass = DefaultAirDamageEffectClass;
-
-	if (Matched)
+	if (Node)
 	{
-		// 정확 매칭 = 완성 시퀀스 = 막타. 분기 Montage/GE로 교체.
-		AttackMontage = IsValid(Matched->Montage) ? Matched->Montage : nullptr;
-		if (Matched->DamageEffectClass)
+		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr;
+		if (Node->DamageEffectClass)
 		{
-			DamageEffectClass = Matched->DamageEffectClass;
+			DamageEffectClass = Node->DamageEffectClass;
 		}
-		bIsFinisher = true;
+		// 다음 없는 노드 = 막타(피니셔)
+		bIsFinisher = (Node->NextLinks.Num() == 0);
 	}
 	else
 	{
-		// 미매칭 = 콤보 진행 중. 길이로 디폴트 배열 인덱싱 (cap, wrap 금지).
+		// 다음 노드 없음 -> 기본 배열로 대신
 		const int32 Num = DefaultAirMontages.Num();
 		if (Num > 0)
 		{
-			const int32 Length = FMath::Max(IsValid(Combo) ? Combo->GetInputHistoryLength() : 1, 1);
-			const int32 Idx = FMath::Min(Length - 1, Num - 1); // 4타 도달 시 멈춤 = 콤보 끝
+			const int32 Length = FMath::Max(IsValid(Combo) ? Combo->GetComboDepth() : 1, 1);
+			const int32 Idx = FMath::Min(Length - 1, Num - 1); // 마지막 = 콤보 끝
 			AttackMontage = DefaultAirMontages[Idx];
 			if (Length >= Num)
 			{
-				bIsFinisher = true; // 배열 끝 도달 = 막타
+				bIsFinisher = true; // 배열 끝 도달 = 피니셔
 			}
 		}
 		else
 		{
-			// 배열 비어있으면 부모가 EndAbility
 			AttackMontage = nullptr;
 		}
 	}
-
+	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	
 }
 
 void UGA_PlayerAirAttackBase::OnActivated()

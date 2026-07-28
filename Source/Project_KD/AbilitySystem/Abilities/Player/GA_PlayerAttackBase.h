@@ -53,5 +53,5 @@ protected:
 	// 락온 중 공격 시 타겟 방향 자동 조준.
 	virtual void OnActivated() override;
 
-	virtual float GetEffectiveMontagePlayRate() const override;
+	//virtual float GetEffectiveMontagePlayRate() const override;
 };

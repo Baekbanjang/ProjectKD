@@ -121,10 +121,10 @@ void AKDPlayerCharacter::PossessedBy(AController* NewController)
 	UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
 	check(ASC);
 
-	// Owner = PlayerState (GAS authority), Avatar = Pawn (physical representation)
+	// Owner = PlayerState(GAS 권한), Avatar = Pawn(실제 피지컬)
 	ASC->InitAbilityActorInfo(PS, this);
 
-	// Cache on base so GetAbilitySystemComponent() works from this Pawn
+	// 베이스에 캐시 — 해당 Pawn에서 GetAbilitySystemComponent() 가능
 	AbilitySystemComponent = ASC;
 
 	PS->GrantStartupAbilities();
@@ -168,7 +168,7 @@ void AKDPlayerCharacter::TryLightAttack() const
 		if (ASC->TryActivateAbilitiesByTag(SprintTags)) return;
 	}
 
-	// D8 P2 — symmetric. If mid-dodge but in cancel window, manually cancel Dodge first.
+	// 회피 중이어도 캔슬 윈도우면 회피부터 끊고 공격 — 회피 쪽 처리와 대칭
 	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
 	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
 	if (bDodging && bCanCancel)
@@ -181,7 +181,7 @@ void AKDPlayerCharacter::TryLightAttack() const
 	FGameplayTagContainer ActivationTags;
 	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Light);
 
-	// Buffer only if activation was blocked (mid-combo or mid-dodge without cancel window).
+	// 켜기 막혔을 때만 버퍼에 저장 — 콤보 진행 중이거나 캔슬 윈도우 밖 회피 중
 	const bool bActivated = ASC->TryActivateAbilitiesByTag(ActivationTags);
 	
 	if (!bActivated && InputBuffer)
@@ -270,8 +270,8 @@ void AKDPlayerCharacter::TryDodge() const
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC) return;
 
-	// D8 P2 — if mid-attack but in cancel window, manually cancel the current attack first.
-	// Dodge GA has ActivationBlockedTags(Attacking), so TryActivate would otherwise fail.
+	// GA_Dodge는 ActivationBlockedTags(Attacking) 때문에 공격 중엔 못 켜짐
+	// 캔슬 윈도우면 공격을 먼저 끊어서 태그를 없앤 뒤 켠다
 	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
 	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
 	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
@@ -291,8 +291,18 @@ void AKDPlayerCharacter::TryDodge() const
 	FGameplayTagContainer ActivationTags;
 	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
 
-	// D8 P4 — buffer when blocked so Tick re-dispatches on Attacking-tag clear or CanCancel arrival.
-	if (!ASC->TryActivateAbilitiesByTag(ActivationTags) && InputBuffer)
+	// 켜기 실패하면 버퍼로 — Attacking 태그가 풀리거나 캔슬 윈도우 열릴 때 Tick이 다시 시도
+	if (ASC->TryActivateAbilitiesByTag(ActivationTags))
+	{
+		// 회피도 콤보 노드 — 퍼펙트면 별도 노드
+		if (ComboComp)
+		{
+			const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
+			ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
+		}
+	}
+	// 회피가 안켜졌으면
+	else if (InputBuffer)
 	{
 		InputBuffer->Push(GameplayTags::Input_Action_Dodge);
 	}
@@ -302,6 +312,7 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// 회전 속도 조절 — 빠르게 달릴수록 천천히 돌게
 	if (TurnSpeedCurve)
 	{
 		if (UCharacterMovementComponent* Move = GetCharacterMovement())
@@ -311,12 +322,14 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 			Move->RotationRate = FRotator(0.f, TurnRate, 0.f);
 		}
 	}
-	
+
+	// 가드 — 아래는 전부 버퍼/ASC가 있어야 도는 로직
 	if (!InputBuffer) return;
-	
+
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC) return;
 
+	// 제자리 턴 — 가던 방향 반대로 입력하면 Turn 어빌리티
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
 		const FVector Accel = Move->GetCurrentAcceleration(); // 지금 누르고 있는 입력 방향
@@ -340,7 +353,7 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	// 락온 회전 모드 체크
+	// 락온 회전 모드 — 락온이면 타겟 보게, 아니면 가는 쪽 보게
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
 		const bool bLocked = LockOnComponent && LockOnComponent->IsLockedOn();
@@ -348,16 +361,19 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 		Move->bOrientRotationToMovement = !bLocked;      
 	}
 
+	// 버퍼를 사용하기 위한 현재 상태
 	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
 	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
 	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
 
-	
-	// D8 P4 — dispatch buffered Dodge when player exits Attacking, OR when cancel window opens.
+
+	// 버퍼된 회피 꺼내기 — 공격이 끝났거나 캔슬 윈도우 열렸을 때만
 	if (!bAttacking || bCanCancel)
 	{
+		// TryConsume — 버퍼에 있으면 꺼내면서 지움, 0.2초 지난 입력은 이미 만료
 		if (InputBuffer->TryConsume(GameplayTags::Input_Action_Dodge))
 		{
+			// GA_Dodge는 Attacking 태그 있으면 못 켜짐 — 공격부터 종료시켜 태그 제거
 			if (bAttacking && bCanCancel)
 			{
 				FGameplayTagContainer LightTags;
@@ -366,24 +382,29 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 			}
 			FGameplayTagContainer DodgeTags;
 			DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-			ASC->TryActivateAbilitiesByTag(DodgeTags);
+
+			// 버퍼 경유로 켜져도 콤보 위치는 똑같이 옮김
+			if (ASC->TryActivateAbilitiesByTag(DodgeTags) && ComboComp)
+			{
+				const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
+				ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
+			}
 		}
 	}
 
-	// Symmetric — dispatch buffered LightAttack when player exits Dodging, OR when cancel window opens.
-	
-	// 콤보 — 공격/회피 둘 다 아닐 때 OR CancelWindow 열렸을 때만 Consume.
+	// 버퍼된 공격 꺼내기 — 회피 쪽과 대칭, 공격/회피 둘 다 아닐 때 OR 캔슬 윈도우 열렸을 때만
 	if ((!bAttacking && !bDodging) || bCanCancel)
 	{
 		const bool bAir = GetCharacterMovement() && GetCharacterMovement()->IsFalling();
 		if (bAir)
 		{
-			// 공중: 버퍼된 Light를 AirCombo로 변경
+			// 공중 — 버퍼된 Light를 AirCombo로 바꿔서 발동
 			TryConsumeAndActivate(ASC, bCanCancel,
 				GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_AirCombo);
 		}
 		else
 		{
+			// 지상 — 약공/강공 각각 버퍼 확인 후 발동, 콤보 노드 이동은 GA가 담당
 			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_Light);
 			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Mugong_Heavy);
 		}
