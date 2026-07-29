@@ -7,14 +7,15 @@
 #include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_PlayerAttackBase.generated.h"
 
-class UHitConfirmProfile;
-class UAnimMontage;
 class UGameplayEffect;
 
-// 플레이어 공격 GA 공통 베이스. 순수 공용 MeleeTraceBase 위에 플레이어 전용을 얹음:
-// 콤보 입력 처리(ActivateAbility) + 타격감 큐(OnTargetHit) + 락온 자동조준(OnActivated).
-// 자식(Light/Heavy/Charge)은 생성자에서 ComboInputTag만 지정.
-UCLASS(Abstract)
+// 콤보 계열 플레이어 공격 GA
+// 몽타주는 DA_ComboTree 노드가 줌 — ActivateAbility가 AttackMontage를 덮어씀
+// 그래서 Action|Montage 카테고리를 디테일에서 숨김
+// 타격감/락온은 부모(UGA_PlayerMeleeAttackBase)가 함
+// 자식(Light/Heavy)은 생성자에서 ComboInputTag만 지정
+
+UCLASS(Abstract, HideCategories = ("Action|Montage"))
 class PROJECT_KD_API UGA_PlayerAttackBase : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
@@ -27,31 +28,12 @@ public:
 		const FGameplayEventData* TriggerEventData) override;
 
 protected:
-	// 자식 생성자가 지정하는 콤보 입력 태그(Light/Heavy/HeavyCharge). ComboComponent::ProcessInput에 전달.
+	// 자식 생성자가 지정하는 콤보 입력 태그 — ComboComponent::ProcessInput에 넘김
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Combo")
 	FGameplayTag ComboInputTag;
 
-	// 1~3타용 디폴트 단발 Montage. GA 인스턴스가 활성화 사이에 살아남아 직전 분기 Montage가 잔류 → 매 시작에 복원.
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
-	TArray<TObjectPtr<UAnimMontage>> DefaultAttackMontages;
-
-	// 1~3타용 디폴트 데미지 GE. 동일 이유로 매번 복원.
+	
+	// 노드가 GE를 안 주면 이 값 — InstancedPerActor라 직전 값이 남음, 매 시작 복원
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DefaultDamageEffectClass;
-
-	// 타격감 큐 크기(셰이크/이펙트 스케일). 플레이어 전용이라 WeaponTraceBase에서 내려옴.
-	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.0", ClampMax = "5.0"))
-	float HitConfirmMagnitude = 1.0f;
-
-	// 무기별 타격감 프로필 — CueParams.SourceObject로 전달, BP GC가 무기별 분기.
-	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
-	TObjectPtr<UHitConfirmProfile> HitConfirmProfile;
-
-	// 타격 시 플레이어 전용 HitConfirm 큐 실행.
-	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) override;
-
-	// 락온 중 공격 시 타겟 방향 자동 조준.
-	virtual void OnActivated() override;
-
-	//virtual float GetEffectiveMontagePlayRate() const override;
 };
