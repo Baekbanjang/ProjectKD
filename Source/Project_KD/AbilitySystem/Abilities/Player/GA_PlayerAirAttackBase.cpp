@@ -16,7 +16,7 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	// 매 활성화마다 막타 플래그 리셋 (InstancedPerActor 잔류 차단).
 	bIsFinisher = false;
 
-	// 적이 이 GA 쓰면 Cast 실패 -> Combo == nullptr -> 디폴트 동작.
+	// 적이 이 GA 쓰면 Cast 실패 -> Combo == nullptr -> 몽타주 없이 종료
 	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
 	UComboComponent* Combo = IsValid(Player) ? Player->GetComboComponent() : nullptr;
 
@@ -28,7 +28,12 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	DamageEffectClass = DefaultAirDamageEffectClass;
 	if (Node)
 	{
-		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr;
+		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr; // 노드의 몽타주 GA 변수에 대입
+		if (!AttackMontage)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[KD] Air combo node '%s' 몽타주 미지정"), *Node->NodeId.ToString());
+		}
+
 		if (Node->DamageEffectClass)
 		{
 			DamageEffectClass = Node->DamageEffectClass;
@@ -38,22 +43,8 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	}
 	else
 	{
-		// 다음 노드 없음 -> 기본 배열로 대신
-		const int32 Num = DefaultAirMontages.Num();
-		if (Num > 0)
-		{
-			const int32 Length = FMath::Max(IsValid(Combo) ? Combo->GetComboDepth() : 1, 1);
-			const int32 Idx = FMath::Min(Length - 1, Num - 1); // 마지막 = 콤보 끝
-			AttackMontage = DefaultAirMontages[Idx];
-			if (Length >= Num)
-			{
-				bIsFinisher = true; // 배열 끝 도달 = 피니셔
-			}
-		}
-		else
-		{
-			AttackMontage = nullptr;
-		}
+		// 트리에서 못 찾음 = 데이터 문제, 몽타주 없이 두면 부모가 EndAbility
+		AttackMontage = nullptr;
 	}
 	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);

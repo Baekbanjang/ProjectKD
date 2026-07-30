@@ -27,15 +27,11 @@ protected:
 	// 중력 복원 + 막타면 쿨다운 GE. Super 반드시 호출(WeaponTrace task 정리).
 	virtual void OnCleanup(bool bWasCancelled) override;
 
-	//  콤보 카운팅 입력 태그.
+	// 자식 생성자가 지정하는 콤보 입력 태그 — ComboComponent::ProcessInput에 넘김
 	UPROPERTY(EditDefaultsOnly, Category = "Action|AirCombo")
 	FGameplayTag ComboInputTag;
 
-	// 공중 디폴트 N타. 미매칭 시 콤보 길이로 인덱싱(cap). 인덱스 = 1타째→[0].
-	UPROPERTY(EditDefaultsOnly, Category = "Action|AirCombo")
-	TArray<TObjectPtr<UAnimMontage>> DefaultAirMontages;
-
-	// 디폴트 N타용 데미지 GE. 매칭 분기는 분기 GE 우선.
+	// 노드가 GE를 안 주면 이 값 — InstancedPerActor라 직전 값이 남음, 매 시작 복원
 	UPROPERTY(EditDefaultsOnly, Category = "Action|AirCombo")
 	TSubclassOf<UGameplayEffect> DefaultAirDamageEffectClass;
 

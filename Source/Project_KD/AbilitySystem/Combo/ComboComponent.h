@@ -25,10 +25,6 @@ public:
 	// 콤보 중이면 현재 노드 NextLinks에서, 아니면 Entries에서 갈 곳 확인
 	const FComboNode* ProcessInput(FGameplayTag InputTag, EComboContext Context = EComboContext::Ground);
 	
-	// 공격 횟수 — GA 디폴트 몽타주 배열 인덱싱용
-	UFUNCTION(BlueprintCallable, Category = "Combo")
-	int32 GetComboDepth() const { return ComboDepth; }
-	
 	// 지금 서 있는 노드 이름 — 디버그용
 	UFUNCTION(BlueprintCallable, Category = "Combo")
 	FName GetCurrentNodeId() const { return CurrentNodeId; }
