@@ -61,7 +61,9 @@ Content repo (로컬 전용, 푸시 금지)
 
 ## 2. 즉시 다음 (B레인) ★ 최우선
 
-### ① GameplayCue 스캔 경로 — 진단 완료, 적용 안 됨
+### ✅ ① GameplayCue 스캔 경로 — 적용 완료 (소스 `a54a6a0`, PIE "잘됨")
+
+아래는 원인 기록. 같은 종류가 또 나오면 `GameplayCue.PrintGameplayCueNotifyMap`부터.
 
 **이펙트가 안 나오는 진짜 원인.** 에셋은 다 있는데 큐 매니저가 그 폴더를 안 뒤진다.
 
@@ -88,10 +90,12 @@ Config/DefaultGame.ini:17-19  현재
 
 > 미확정: 각 GCN의 `GameplayCueTag`를 조회하니 6개 다 비어 보였는데 **잘 되는 옛 3개도 똑같이 비어 보였다** → 조회 방식이 부정확. 태그 문제로 단정하지 말 것. 경로만 확정 원인이고, 재시작 후에도 unmapped면 그때 BP 디테일에서 태그를 직접 박는다.
 
-### ② 입력 버퍼 창 확대
+### ✅ ② 입력 버퍼 창 확대 — 적용 완료 (2026-07-30)
 
-지상 콤보 15개 중 **8개에서 입력이 증발**(실측). 몽타주가 길어 0.2초 안에 캔슬 윈도우가 안 열린다.
-안: `BufferTimeWindow` 0.2 → **0.5**, `MaxBufferSize` 4 → **2** (창을 늘리는 대신 쌓이는 개수를 줄여 "옛 입력 뒤늦게 튀어나옴" 방지).
+`BP_SBPlayer` → `InputBuffer` 컴포넌트 디테일에서 `BufferTimeWindow` 0.2 → **0.5**, `MaxBufferSize` 4 → **2**. 코드 수정 0줄(둘 다 `EditAnywhere`, `ClampMax`가 정확히 0.5).
+
+지상 콤보 15개 중 8개에서 입력이 증발하던 문제 → **12개 해결.**
+**남은 3개**: `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74)는 `ANS_CancelWindow`가 너무 늦게 열려 0.5초로도 못 덮는다 → **노티를 앞으로 당길지 별도 판단.**
 
 ---
 
@@ -99,12 +103,17 @@ Config/DefaultGame.ini:17-19  현재
 
 | # | 항목 | 내용 |
 |---|---|---|
-1 | `PerfectDodgeWindowSec` 죽은 값 | `GA_Dodge.h:49`에 노출돼 있는데 판정에 안 쓰인다. 실제 판정은 적 몽타주의 `ANS_EnemyAttackWindow`. **값을 바꿔도 아무 일이 없어서 시간을 태우는 종류** — 지우거나 연결 |
-2 | `Block_End` 재생 안 됨 | `AM_SB_Block_End`(0.595s, 노티 0개)를 아무도 안 튼다. 가드 풀면 자세가 툭 끊긴다 |
-3 | 월드 전체 액터 순회 2곳 | `GA_Dodge.cpp` + `EnvQueryContext_AllyEnemies`가 `TActorIterator`로 레벨 전체를 훑는다. 액터 늘면 회피마다 프레임 튄다 |
-4 | `AirComboResetTime` | 현재 `DA_AirComboTree` 구조와 안 맞는다. 공중 재설계와 함께 |
-5 | `ANS_WeaponTrail` 잔류 위험 | 노티는 인스턴싱 안 되는데 `SpawnedComponent`를 멤버로 들고 있다. 같은 몽타주를 두 액터가 동시 재생하면 트레일 영구 잔류. 재생자 1명이면 안 터짐 |
-6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일, `GripPoint` 역보정만 한 번 더. 문제 생기면 수정(승환 판단) |
+1 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 |
+2 | 월드 전체 액터 순회 2곳 | `GA_Dodge.cpp:181` + `EnvQueryContext_AllyEnemies`가 `TActorIterator`로 레벨 전체를 훑는다(거리 검사가 **그 다음**이라 필터가 아니다). 액터 늘면 회피마다 프레임 튄다. `LockOnComponent.cpp:112`의 `OverlapMultiByObjectType` 방식으로 교체 |
+3 | `AirComboResetTime` | `ComboResetTime 1.5f` 하나를 지상·공중이 공유. 급하지 않다 — 실제 유예는 **떨어지는 시간**이 정한다. 공중 재설계와 함께 |
+4 | `ANS_WeaponTrail` 잔류 위험 | 노티는 인스턴싱 안 되는데 `SpawnedComponent`를 멤버로 들고 있다. 같은 몽타주를 두 액터가 동시 재생하면 트레일 영구 잔류. 재생자 1명이면 안 터짐 |
+5 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일, `GripPoint` 역보정만 한 번 더. 문제 생기면 수정(승환 판단) |
+
+### 닫힌 항목
+
+- ✅ **`PerfectDodgeWindowSec` 삭제** (2026-07-30) — 참조 0건인 죽은 값. 실제 퍼펙트 판정은 시간이 아니라 **상태**(적 ASC의 `State.Combat.EnemyAttackHitWindow` 태그). ⚠️ `PerfectDodgeCheckRadius`(500)는 살아 있다
+- ✅ **`Block_End` = A안(연결 안 함)으로 확정** (2026-07-30 승환) — C++·BP 그래프 전수 확인 결과 재생 경로가 없고, 지금 자연스럽게 보이는 건 **ABP 블렌드 아웃(0.25초)**이다. 연결하면 가드를 놓고 0.6초간 묶여 "가드 풀었는데 못 움직인다"는 새 문제가 생긴다. SB도 블렌드로 처리
+  - 뒤집을 때 방법 3개: ① 짧은 전용 GA ② `GA_Parry` 종료를 몽타주 끝까지 지연 ③ GA 없이 `AnimInstance`에 직접 재생(가장 단순, 순수 연출이라 판정 없음 — 단 §1-3 의존성 방향 확인)
 
 ---
 
