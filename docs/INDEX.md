@@ -3,6 +3,8 @@
 프로젝트 전체 문서 카탈로그. 새 문서 추가 시 여기에 한 줄 등록.
 
 > ★ **[PROJECT_OVERVIEW](PROJECT_OVERVIEW.md)** — 프로젝트 전체 개관(현재 방향·코드 아키텍처·에셋 맵·진행상황). **새 세션 부트 문서, 여기부터 읽을 것.**
+>
+> ★ **코드 설명서 = 옵시디언 볼트 `ProjectKD/notes/코드구조/`** (8문서 2,776줄, 2026-07-30) — 클래스별 용도·함수 기능·동작 흐름·핵심 코드 발췌. `00_코드구조_MOC`부터. 이 저장소엔 두지 않음(개인 노트 체계).
 
 최신 dev-log: [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md) · [2026-07-27 콤보 캔슬 타이밍 실측](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md)
 
