@@ -35,14 +35,22 @@ void UANS_WeaponTrail::NotifyBegin(
 	}
 
 	if (!IsValid(AttachMesh)) return;
-	SpawnedComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+	
+	UNiagaraComponent* Trail = UNiagaraFunctionLibrary::SpawnSystemAttached(
 			NiagaraSystem, AttachMesh, SocketName,
 			LocationOffset, RotationOffset,
 			EAttachLocation::SnapToTarget, true);
+	if (!IsValid(Trail)) return;
+	
+	Trail->SetVariableFloat(TEXT("SwordLength"), SwordLength);   // 무기 길이
+	Trail->SetVariableFloat(TEXT("TrailWidth"), TrailWidth);     // 트레일 폭
 
-	if (!IsValid(SpawnedComponent)) return;
-	SpawnedComponent->SetVariableFloat(TEXT("SwordLength"), SwordLength);
-	SpawnedComponent->SetVariableFloat(TEXT("TrailWidth"), TrailWidth);
+	//  NotifyEnd 없이 사라진 경우(액터 파괴 / 레벨 전환) 대비
+	for (auto It = SpawnedTrails.CreateIterator(); It; ++It)
+	{
+		if (!It->Key.IsValid()) It.RemoveCurrent();
+	}
+	SpawnedTrails.Add(MeshComp, Trail);   // 액터별 등록 
 }
 
 void UANS_WeaponTrail::NotifyEnd(
@@ -51,10 +59,15 @@ void UANS_WeaponTrail::NotifyEnd(
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
-
-	if (IsValid(SpawnedComponent))
-		SpawnedComponent->Deactivate(); // Stop emission, let existing ribbon fade out
-	SpawnedComponent = nullptr;
+	
+	TWeakObjectPtr<UNiagaraComponent> Found;
+	if (SpawnedTrails.RemoveAndCopyValue(MeshComp, Found))
+	{
+		if (UNiagaraComponent* Trail = Found.Get())
+		{
+			Trail->Deactivate();
+		}
+	}
 }
 
 FString UANS_WeaponTrail::GetNotifyName_Implementation() const

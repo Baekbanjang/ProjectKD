@@ -44,10 +44,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
 	TArray<TObjectPtr<UAnimMontage>> DodgeMontages;
 
-	// Perfect 닷지 윈도우 — 적 공격 윈도우와 겹쳐서 입력 시 Perfect 발동
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge", meta = (ClampMin = "0.05", ClampMax = "0.5"))
-	float PerfectDodgeWindowSec = 0.15f;
-
 	// 퍼펙트 닷지 검사 반경(cm). 이 안의 적 공격 윈도우/발사체를 퍼펙트 대상으로 봄.
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Dodge", meta = (ClampMin = "100.0", ClampMax = "1000.0"))
 	float PerfectDodgeCheckRadius = 500.0f;

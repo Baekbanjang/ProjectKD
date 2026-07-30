@@ -50,6 +50,9 @@ protected:
 	FRotator RotationOffset = FRotator::ZeroRotator;
 
 private:
+	// 노티 객체 = 몽타주 에셋 소속 1개, 모든 액터가 공유 (액터별 복사 없음 = 인스턴싱 X)
+	//  맵 | 키 = MeshComp (= 액터 식별) / 값 = 그 액터의 트레일
+	//   TWeakObjectPtr 사용: 액터 파괴 시 GC 방해 x + 죽은 키 감지 가능
 	UPROPERTY(Transient)
-	TObjectPtr<UNiagaraComponent> SpawnedComponent;
+	TMap<TWeakObjectPtr<USkeletalMeshComponent>, TWeakObjectPtr<UNiagaraComponent>> SpawnedTrails;
 };

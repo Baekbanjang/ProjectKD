@@ -5,10 +5,10 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "EngineUtils.h"
 #include "KDGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Combat/KDProjectile.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -165,6 +165,7 @@ EDodgeDirection UGA_Dodge::ResolveDodgeDirection() const
     return DotRight > 0 ? EDodgeDirection::Right : EDodgeDirection::Left;
 }
 
+
 bool UGA_Dodge::IsInPerfectDodgeWindow(const FGameplayAbilityActorInfo* ActorInfo) const
 {
     if (!ActorInfo) return false;
@@ -173,26 +174,35 @@ bool UGA_Dodge::IsInPerfectDodgeWindow(const FGameplayAbilityActorInfo* ActorInf
 
     UWorld* World = Avatar->GetWorld();
     if (!World) return false;
+    
+    FCollisionObjectQueryParams ObjectParams;
+    ObjectParams.AddObjectTypesToQuery(ECC_Pawn);               // 적
+    ObjectParams.AddObjectTypesToQuery(ECC_GameTraceChannel1);  // 발사체 = Projectile 
 
-    // 근접 적(5m) ASC에 EnemyAttackHitWindow 태그 있나 검사. 적 시스템 완성 전엔 항상 false.
-    const float CheckRadiusSq = PerfectDodgeCheckRadius * PerfectDodgeCheckRadius;
-    const FVector PlayerLoc = Avatar->GetActorLocation();
+    FCollisionQueryParams QueryParams;
+    QueryParams.AddIgnoredActor(Avatar);                        // 본인 제외
 
-    for (TActorIterator<AActor> It(World); It; ++It)
+    TArray<FOverlapResult> Overlaps;
+    World->OverlapMultiByObjectType(Overlaps, Avatar->GetActorLocation(), FQuat::Identity,
+        ObjectParams, FCollisionShape::MakeSphere(PerfectDodgeCheckRadius), QueryParams);
+
+    // 컴포넌트 단위 결과라 같은 액터가 중복 가능
+    for (const FOverlapResult& Overlap : Overlaps)
     {
-        AActor* Other = *It;
-        if (Other == Avatar) continue;
-        if (FVector::DistSquared(PlayerLoc, Other->GetActorLocation()) > CheckRadiusSq) continue;
+        AActor* Other = Overlap.GetActor();
+        if (!Other) continue;
 
+        // 발사체 경로 — 플래그 검사
         if (const AKDProjectile* Proj = Cast<AKDProjectile>(Other))
         {
             if (Proj->IsPerfectDodgeable())
             {
                 return true;
             }
-            continue; // 발사체는 ASC 경로 안 탐
+            continue; // 발사체 = ASC 없음 -> 아래 태그 경로 생략
         }
 
+        // 적 경로 — 태그 검사
         UAbilitySystemComponent* OtherASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Other);
         if (!OtherASC) continue;
 
