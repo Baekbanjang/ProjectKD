@@ -6,7 +6,9 @@
 >
 > ★ **코드 설명서 = 옵시디언 볼트 `ProjectKD/notes/코드구조/`** (8문서 2,776줄, 2026-07-30) — 클래스별 용도·함수 기능·동작 흐름·핵심 코드 발췌. `00_코드구조_MOC`부터. 이 저장소엔 두지 않음(개인 노트 체계).
 
-최신 dev-log: [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md) · [2026-07-27 콤보 캔슬 타이밍 실측](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md)
+> ★ **[2026-07-30 핸드오프 — 2세션 병행 체제](handoffs/2026-07-30-parallel-sessions.md)** — **현재 진행상황·다음 할 일·보류 목록·레인 구분.** 세션 시작 시 여기부터.
+
+최신 dev-log: [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
 - **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
@@ -92,6 +94,7 @@
 | 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
 | 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
 | 2026-07-30 | [gildong-montage-migration](dev-logs/2026-07-30-gildong-montage-migration.md) | ★길동 몽타주 전면 탈출 (단발·방어·회피·피격·공중) + GA 계층 리팩토링 + SB 공중 콤보 실측 |
+| 2026-07-30 | [inaction-tag-system](dev-logs/2026-07-30-inaction-tag-system.md) | ★InAction 우산 태그 (가드·회피도 전투 진입+무기 부착) + 회피 캔슬 목록 통합 + ABP 슬롯 재배치 |
 
 ## handoffs/ — 인수인계
 
@@ -99,6 +102,7 @@
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [2026-07-06-claudian-env-setup](handoffs/2026-07-06-claudian-env-setup.md)                               | Claudian 환경 셋업 인수인계                                             |
 | [2026-07-21-pivot-gunsword](handoffs/2026-07-21-pivot-gunsword.md)                                       | ★프로젝트 피벗 — 버터 맨손 폐기 → 9CG Gun&Sword 팩 기반 SB 스타일 액션  |
+| [2026-07-30-parallel-sessions](handoffs/2026-07-30-parallel-sessions.md)                                 | ★★**현재 핸드오프** — 2세션 병행(기획A/코드B) 레인 규칙 + 진행상황 + 보류 목록 + 설계 미결 |
 
 ## archive/ — ⚠️ 폐기 라인 (기본은 읽지 않음)
 
