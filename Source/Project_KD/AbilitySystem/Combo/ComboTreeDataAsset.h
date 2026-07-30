@@ -57,6 +57,9 @@ struct FComboNode
 	// 비우면 GA 기본 GE 사용
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float InputWindow = 0.f;
 };
 
 // 콤보 시작 — 상황 + 입력 -> 첫 노드

@@ -30,13 +30,6 @@ const FComboNode* UComboComponent::ProcessInput(FGameplayTag InputTag, EComboCon
 		return nullptr;
 	}
 
-	// 리셋 타이머 재시작 — 입력 없을 시 콤보 중단
-	if (UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().SetTimer(ResetTimerHandle, this,
-			&UComboComponent::OnResetTimeout, ComboResetTime, false);
-	}
-
 	const FComboNode* Next = nullptr;
 	bool bNewCombo = false;
 	// 1) 콤보 중이면 현재 노드에서 다음 노드 확인
@@ -66,6 +59,16 @@ const FComboNode* UComboComponent::ProcessInput(FGameplayTag InputTag, EComboCon
 	}
 	++ComboDepth;
 	CurrentNodeId = Next ? Next->NodeId : NAME_None;
+
+	// 리셋 타이머 재시작 — 노드 결정 후에 InputWindow를 사용
+	if (UWorld* World = GetWorld())
+	{
+		// 노드별 값 우선, 0이면 컴포넌트 공용값
+		const float Window = (Next && Next->InputWindow > 0.f) ? Next->InputWindow : ComboResetTime;
+		World->GetTimerManager().SetTimer(ResetTimerHandle, this,
+			&UComboComponent::OnResetTimeout, Window, false);
+	}
+
 	return Next;
 }
 
@@ -86,10 +89,28 @@ void UComboComponent::EnterNode(FName NodeId, float ResetTimeOverride)
 	CurrentNodeId = NodeId;
 	ComboDepth = 0;
 
-	// 인자 안 주면 기본값 사용
-	const float Time = (ResetTimeOverride > 0.f) ? ResetTimeOverride : ComboResetTime;
+	// 노드의 InputWindow 조회
+	const FComboNode* Node = ComboTree ? ComboTree->FindNode(NodeId) : nullptr;
 
-	// 이 시간 안에 입력 없으면 콤보 중단, 입력 오면 ProcessInput이 기본값으로 다시 작동
+	if (!Node && AirComboTree)
+	{
+		Node = AirComboTree->FindNode(NodeId);
+	}
+
+	// 인자 안 주면 기본값 사용
+	float Time = ComboResetTime;
+
+	// 인자 > 노드 InputWindow > 공용값
+	if (ResetTimeOverride > 0.f)
+	{
+		Time = ResetTimeOverride;
+	}
+	else if (Node && Node->InputWindow > 0.f)
+	{
+		Time = Node->InputWindow;
+	}
+
+	// 이 시간 안에 입력 없으면 콤보 중단
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().SetTimer(ResetTimerHandle, this,
