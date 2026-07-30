@@ -22,19 +22,19 @@ void UCombatStateComponent::BeginPlay()
 		ScanTimerHandle, this, &UCombatStateComponent::ScanForEnemies, ScanInterval, true);
 
 	
-	RegisterAttackingTagListener();
+	RegisterInActionTagListener();
 }
 
 void UCombatStateComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	// 델리게이트 Attacking 종료
-	if (AttackingTagHandle.IsValid())
+	if (InActionTagHandle.IsValid())
 	{
 		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()))
 		{
-			ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_Attacking, EGameplayTagEventType::NewOrRemoved).Remove(AttackingTagHandle);
+			ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_InAction, EGameplayTagEventType::NewOrRemoved).Remove(InActionTagHandle);
 		}
-		AttackingTagHandle.Reset();
+		InActionTagHandle.Reset();
 	}
 
 	Super::EndPlay(EndPlayReason);
@@ -46,9 +46,9 @@ void UCombatStateComponent::ScanForEnemies()
 	if (!ASC) return;
 
 	const bool bHasInCombat = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InCombat);
-	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
+	const bool bInAction = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InAction);
 	
-	if (HasEnemyInRange() || bAttacking)
+	if (HasEnemyInRange() || bInAction)
 	{
 		// 적 있음 또는 공격 -> 해제 대기 취소 + 전투 태그 부여(중복 방지).
 		GetWorld()->GetTimerManager().ClearTimer(ExitTimerHandle);
@@ -60,7 +60,7 @@ void UCombatStateComponent::ScanForEnemies()
 	else if (bHasInCombat && !GetWorld()->GetTimerManager().IsTimerActive(ExitTimerHandle))
 	{
 		// 적 없음 -> 바로 안 끄고 CombatExitDelay 뒤 해제
-		TWeakObjectPtr<UAbilitySystemComponent> WeakASC = ASC;
+		TWeakObjectPtr WeakASC = ASC;
 		FTimerDelegate ExitDel = FTimerDelegate::CreateLambda([WeakASC]()
 		{
 			if (WeakASC.IsValid())
@@ -109,24 +109,24 @@ bool UCombatStateComponent::HasEnemyInRange() const
 }
 
 // 공격 태그 델리게이트 등록
-void UCombatStateComponent::RegisterAttackingTagListener()
+void UCombatStateComponent::RegisterInActionTagListener()
 {
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
 	if (!ASC)
 	{
 		if (UWorld* World = GetWorld())
 		{
-			World->GetTimerManager().SetTimerForNextTick(this, &UCombatStateComponent::RegisterAttackingTagListener);
+			World->GetTimerManager().SetTimerForNextTick(this, &UCombatStateComponent::RegisterInActionTagListener);
 		}
 		return;
 	}
 
-	AttackingTagHandle = ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_Attacking, EGameplayTagEventType::NewOrRemoved)
-		.AddUObject(this, &UCombatStateComponent::OnAttackingTagChanged);
+	InActionTagHandle = ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_InAction, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &UCombatStateComponent::OnInActionTagChanged);
 }
 
 // 공격 시작 시 즉시 전투
-void UCombatStateComponent::OnAttackingTagChanged(const FGameplayTag Tag, int32 NewCount)
+void UCombatStateComponent::OnInActionTagChanged(const FGameplayTag Tag, int32 NewCount)
 {
 	if (NewCount <= 0) return;
 

@@ -35,6 +35,15 @@ void UWeaponComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 		InCombatTagHandle.Reset();
 	}
 
+	if (InActionTagHandle.IsValid())
+	{
+		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()))
+		{
+			ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_InAction, EGameplayTagEventType::NewOrRemoved).Remove(InActionTagHandle);
+		}
+		InActionTagHandle.Reset();
+	}
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -84,7 +93,8 @@ void UWeaponComponent::OnInCombatTagChanged(const FGameplayTag Tag, int32 NewCou
 
 	const bool bDraw = (NewCount > 0);
 
-	if (bDraw && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking))
+	// 전투 상태 급히 발생 시 바로 전투
+	if (bDraw && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InAction))
 	{
 		AttachWeaponToHand();
 		return;
@@ -111,6 +121,28 @@ UAnimMontage* UWeaponComponent::SelectEquipMontage(const FEquipMontageSet& Set) 
 	if (Speed < WalkSpeedThreshold) return Set.Idle;
 	if (Speed < RunSpeedThreshold)  return Set.Walk;
 	return Set.Run;
+}
+
+void UWeaponComponent::RegisterInActionTagListener()
+{
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+	if (!ASC)
+	{
+		// ASC가 아직 준비 안 됨(PlayerState에 늦게 붙음) -> 다음 틱 재시도
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().SetTimerForNextTick(this, &UWeaponComponent::RegisterInActionTagListener);
+		}
+		return;
+	}
+	InActionTagHandle = ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_InAction, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &UWeaponComponent::OnInActionTagChanged);
+}
+
+void UWeaponComponent::OnInActionTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount <= 0) return;
+	AttachWeaponToHand();
 }
 
 void UWeaponComponent::BeginPlay()
@@ -155,6 +187,7 @@ void UWeaponComponent::BeginPlay()
 	{
 		AttachWeaponToSheath();
 		RegisterCombatTagListener();
+		RegisterInActionTagListener();
 	}
 	else
 	{

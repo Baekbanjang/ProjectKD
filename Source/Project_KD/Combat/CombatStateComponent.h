@@ -20,7 +20,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	// 컴포넌트 소멸 시 Attacking 태그 구독 해제
+	// 컴포넌트 소멸 시 InAction 태그 구독 해제
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	// 감지 반경 - 적이 이 안에 들어오면 전투 모드
@@ -42,12 +42,12 @@ public:
 	FTimerHandle ScanTimerHandle;
 	FTimerHandle ExitTimerHandle;
 	
-	// 공격 시작  순간 즉시 InCombat 켜기용 구독 핸들
-	FDelegateHandle AttackingTagHandle;
+	// 전투 행동 시작 순간 즉시 InCombat 켜기용 구독 핸들
+	FDelegateHandle InActionTagHandle;
 
-	// ASC 준비되면 Attacking 태그 구독 등록 
-	void RegisterAttackingTagListener();
+	// ASC 준비되면 InAction 태그 구독 등록
+	void RegisterInActionTagListener();
 
 	UFUNCTION()
-	void OnAttackingTagChanged(const FGameplayTag Tag, int32 NewCount);
+	void OnInActionTagChanged(const FGameplayTag Tag, int32 NewCount);
 };

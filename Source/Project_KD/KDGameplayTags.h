@@ -48,7 +48,8 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Enemy_Elite_Rush)
 
 	// Character states
-     UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_InCombat)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_InCombat)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_InAction)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Attacking) 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Dodging)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Invulnerable)

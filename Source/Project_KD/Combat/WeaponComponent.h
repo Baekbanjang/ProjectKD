@@ -63,14 +63,22 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<UMeshComponent> WeaponMesh;
+	
+	void AttachWeaponToSocket(FName SocketName); // 손/등 공용 재부착 (GripPoint 역보정 포함)
 
-	void AttachWeaponToSocket(FName SocketName);                 // 손/등 공용 재부착 (GripPoint 역보정 포함)
-	void RegisterCombatTagListener();                            // ASC 준비되면 InCombat 태그
+	// 전투 시작 시 
+	FDelegateHandle InCombatTagHandle;
+	void RegisterCombatTagListener();            // ASC 준비되면 InCombat 태그
 	
 	UFUNCTION()
 	void OnInCombatTagChanged(const FGameplayTag Tag, int32 NewCount); 
-	
-	FDelegateHandle InCombatTagHandle;
 
 	UAnimMontage* SelectEquipMontage(const FEquipMontageSet& Set) const;
+
+	// 전투 행동 시 (닷지, 공격, 패링 등)
+	FDelegateHandle InActionTagHandle;
+	void RegisterInActionTagListener();
+	
+	UFUNCTION()
+	void OnInActionTagChanged(const FGameplayTag Tag, int32 NewCount);
 };

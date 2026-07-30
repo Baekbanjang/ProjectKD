@@ -41,6 +41,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Cooldown_Enemy_Elite_Rush, "Cooldown.Enemy.Elite.Rush")
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_InCombat, "State.Combat.InCombat")
+	UE_DEFINE_GAMEPLAY_TAG(State_Combat_InAction, "State.Combat.InAction")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Attacking, "State.Combat.Attacking")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Dodging, "State.Combat.Dodging")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Invulnerable, "State.Combat.Invulnerable")
