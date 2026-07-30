@@ -103,11 +103,20 @@ Config/DefaultGame.ini:17-19  현재
 
 | # | 항목 | 내용 |
 |---|---|---|
-1 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 |
-2 | 월드 전체 액터 순회 2곳 | `GA_Dodge.cpp:181` + `EnvQueryContext_AllyEnemies`가 `TActorIterator`로 레벨 전체를 훑는다(거리 검사가 **그 다음**이라 필터가 아니다). 액터 늘면 회피마다 프레임 튄다. `LockOnComponent.cpp:112`의 `OverlapMultiByObjectType` 방식으로 교체 |
-3 | `AirComboResetTime` | `ComboResetTime 1.5f` 하나를 지상·공중이 공유. 급하지 않다 — 실제 유예는 **떨어지는 시간**이 정한다. 공중 재설계와 함께 |
-4 | `ANS_WeaponTrail` 잔류 위험 | 노티는 인스턴싱 안 되는데 `SpawnedComponent`를 멤버로 들고 있다. 같은 몽타주를 두 액터가 동시 재생하면 트레일 영구 잔류. 재생자 1명이면 안 터짐 |
-5 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일, `GripPoint` 역보정만 한 번 더. 문제 생기면 수정(승환 판단) |
+1 | **`DA_ComboTree` 값 채우기** ★ | 칸과 배선은 깔렸다(`FComboNode.InputWindow`). **값이 전부 0 = 아직 1.5초 공용값으로 돈다.** A레인 전투 수치표의 `DamageMultiplier`도 같은 상태 → **DA 한 번 열어 두 값을 같이** 넣는 게 효율적. SB 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5 |
+2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
+3 | **`ANS_EnemyAttackWindow`의 `AttackWindowTag` 확인** | 헤더에 기본값이 없고 생성자도 안 넣는다 → **몽타주마다 손으로 `State.Combat.EnemyAttackHitWindow`를 넣어야** 태그가 붙는다. 비어 있으면 퍼펙트 회피가 영원히 안 뜬다. 적 공격 몽타주 전수 점검 필요 |
+4 | `AirComboResetTime` | `ComboResetTime 1.5f` 하나를 지상·공중이 공유. 급하지 않다 — 실제 유예는 **떨어지는 시간**이 정한다. 공중 재설계와 함께 |
+5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
+6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일. **제약**: `AttachWeaponToHand()`에 1회성 작업(사운드·이펙트) 넣지 말 것 |
+
+### 닫힌 항목 (2026-07-30~31)
+
+- ✅ **`GA_Dodge` 레벨 전체 순회 → 반경 물리 조회** (`84b57af`). 채널 2개(Pawn + `ECC_GameTraceChannel1`) 필수 — 발사체는 Pawn이 아니다. `EnvQueryContext_AllyEnemies`는 **고칠 필요 없다**: 타입 지정 순회 + "아레나 3~12마리라 가볍다"고 파일 주석에 판단 근거가 있다
+- ✅ **`ANS_WeaponTrail` 액터별 분리** (`84b57af`). 노티 객체는 몽타주 에셋 소속 1개라 모든 액터가 공유 → 멤버 대신 `TMap<MeshComp, Trail>`
+- ✅ **`PerfectDodgeWindowSec` 삭제** (`84b57af`)
+- ✅ **`FComboNode.InputWindow` 칸 + 배선** (`c0ccc9e`). `ProcessInput` 타이머를 노드 결정 후로 이동, `EnterNode` 우선순위 3단계
+- ✅ **입력 버퍼 0.5 / 2** (Content `60698c5`)
 
 ### 닫힌 항목
 
