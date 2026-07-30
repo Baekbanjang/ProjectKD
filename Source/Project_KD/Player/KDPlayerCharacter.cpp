@@ -5,7 +5,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Player/KDPlayerState.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/AS_CharacterBase.h"
 #include "KDGameplayTags.h"
 #include "Engine/Engine.h"
 #include "GameplayTagContainer.h"
@@ -17,6 +16,26 @@
 #include "Input/InputBufferComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Movement/SprintComponent.h"
+
+// 헬퍼
+namespace
+{
+	// 캔슬 윈도우에서 끊을 수 있는 공격 GA 목록
+	const FGameplayTagContainer& GetCancelableAttackTags()
+	{
+		static const FGameplayTagContainer Tags = []
+		{
+			FGameplayTagContainer C;
+			C.AddTag(GameplayTags::Ability_Mugong_Light);
+			C.AddTag(GameplayTags::Ability_Mugong_Heavy);
+			C.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
+			C.AddTag(GameplayTags::Ability_Mugong_CounterThrust);
+			return C;
+		}();
+		return Tags;
+	}
+}
+
 
 AKDPlayerCharacter::AKDPlayerCharacter()
 {
@@ -90,11 +109,9 @@ void AKDPlayerCharacter::TryConsumeAndActivate(UAbilitySystemComponent* ASC, boo
 	// CancelWindow 시점에 진행 중 모든 공격/회피 GA 강제 종료 -> 즉시 새 GA 활성화.
 	if (bCanCancel)
 	{
-		FGameplayTagContainer CancelTags;
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_Light);
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_Heavy);
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_AirCombo);
+		FGameplayTagContainer CancelTags = GetCancelableAttackTags();
+		CancelTags.AddTag(GameplayTags::Ability_Mugong_Dodge);     // 회피 후딜에서 공격으로 잇기
+		CancelTags.AddTag(GameplayTags::Ability_Mugong_AirCombo);  // 공중 콤보 사이 갈아타기
 		ASC->CancelAbilities(&CancelTags);
 	}
 
@@ -283,9 +300,7 @@ void AKDPlayerCharacter::TryDodge() const
 	
 	if (bAttacking && bCanCancel)
 	{
-		FGameplayTagContainer LightTags;
-		LightTags.AddTag(GameplayTags::Ability_Mugong_Light);
-		ASC->CancelAbilities(&LightTags);
+		ASC->CancelAbilities(&GetCancelableAttackTags());
 	}
 
 	FGameplayTagContainer ActivationTags;
@@ -376,9 +391,7 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 			// GA_Dodge는 Attacking 태그 있으면 못 켜짐 — 공격부터 종료시켜 태그 제거
 			if (bAttacking && bCanCancel)
 			{
-				FGameplayTagContainer LightTags;
-				LightTags.AddTag(GameplayTags::Ability_Mugong_Light);
-				ASC->CancelAbilities(&LightTags);
+				ASC->CancelAbilities(&GetCancelableAttackTags());
 			}
 			FGameplayTagContainer DodgeTags;
 			DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
