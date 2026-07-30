@@ -89,6 +89,7 @@
 | 2026-07-27 | [gunsword-combo-cancel-timing](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) | ★콤보 캔슬 타이밍 실측 (포즈 매칭으로 안무가 의도 역추출) + 루트모션 이동량 |
 | 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
 | 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
+| 2026-07-30 | [gildong-montage-migration](dev-logs/2026-07-30-gildong-montage-migration.md) | ★길동 몽타주 전면 탈출 (단발·방어·회피·피격·공중) + GA 계층 리팩토링 + SB 공중 콤보 실측 |
 
 ## handoffs/ — 인수인계
 
