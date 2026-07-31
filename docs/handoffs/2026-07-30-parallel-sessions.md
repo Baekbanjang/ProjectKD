@@ -212,32 +212,65 @@ IA_Fire (Aiming 중) → GA_Shoot → Shoot / Walk_Shoot / Run_Shoot → 노티�
 
 ```
 Content repo (로컬)
-  4f1ac60 [VFX] 무기 트레일 NS 배정 - Distortion_Only_Loop  (25 파일)
+  4f1ac60 [VFX]    무기 트레일 NS 배정 - Distortion_Only_Loop  (25 파일)
+  e542cb3 [Camera] SB 카메라 1단계 값 이식 - 붐 6개 + FOV 커브 재조정
 ```
 
 문서·메모리 갱신(커밋 대상 아님): 옵시디언 `StellarBlade_Player_Analysis.md §4-6` 정정 5군데 / 메모리 `reference_sb_camera_data_2026-05-27` · `reference_control_scheme` 갱신
 
 ---
 
-## 2-0. 🔴 진행 중 — 카메라 1단계 (2026-07-31 세션 중단 지점)
+## 2-0. 🟡 진행 중 — 카메라 (1단계 ✅완료 / 2단계 승인 대기)
 
-> **새 세션은 여기부터 이어라.** MCP 끊김으로 세션을 갈았다.
+> **새 세션은 여기부터 이어라.**
 
 ### 확정된 작업 순서 (승환)
 ```
-1. 플레이어 카메라   ← 지금 여기
+1. 플레이어 카메라   ← 1단계 끝, 2단계 코드 승인 대기
 2. 히트스톱
 3. 총 발사 로직
 ```
 
-### 카메라 1단계 체크리스트
+### 카메라 1단계 — ✅ 전부 완료 (2026-07-31)
 
-| | 항목 | 상태 |
+| | 항목 | 결과 |
 |---|---|---|
-✅ | `KDPlayerCameraManager.cpp:12` `ViewPitchMin` -80 → **-89** | **완료 + 빌드 통과** |
-☐ | BP_SBPlayer → CameraBoom 값 6개 | **미완** |
-☐ | `CF_FovByCamDist` 키 확인 | **미완 — 유일한 미지수** |
-☐ | PIE 검증 | 미완 |
+✅ | `KDPlayerCameraManager.cpp:12` `ViewPitchMin` -89 | 완료 + 빌드 통과 |
+✅ | BP_SBPlayer → CameraBoom 값 6개 | **CDO 조회 결과 이미 반영돼 있었다** (382 / Z111 / Lag 19·57 / Probe 10) |
+✅ | `CF_FovByCamDist` 키 | **문제 있었고 고쳤다** (아래) |
+✅ | PIE 검증 | 승환 "큰 이상 없음". 랙 마커 정상 동작 확인 |
+
+**커밋** — Content `e542cb3` `[Camera] SB 카메라 1단계 값 이식`
+
+#### FOV 커브가 실제로 문제였다
+
+| | 키 | 거리 400에서 |
+|---|---|---|
+| 이전 | 100→40 / 200→50 / 350→65 / **500→75** | **67.6** ← 답답 |
+| 현재 | 113→40 / 140→40 / **300→75** | **75.0** ✅ |
+
+암 길이를 382로 줄이자 실제 카메라 거리가 `√(382²+40²+111²) ≈ 400`이 됐는데, 커브 마지막 키가 500이라 400에서 FOV 75에 도달하지 못했다. **SB 실측 3키로 교체해서 해결.**
+⚠️ `float_curve`는 Python에 노출 안 됨 → **커브 편집은 에디터에서만 가능**(MCP 불가).
+곁가지 — 113~140 구간에 0.75도 언더슛(39.25)이 있다. 무시 가능 수준이라 그대로 둠. 없애려면 140 키를 Smart Auto 또는 User+탄젠트 0으로.
+
+#### 남은 것 하나 — 발이 안 보인다
+
+**원인 확정.** 두 변경이 같은 방향으로 겹쳤다.
+
+```
+카메라 높이 = 88(캡슐) + 111(SocketOffset.Z) = 199cm
+수평 거리   = √(382² + 40²) = 384cm
+발까지 각도 = atan(199/384) = 27.4° 아래
+화면 하단   = 23.35° 아래     ← FOV 75(가로) → 세로 46.7°의 절반
+              27.4 > 23.35  →  지면 위 33cm부터 잘림
+```
+
+이전(암 500 / Z 70)엔 발 아래 58cm 여유가 있었다. 총 91cm어치가 움직였다.
+
+**진짜 원인 = SB의 "위치"만 베끼고 "시선"을 안 베꼈다.** SB는 같은 자리에서 **17.1° 아래**를 본다(`atan(118/383)`). 스프링암은 피치 0이면 정직하게 수평을 본다.
+
+→ **2단계 레일에서 자동 해결된다**(레일 = 위치 + LookAt, LookAt이 곧 기울기). 승환 판단으로 임시 처방 없이 2단계로 넘어간다.
+임시로 필요하면 `FollowCamera` 회전 Y에 **-8** 하나면 된다 (`bUsePawnControlRotation = false` 실측 확인).
 
 **BP 값 6개** (`Content/SB_Style_GameProject/Player/BP_SBPlayer` → CameraBoom):
 ```
@@ -256,24 +289,123 @@ Content repo (로컬)
    Enable Camera Rotation Lag      ☐ 유지        SB도 안 씀. 켜지 말 것
 ```
 
-**`CF_FovByCamDist` 키 확인이 왜 필요한가** — `Content/SB_Style_GameProject/Camera/Curves/CF_FovByCamDist`
-거리↔FOV 연동이 **이미 구현돼 돌아가고 있다**(`KDPlayerCameraManager.cpp:64-70`이 매 프레임 거리를 재서 커브로 FOV 결정).
-암 길이를 바꾸면 카메라 거리가 **506 → 402**로 줄어든다. 커브가 "500 근처=75"로 짜여 있으면 402에서 더 좁은 FOV가 나와 **화면이 답답해진다.**
-SB 실측 커브 = `112.85→39.82 / 139.95→40.06 / 300→75`. **마지막 키가 300**이라 402에서 75가 보장된다. 우리 커브 마지막 키가 300보다 뒤면 당길 것.
+### ★카메라 랙 검증법 (2026-07-31 확립 — 재사용할 것)
 
-**PIE 검증 = 달리기 시작 / 급정지 / 대시·회피.**
-⚠️ **회전으로는 판단 안 된다** — 엔진 실측: 랙은 `ArmOrigin`(따라다니는 기준점)에만 걸리고 회전은 매 프레임 새로 적용된다. 마우스로 휙 돌려도 랙이 안 걸린다.
-튜닝 시 `Draw Debug Lag Markers` 켜면 목표=초록 / 실제=노랑 / 클램프=빨강.
+랙은 지수 감쇠라 **공식으로 예측하고 화면과 대조**한다. 시정수 = `1 / LagSpeed` = 0.053초.
 
-### 2단계 = 스플라인 돌리 (레일) — 승환 결정
+| 공식 | 계산 |
+|---|---|
+| 등속 뒤처짐 | **속도 ÷ LagSpeed** |
+| 정지 후 수렴 | **ln(오차 ÷ 목표) ÷ LagSpeed** |
+| 클램프 발동 속도 | **MaxDistance × LagSpeed** |
 
-**레일로 간다.** 이유 = 배우는 김에 + 확장성. `ArmLength 커브`(1.5단계 대안)는 **스킵** — 레일의 열화판이라 둘 다 할 이유 없음.
+우리 속도(`SprintComponent.h:32-41` Walk 250 / Jog 500 / Sprint 700 / FullSprint 800) 대입:
 
-- 확장 지점 확인됨: `SpringArmComponent.h:171 UpdateDesiredArmLocation()` / `:177 BlendLocations()` 둘 다 `protected virtual`
-- 분량 = 클래스 1개 150~200줄 + 스플라인 1개
-- **궤도는 1개만.** SB 13종은 수영·비행·외줄타기 때문. 우리는 지상 액션
-- ⚠️ `AKDPlayerCameraManager::UpdateViewTarget`이 이미 POV를 손댄다 — 누가 최종인지 정하고 시작
-- 같이 만들 커브 = **`ZOffsetArmLengthCurve`** (암길이 20→Z+12 / 60→+30 / 300→0). 벽에 껴서 당겨질 때 위로 띄워 몸통 관통 방지
+```
+FullSprint 800 → 뒤처짐 42.1cm
+급정지        → 5cm까지 0.112초 / 1cm까지 0.197초
+클램프 57     → 57 × 19 = 1083 cm/s 에서만 발동 → 일반 이동으로는 영영 안 걸림
+```
+
+⚠️ **`CameraLagMaxDistance 57`은 지금 사실상 죽은 값이다.** 대시·회피(루트모션 순간속도)에서만 빨강선이 뜬다. 승환이 빨강을 못 본 게 정상.
+
+⚠️ **SB의 19/57은 최고속 500 기준 튜닝값이다.** 우리는 800이라 60% 더 뒤처진다(26.3 → 42.1). SB와 같은 체감을 원하면 `LagSpeed ≈ 30`. **지금은 그대로 두고 체감으로 판단하기로 함.**
+
+**디버그 마커 정체** (엔진 `SpringArmComponent.cpp:169-176`):
+🟢 초록 = `ArmOrigin`(랙 없는 진짜 기준점) / 🟡 노랑 = `DesiredLoc`(랙 걸린 것) / 화살표 클램프 시 빨강
+
+**PIE에서 볼 것 3가지**
+
+| | 동작 | 왜 |
+|---|---|---|
+| 1 | **옆걸음(스트레이프)** ★ | 랙이 화면에서 보이는 **유일한** 동작. 화면 가로 절반 294cm 기준 42cm = **14% 밀림** |
+| 2 | 급정지 | 오버슛(되튕김) 검사 |
+| 3 | 대시·회피 | 클램프 실동작 |
+
+⚠️ **앞뒤 달리기로는 판단 불가** — 카메라가 42cm 밀려도 거리만 384→426으로 변하고 캐릭터는 화면 중앙 그대로다.
+⚠️ **회전으로도 판단 불가** — 랙은 `ArmOrigin` 위치에만 걸린다.
+✅ **프레임레이트 검증은 이미 통과** — `bUseCameraLagSubstepping = true` / `MaxTimeStep 0.0167` 실측 확인.
+
+---
+
+## 2-0-B. 🔴 2단계 = 스플라인 돌리 — **설계 확정, `.h`/`.cpp` draft 승인 대기**
+
+> **여기가 재개점.** 코드는 아직 파일로 안 만들었다. draft는 이 문서 아래 + 세션 로그에.
+
+### ⚠️ 걱정하던 충돌은 없었다
+
+`AKDPlayerCameraManager::UpdateViewTarget`이 POV를 손대는 건 맞지만 **FOV만** 건드린다(`:55`, `:70` 둘 다 `ViewTarget.POV.FOV`). 위치·회전은 안 만진다.
+→ **역할이 이미 갈려 있다.** 붐 = 위치·회전 / 카메라매니저 = FOV. 그대로 둔다.
+
+### 핵심 설계 — 부모 함수 복사 0줄
+
+`UpdateDesiredArmLocation`을 오버라이드하면 부모 90줄을 복사해야 한다(바꿀 건 위치 계산 2줄인데 함수 한가운데 있음). **복사를 피하는 길을 찾았다.**
+
+```
+bInheritPitch = false   →  DesiredRot의 피치가 0  →  DesiredRot.Vector()가 항상 수평
+                        →  TargetArmLength = 순수 수평거리
+                           SocketOffset.Z  = 순수 높이
+                        →  레일 점이 그대로 이 두 값으로 표현됨
+```
+
+매 틱 두 값만 갈아끼우고 `Super::TickComponent()`를 부르면 **랙·클램프·벽 충돌은 부모가 처리**한다.
+시선(LookAt)은 `GetSocketTransform()`이 `virtual`이라(헤더 `:153`) 회전만 가로챈다.
+
+```cpp
+class UKDSpringArmComponent : public USpringArmComponent
+{
+    TObjectPtr<USplineComponent> DollySpline;   // 캐릭터가 주입
+
+    TickComponent() override
+    {
+        ApplyRailPosition();       // 피치 → 진행도 → 레일 위치 → 붐 값
+        Super::TickComponent();    // 랙 | 충돌 | 소켓 갱신
+        UpdateLookRotation();      // 새 위치 기준 LookAt
+        UpdateChildTransforms();   // 카메라에 반영
+    }
+    GetSocketTransform() const override;   // 위치는 부모 / 회전만 교체
+};
+```
+
+**약 90줄.**
+
+### 파일 목록 (승인 대상)
+
+| | 경로 | 클래스 |
+|---|---|---|
+| 신규 | `Source/Project_KD/Player/KDSpringArmComponent.h` | `UKDSpringArmComponent : USpringArmComponent` |
+| 신규 | `Source/Project_KD/Player/KDSpringArmComponent.cpp` | — |
+| 수정 | `KDPlayerCharacter.h:18` | 전방선언 2개 교체·추가 |
+| 수정 | `KDPlayerCharacter.h:64-66` | 붐 타입 + `CameraDollySpline` 멤버 |
+| 수정 | `KDPlayerCharacter.cpp:5` | include |
+| 수정 | `KDPlayerCharacter.cpp:48-53` | 붐 클래스 교체 + 스플라인 생성/주입/시드 |
+
+**궤도 점 시드** (엔진 기본 스플라인은 점 2개라 3개로 교체):
+```cpp
+CameraDollySpline->ClearSplinePoints(false);
+CameraDollySpline->AddSplinePoint(FVector(  -1.f,  0.f, 514.f), ESplineCoordinateSpace::Local, false);
+CameraDollySpline->AddSplinePoint(FVector(-382.f, 40.f, 111.f), ESplineCoordinateSpace::Local, false);
+CameraDollySpline->AddSplinePoint(FVector( -53.f,  0.f, -83.f), ESplineCoordinateSpace::Local, false);
+CameraDollySpline->UpdateSpline();
+```
+
+### 결정 사항
+
+- **스플라인 = 엔진 기본 `USplineComponent`.** 커스텀 안 만든다 — **SB조차 커스텀을 안 만들었다**(`CameraDollySpline` 클래스가 `SplineComponent`). 로직 붙는 쪽(붐)만 상속
+- **캐릭터 직속으로 단다.** 붐 안에 숨기면 뷰포트에서 레일을 눈으로 보고 점을 못 끈다
+- **`CameraBoom` 이름 유지.** 클래스만 교체 (이름 바꾸면 BP 디테일 빈 화면 함정)
+- **`TargetArmLength 350` / `SocketOffset 70` 두 줄 삭제** — 매 틱 궤도가 덮어써서 죽은 값
+- **궤도는 1개만.** SB 13종은 수영·비행·외줄타기 때문
+- **`DollySpline`이 비면 전 구간 폴백** → 일반 스프링암 동작. 주입 전에도 안 깨짐
+
+### 착수 시 확인할 실패 지점 2개
+
+1. **`GetSocketTransform` 가로채기가 안 먹을 가능성.** `UpdateChildTransforms()`가 소켓 트랜스폼을 거친다는 전제인데, 엔진이 캐시 경로로 우회하면 카메라 회전이 안 바뀐다 → 대안 = `FollowCamera`에 상대 회전 직접 세팅
+2. **`TargetArmLength`가 0이면 벽 충돌 검사가 통째로 꺼진다**(`:191 if (bDoTrace && TargetArmLength != 0)`). 레일 t=0의 X가 -1.2라 1.2로 살아 있지만, 점을 튜닝하다 0을 만들면 카메라가 벽을 뚫는다
+
+### 나중 (지금 하지 말 것)
+
+- `ZOffsetArmLengthCurve` (암길이 20→Z+12 / 60→+30 / 300→0) — 벽에 껴서 당겨질 때 위로 띄워 몸통 관통 방지. 레일 안정화 후
 - **나머지 커브는 만들지 마라** — Yaw자동회전·락온 3종은 읽을 코드가 없다. `SlopeControlCurve`가 이미 "슬롯만 있고 에셋 없는" 반면교사
 
 ### 우리 커브 현황 (3개)
@@ -385,6 +517,23 @@ Config/DefaultGame.ini:17-19  현재
 코드가 아니라 **판단이 필요한** 것들. 착수 전에 승환이 정해야 한다.
 
 ### ① 스탠스 체계
+
+> **★2026-07-31 — 실목록과 수치를 찾았다.** `Content/Local/Data/CharacterStanceTable.json`. 스탠스가 곧 이동 속도 세트다.
+
+| 스탠스 | Walk | Jogging | **Run** | LockOn Run |
+|---|---|---|---|---|
+| **`P_Eve_Default`** (평시 = 검) | 150 | 300 | **500** | **280** |
+| `P_Eve_BlockSword` / `Fusion` / `Tutorial` / `AirDead` / `Freeze` | 150 | 300 | 500 | 280 |
+| **`P_Eve_Tachy`** (각성) / `Fusion2` | 150 | 450 | **600** | 400 |
+| **`P_Eve_Gun`** / `Gun_Gorgon` | **100** | **100** | **100** | 100 |
+| `P_Eve_GunNikke` / `GunBlockSword` / `GunTutorial` | 120 | 120 | 120 | 120 |
+| `P_Eve_Fishing` | 0 | 0 | 0 | 0 |
+
+**여기서 나오는 것 3가지**
+- **총 스탠스 = 100. 걷기(150)보다 느리다.** "총은 딜링이 아니라 근접의 준비 도구"라는 §1-B 해석이 수치로 확증됐다. **사격 착수 시 이 값을 그대로 쓴다**
+- **락온 전용 속도가 따로 있다** (500 → 280, 44% 감속). 우리는 이 개념이 없다
+- **스프린트가 없다.** SB는 150/300/500 3단계. 우리는 250/500/700/800 4단계로 **전반적으로 빠르다** — 우리 Jog(500)가 SB 최고속과 같다
+
 SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·동결·튜토리얼)`로 나뉜다. **평시 스탠스가 없다** — Eve는 항상 무장 상태다.
 우리 초안(승환): `Default(평시 전투 = Sword&Gun) / Gun(진짜 사격만) / 사망`.
 → **사격 로직 착수 전까지 보류 결정됨**(YAGNI). 사격을 시작할 때 이 표를 확정해야 한다.
@@ -436,3 +585,10 @@ SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·�
 1. **`.h` 선언과 `.cpp` 정의는 짝이다.** `InAction`이 `.cpp`만 있어서 빌드가 깨졌다. 태그 추가 시 양쪽 확인
 2. **구독과 해제는 같은 태그로.** `RegisterGameplayTagEvent(A).Add()` 하고 `RegisterGameplayTagEvent(B).Remove()` 하면 조용히 실패한다 — 핸들 리셋은 그대로 돌아서 코드가 깨끗해 보인다
 3. **`search_assets`는 패턴을 무시하고 100개를 통째로 반환한다.** 목록·집계는 `execute_python`으로. 실측: 821개 중 100개가 돌아와 1만 토큰 낭비
+
+### 2026-07-31 추가 4개
+
+4. **`CurveFloat`의 `float_curve`는 Python에 노출 안 된다.** `get_editor_property('float_curve')` → `Failed to find property`. **커브 키 편집은 에디터에서만.** 읽기는 `get_float_value(x)` / `get_time_range()` / `get_value_range()`로 가능하니, 값 샘플링으로 키를 역추출한 뒤 사람이 편집하는 방식이 현실적
+5. **UE의 `FieldOfView`는 가로 FOV다.** 16:9에서 75 → 세로는 46.7도(아래로 23.35도뿐). "왜 발이 안 보이지"의 계산 근거가 여기
+6. **핸드오프의 "미완"을 믿지 말고 실측할 것.** BP 값 6개가 이미 다 들어가 있었다. `inspect_cdo`로 30초면 확인된다
+7. **스플라인 점의 회전이 시선인지 판별하는 법** — 점들의 높이가 크게 다른데 회전값이 같거나 무관하면 **그건 시선이 아니다.** 머리 위 5m와 발치 아래에서 같은 각도로 같은 대상을 볼 수 없기 때문
