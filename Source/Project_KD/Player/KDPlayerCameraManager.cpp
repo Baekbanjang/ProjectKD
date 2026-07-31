@@ -9,7 +9,7 @@
 
 AKDPlayerCameraManager::AKDPlayerCameraManager()
 {
-	ViewPitchMin = -80.0f;
+	ViewPitchMin = -89.0f;
 	ViewPitchMax = 45.0f;
 	
 	DefaultFOV = 75.0f;
@@ -21,7 +21,7 @@ void AKDPlayerCameraManager::UpdateViewTarget(FTViewTarget& OutVT, float DeltaTi
 	Super::UpdateViewTarget(OutVT, DeltaTime);
 
 	// 카메라가 벽 등으로 가까워지면 FOV 자동 좁아짐(시네마틱).
-	// 평상시(TargetArmLength=500) -> FOV 75, 벽 밀착 -> FOV 40 근접.
+	// 평상시(TargetArmLength=382) -> FOV 75, 벽 밀착 -> FOV 40 근접.
 	if (!FovByDistanceCurve || !PCOwner || !PCOwner->GetPawn())
 	{
 		return;

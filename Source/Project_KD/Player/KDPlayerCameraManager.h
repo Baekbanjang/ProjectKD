@@ -20,11 +20,11 @@ public:
 	AKDPlayerCameraManager();
 
 protected:
-	// 카메라 거리(cm) -> FOV(deg). 가까이=좁게(시네마틱), 멀리=넓게(가독성).
+	// 카메라 거리(cm) -> FOV(deg). 가까이=좁게(시네마틱), 멀리=넓게(가독성)
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Curves")
 	TObjectPtr<UCurveFloat> FovByDistanceCurve;
 
-	// 경사 각도 -> Look-at IK 강도. M2 폴리싱에서 본격 적용.
+	// 경사 각도 -> Look-at IK 강도. M2 폴리싱에서 본격 적용
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Curves")
 	TObjectPtr<UCurveFloat> SlopeControlCurve;
 

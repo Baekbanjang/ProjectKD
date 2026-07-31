@@ -219,6 +219,97 @@ Content repo (로컬)
 
 ---
 
+## 2-0. 🔴 진행 중 — 카메라 1단계 (2026-07-31 세션 중단 지점)
+
+> **새 세션은 여기부터 이어라.** MCP 끊김으로 세션을 갈았다.
+
+### 확정된 작업 순서 (승환)
+```
+1. 플레이어 카메라   ← 지금 여기
+2. 히트스톱
+3. 총 발사 로직
+```
+
+### 카메라 1단계 체크리스트
+
+| | 항목 | 상태 |
+|---|---|---|
+✅ | `KDPlayerCameraManager.cpp:12` `ViewPitchMin` -80 → **-89** | **완료 + 빌드 통과** |
+☐ | BP_SBPlayer → CameraBoom 값 6개 | **미완** |
+☐ | `CF_FovByCamDist` 키 확인 | **미완 — 유일한 미지수** |
+☐ | PIE 검증 | 미완 |
+
+**BP 값 6개** (`Content/SB_Style_GameProject/Player/BP_SBPlayer` → CameraBoom):
+```
+📁 Camera
+   Target Arm Length              500 → 382
+   Socket Offset  Z                70 → 111      ★ 이게 핵심. 거리만 줄이면 시점 안 맞음
+   Socket Offset  Y                40    유지
+
+📁 Camera Collision
+   Probe Size                      12 → 10
+
+📁 Lag                                            ★ 체감 제일 큼
+   ① Enable Camera Lag             ☐ → ☑         먼저 체크해야 아래 활성화
+   ② Camera Lag Speed              10 → 19
+   ③ Camera Lag Max Distance        0 → 57
+   Enable Camera Rotation Lag      ☐ 유지        SB도 안 씀. 켜지 말 것
+```
+
+**`CF_FovByCamDist` 키 확인이 왜 필요한가** — `Content/SB_Style_GameProject/Camera/Curves/CF_FovByCamDist`
+거리↔FOV 연동이 **이미 구현돼 돌아가고 있다**(`KDPlayerCameraManager.cpp:64-70`이 매 프레임 거리를 재서 커브로 FOV 결정).
+암 길이를 바꾸면 카메라 거리가 **506 → 402**로 줄어든다. 커브가 "500 근처=75"로 짜여 있으면 402에서 더 좁은 FOV가 나와 **화면이 답답해진다.**
+SB 실측 커브 = `112.85→39.82 / 139.95→40.06 / 300→75`. **마지막 키가 300**이라 402에서 75가 보장된다. 우리 커브 마지막 키가 300보다 뒤면 당길 것.
+
+**PIE 검증 = 달리기 시작 / 급정지 / 대시·회피.**
+⚠️ **회전으로는 판단 안 된다** — 엔진 실측: 랙은 `ArmOrigin`(따라다니는 기준점)에만 걸리고 회전은 매 프레임 새로 적용된다. 마우스로 휙 돌려도 랙이 안 걸린다.
+튜닝 시 `Draw Debug Lag Markers` 켜면 목표=초록 / 실제=노랑 / 클램프=빨강.
+
+### 2단계 = 스플라인 돌리 (레일) — 승환 결정
+
+**레일로 간다.** 이유 = 배우는 김에 + 확장성. `ArmLength 커브`(1.5단계 대안)는 **스킵** — 레일의 열화판이라 둘 다 할 이유 없음.
+
+- 확장 지점 확인됨: `SpringArmComponent.h:171 UpdateDesiredArmLocation()` / `:177 BlendLocations()` 둘 다 `protected virtual`
+- 분량 = 클래스 1개 150~200줄 + 스플라인 1개
+- **궤도는 1개만.** SB 13종은 수영·비행·외줄타기 때문. 우리는 지상 액션
+- ⚠️ `AKDPlayerCameraManager::UpdateViewTarget`이 이미 POV를 손댄다 — 누가 최종인지 정하고 시작
+- 같이 만들 커브 = **`ZOffsetArmLengthCurve`** (암길이 20→Z+12 / 60→+30 / 300→0). 벽에 껴서 당겨질 때 위로 띄워 몸통 관통 방지
+- **나머지 커브는 만들지 마라** — Yaw자동회전·락온 3종은 읽을 코드가 없다. `SlopeControlCurve`가 이미 "슬롯만 있고 에셋 없는" 반면교사
+
+### 우리 커브 현황 (3개)
+`CF_FovByCamDist`(거리→FOV) · `CF_FovPunchCurve`(시간→FOV델타) · `CF_TurnSpeedByVelocity`(속도→회전속도)
+**셋 다 카메라 "위치"와 무관하다.** 레일은 위치를 정하는 별개 축 — 레일이 생기면 이미 있는 FOV 커브가 자동으로 살아난다.
+
+---
+
+## 2-1. 다음 작업 = 히트스톱 (카메라 끝난 뒤)
+
+**문제**: 다단히트 노드에서 히트스톱이 덜컥거린다.
+
+```cpp
+// GA_PlayerMeleeAttackBase.cpp:29-37
+FTimerHandle TH;                    // ← 지역 변수. 핸들을 안 들고 있다
+Char->GetWorldTimerManager().SetTimer(TH, ...Resume..., Duration, false);
+```
+호출마다 독립 타이머가 쌓여 `Pause→Resume→Pause→Resume` 스터터. **공격자 몽타주도 멈춘다**(`:66`)라 스윙 애니가 망가진다.
+주석에 이미 흔적 있음 — "SetPlayRate(0) 대신 Pause — 겹친 두 번째 타격이 rate=0을 물어 영구 정지하는 것 방지". **한 번 데인 자리다.**
+
+**원인**: `GA_MeleeTraceBase.cpp:88-89`가 **판정창마다 `AlreadyHitActors.Reset()`**. 주석에 의도가 적혀 있다 — "한 몽타주의 2연타가 같은 적에게 각각 들어가게". **버그가 아니라 설계.**
+
+**SB 실측 답** (`SkillActiveStepTable.json` 6,958행 전수):
+- 히트스톱 관련 필드 = **`bIgnoreHitStop` 불리언 하나뿐.** 수치 필드 없음 → 지속시간은 코드에서 일괄
+- **true 2,284 (33%) / false 4,674**
+- Eve 검: true 53 / false 636. **true인 것들이 전부 `_Hit1`/`_Hit2` 쌍 = 다단히트 스텝**
+- → **SB는 한 공격에 판정이 2개 이상이면 히트스톱을 끈다**
+- 화면 슬로우(TimeScale 0.1 × 0.5초)는 **저스트 패링 전용.** 일반 콤보 히트엔 안 걸림
+- 피격 경직 **0.3초 고정**(1~4타 동일), 넉백만 피니셔 2배(100→200) — **시간이 아니라 공간으로 콤보 제어**
+- 곁가지: `CH_P_EVE_08_HitStop_CtrlRig` 존재 → SB 히트스톱은 몽타주 정지 + **컨트롤 리그 변형**까지 물려 있음
+
+**해법**: **(b) 재진입 가드 권장** — 타이머 핸들을 멤버로 들고, 진행 중이면 새 요청 무시. (a) `bIgnoreHitStop` 플래그 이식은 나중에 연출 요구 생기면.
+**데미지 계수는 이거 고친 뒤에.** 순서가 그렇다.
+
+---
+
 ## 2. 즉시 다음 ★ 최우선
 
 ### ✅ ① GameplayCue 스캔 경로 — 적용 완료 (소스 `a54a6a0`, PIE "잘됨")
