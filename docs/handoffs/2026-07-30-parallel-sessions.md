@@ -263,9 +263,9 @@ Config/DefaultGame.ini:17-19  현재
 
 | # | 항목 | 내용 |
 |---|---|---|
-1 | **`DA_ComboTree` 값 채우기** ★ | 칸과 배선은 깔렸다(`FComboNode.InputWindow`). **값이 전부 0 = 아직 1.5초 공용값으로 돈다.** A레인 전투 수치표의 `DamageMultiplier`도 같은 상태 → **DA 한 번 열어 두 값을 같이** 넣는 게 효율적. SB 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5 |
+1 | **`DA_ComboTree` 값 채우기** ★ | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
 2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
-3 | **`ANS_EnemyAttackWindow`의 `AttackWindowTag` 확인** | 헤더에 기본값이 없고 생성자도 안 넣는다 → **몽타주마다 손으로 `State.Combat.EnemyAttackHitWindow`를 넣어야** 태그가 붙는다. 비어 있으면 퍼펙트 회피가 영원히 안 뜬다. 적 공격 몽타주 전수 점검 필요 |
+3 | **`ANS_EnemyAttackWindow`의 `AttackWindowTag`** | 증상은 맞다 — 비어 있으면 퍼펙트 회피가 영원히 안 뜬다.<br>**단 해법이 전수 점검이 아니다 (2026-07-31 정정).** 형제 클래스 `ANS_CancelWindow`가 이미 생성자에서 기본값을 넣는다:<br>`UANS_CancelWindow::UANS_CancelWindow() : CancelTag(GameplayTags::State_Combat_CanCancel)`<br>`ANS_EnemyAttackWindow` 생성자엔 `NotifyColor`만 있고 태그 초기화가 없다. **한 줄 추가로 끝난다.**<br>★ **이미 배치된 노티에도 소급된다** — UE는 CDO와 같은 값을 직렬화하지 않으므로, 비워둔 노티는 저장된 값이 없어 **새 CDO 기본값을 읽는다**. 명시적으로 다른 태그를 넣어둔 것만 자기 값 유지<br>→ 작업 = **코드 1줄 + 몽타주 1개로 검증.** 전수 점검 불필요 |
 4 | **발사체 리팩토링 3건** | §1-B 참조. **총 작업 착수와 함께** 처리하기로 결정(2026-07-31 승환). ②번은 플레이어 총이 붙으면 확실히 터진다 |
 5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
 6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일. **제약**: `AttachWeaponToHand()`에 1회성 작업(사운드·이펙트) 넣지 말 것 |
