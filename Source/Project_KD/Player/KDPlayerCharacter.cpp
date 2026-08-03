@@ -8,11 +8,13 @@
 #include "KDGameplayTags.h"
 #include "Engine/Engine.h"
 #include "GameplayTagContainer.h"
+#include "KDSpringArmComponent.h"
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/Combo/ComboComponent.h"
 #include "Combat/CombatStateComponent.h"
 #include "Combat/LockOnComponent.h"
 #include "Combat/WeaponComponent.h"
+#include "Components/SplineComponent.h"
 #include "Input/InputBufferComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Movement/SprintComponent.h"
@@ -45,12 +47,24 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// Third-person back view: boom orbits behind the capsule with control rotation.
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	// 요 = 컨트롤러 / 상하 = 궤도
+	CameraBoom = CreateDefaultSubobject<UKDSpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 350.f;
-	CameraBoom->SocketOffset = FVector(0.f, 0.f, 70.f);
-	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bInheritPitch = false; // 스프링암 길이 = 수평 거리
+
+	CameraDollySpline = CreateDefaultSubobject<USplineComponent>(TEXT("CameraDollySpline"));
+	CameraDollySpline->SetupAttachment(RootComponent);
+	CameraDollySpline->ClearSplinePoints(false); // 포인트 초기화
+	
+	// SB 원본 궤도 3점 - 위치 | 도착 탄젠트 | 출발 탄젠트 (탄젠트 수동 지정)
+	CameraDollySpline->AddPoints({
+		FSplinePoint(0.f, FVector(  -1.21f,  0.f, 514.18f), FVector(-594.58f, 0.f, -110.55f), FVector(-594.58f, 0.f, -110.55f)),   // 마우스 -89.0도 · 거리 514
+		FSplinePoint(1.f, FVector(-382.54f, 40.f, 117.58f), FVector(   1.27f, 0.f, -607.56f), FVector(   1.27f, 0.f, -607.56f)),   // 마우스 -24.8도 · 거리 400
+		FSplinePoint(2.f, FVector( -52.91f,  0.f, -82.98f), FVector(  57.84f, 0.f,   -0.34f), FVector(  57.84f, 0.f,   -0.34f)),   // 마우스 +45.0도 · 거리  98
+	}, false);
+	CameraDollySpline->UpdateSpline();
+	
+	CameraBoom->DollySpline = CameraDollySpline;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);

@@ -15,7 +15,8 @@ struct FGameplayTag;
 class UWeaponComponent;
 class UCameraComponent;
 class UInputBufferComponent;
-class USpringArmComponent;
+class UKDSpringArmComponent;
+class USplineComponent;
 class UComboComponent;
 
 UCLASS()
@@ -63,8 +64,11 @@ public:
 protected:
 	// 3인칭 백뷰 붐. 캡슐에 부착, 컨트롤러 회전을 따라 캐릭터 뒤를 공전. 길이/오프셋은 BP에서 튜닝.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<USpringArmComponent> CameraBoom;
+	TObjectPtr<UKDSpringArmComponent> CameraBoom;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<USplineComponent> CameraDollySpline;
+	
 	// 붐 끝단 카메라. 자체 회전 없음(붐이 회전 담당).
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> FollowCamera;

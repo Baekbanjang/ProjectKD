@@ -99,6 +99,7 @@
 | 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
 | 2026-07-30 | [gildong-montage-migration](dev-logs/2026-07-30-gildong-montage-migration.md) | ★길동 몽타주 전면 탈출 (단발·방어·회피·피격·공중) + GA 계층 리팩토링 + SB 공중 콤보 실측 |
 | 2026-07-30 | [inaction-tag-system](dev-logs/2026-07-30-inaction-tag-system.md) | ★InAction 우산 태그 (가드·회피도 전투 진입+무기 부착) + 회피 캔슬 목록 통합 + ABP 슬롯 재배치 |
+| 2026-08-03 | [camera-rail-look-rotation](dev-logs/2026-08-03-camera-rail-look-rotation.md) | ★카메라 레일 2단계 완료 — 조준을 랙 전 이상 위치로 (버그 3개가 한 뿌리) + 마우스 감도 노출. PIE 6항목 통과 |
 
 ## handoffs/ — 인수인계
 

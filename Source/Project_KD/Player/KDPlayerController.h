@@ -23,8 +23,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Movement")
 	TObjectPtr<UInputAction> IA_Move;
 
+	//----------------------------------------------------------
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Movement")
 	TObjectPtr<UInputAction> IA_Look;
+
+	// 마우스 감도 좌우
+	UPROPERTY(EditAnywhere, Category = "Input|Look")
+	float LookSensitivityYaw = 1.f;
+	// 상하
+	UPROPERTY(EditAnywhere, Category = "Input|Look")
+	float LookSensitivityPitch = 0.7f;
+	//----------------------------------------------------------
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Movement")
 	TObjectPtr<UInputAction> IA_Jump;

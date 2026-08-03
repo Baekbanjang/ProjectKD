@@ -113,8 +113,8 @@ void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
 void AKDPlayerController::Handle_Look(const FInputActionValue& Value)
 {
 	const FVector2D Axis = Value.Get<FVector2D>();
-	AddYawInput(Axis.X);
-	AddPitchInput(Axis.Y);
+	AddYawInput(Axis.X * LookSensitivityYaw);
+	AddPitchInput(Axis.Y * LookSensitivityPitch);
 }
 
 void AKDPlayerController::Handle_Jump()
