@@ -10,6 +10,7 @@
 #include "Interface/KDTargetableInterface.h"
 #include "KDGameplayTags.h"
 #include "Engine/OverlapResult.h"
+#include "Curves/CurveFloat.h"
 
 // Sets default values for this component's properties
 ULockOnComponent::ULockOnComponent()
@@ -66,9 +67,20 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 				const FVector ToTarget = TargetPoint - PC->PlayerCameraManager->GetCameraLocation(); // 카메라에서 적 방향 벡터
 				const FRotator CurrentRot = PC->GetControlRotation();
 				const FRotator LookRot = ToTarget.Rotation(); // 방향벡터를 각도 
-				const float ClampedPitch = FMath::ClampAngle(LookRot.Pitch, -80.f, 45.f); // 상하 각도(pitch)만 -80~45 제한 
-				const FRotator DesiredRot(ClampedPitch, LookRot.Yaw, CurrentRot.Roll); // 상하=제한된 pitch, 좌우=적 방향 yaw, 기울기=현재값 유지
-				const FRotator InterpedRot = FMath::RInterpTo(CurrentRot, DesiredRot, DeltaTime, Config->CameraInterpSpeed); // 보간
+				const FRotator DesiredRot(CurrentRot.Pitch, LookRot.Yaw, CurrentRot.Roll); // 상하 유지(Pitch), 좌우만 적 쪽(Yaw)
+				FRotator InterpedRot = FMath::RInterpTo(CurrentRot, DesiredRot, DeltaTime, Config->CameraInterpSpeed); // 보간
+
+				if (Config->LockOnPitchCurve)
+				{
+					const float Dist = FVector::Dist(OwnerPawn->GetActorLocation(), TargetPoint);
+					const float CurrentPitch = FRotator::NormalizeAxis(CurrentRot.Pitch); // 0~360으로 오는 값을 -180~180
+					InterpedRot.Pitch =
+						FMath::FInterpTo(CurrentPitch,
+							Config->LockOnPitchCurve->GetFloatValue(Dist),
+							DeltaTime,
+							Config->PitchInterpSpeed);
+				}
+				
 				PC->SetControlRotation(InterpedRot);
 			}
 		}
