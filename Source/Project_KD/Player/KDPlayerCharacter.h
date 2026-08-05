@@ -108,7 +108,11 @@ protected:
 	// 처형 발동 거리
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (ClampMin = "50", ClampMax = "1000"))
 	float ExecutionRange = 250.f;
-
+	
+	// 락온 중 최고 이동속도 
+	UPROPERTY(EditAnywhere, Category = "LockOn", meta = (ClampMin = "50.0", ClampMax = "800.0"))
+	float LockOnMoveSpeed = 280.f;
+	
 public:
 	UComboComponent* GetComboComponent() const {return ComboComp;}
 	ULockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
@@ -125,4 +129,7 @@ private:
 
 	bool ActivateByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const;
 	void CancelByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const;
+
+	void RefreshMaxWalkSpeed();
+	float BaseWalkSpeed = 500.f;
 };

@@ -138,10 +138,8 @@ void AKDPlayerCharacter::TryConsumeAndActivate(UAbilitySystemComponent* ASC, boo
 
 void AKDPlayerCharacter::ApplyMaxWalkSpeed(float NewSpeed)
 {
-	if (UCharacterMovementComponent* Move = GetCharacterMovement())
-	{
-		Move->MaxWalkSpeed = NewSpeed;
-	}
+	BaseWalkSpeed = NewSpeed;
+	RefreshMaxWalkSpeed();
 }
 
 void AKDPlayerCharacter::PossessedBy(AController* NewController)
@@ -389,7 +387,8 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 	{
 		const bool bLocked = LockOnComponent && LockOnComponent->IsLockedOn();
 		Move->bUseControllerDesiredRotation = bLocked;   
-		Move->bOrientRotationToMovement = !bLocked;      
+		Move->bOrientRotationToMovement = !bLocked;
+		RefreshMaxWalkSpeed(); 
 	}
 
 	// 버퍼를 사용하기 위한 현재 상태
@@ -477,4 +476,13 @@ void AKDPlayerCharacter::CancelByTag(UAbilitySystemComponent* ASC, const FGamepl
 {
 	FGameplayTagContainer C;
 	C.AddTag(Tag); return ASC->CancelAbilities(&C);
+}
+
+void AKDPlayerCharacter::RefreshMaxWalkSpeed()
+{
+	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		const bool bLocked = LockOnComponent && LockOnComponent->IsLockedOn();
+		Move->MaxWalkSpeed = bLocked ? FMath::Min(BaseWalkSpeed, LockOnMoveSpeed) : BaseWalkSpeed;
+	}
 }
