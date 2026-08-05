@@ -104,6 +104,9 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_WeaponToggle)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_ExecutionStarted)
 
+	// 명중 시 공격자가 자기 자신에게 발신 - EventMagnitude에 정지 시간 운반
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_HitStop)
+
 	// Combat events
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_PerfectParryTriggered)
 

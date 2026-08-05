@@ -80,6 +80,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_HitReact, "Event.Combat.HitReact")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_WeaponToggle, "Event.Combat.WeaponToggle")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_ExecutionStarted, "Event.Combat.ExecutionStarted")
+	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_HitStop, "Event.Combat.HitStop")
 
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_PerfectParryTriggered, "Event.Combat.PerfectParryTriggered")

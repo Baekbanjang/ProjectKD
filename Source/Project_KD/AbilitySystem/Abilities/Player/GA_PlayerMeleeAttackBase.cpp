@@ -3,39 +3,15 @@
 
 #include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "Combat/LockOnComponent.h"
 #include "GameFramework/Character.h"
 #include "Player/KDPlayerCharacter.h"
 #include "KDGameplayTags.h"
+#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 #include "Combat/Data/HitConfirmProfile.h"
 
-void UGA_PlayerMeleeAttackBase::ApplyHitStop(AActor* Target, float Duration) const
-{
-	ACharacter* Char = Cast<ACharacter>(Target);
-	
-	if (!Char || Duration <= 0.f) return;
-	USkeletalMeshComponent* Mesh = Char->GetMesh();
-	UAnimInstance* AnimInst = Mesh ? Mesh->GetAnimInstance() : nullptr;
-	UAnimMontage* CurMontage = AnimInst ? AnimInst->GetCurrentActiveMontage() : nullptr;
-	
-	if (!AnimInst || !CurMontage) return;
-	// SetPlayRate(0) 대신 Pause — 겹친 두 번째 타격이 rate=0을 물어 영구 정지하는 것 방지
-	AnimInst->Montage_Pause(CurMontage);
-
-	TWeakObjectPtr<UAnimInstance> WeakAnim(AnimInst);
-	TWeakObjectPtr<UAnimMontage> WeakMontage(CurMontage);
-	
-	FTimerHandle TH;
-	Char->GetWorldTimerManager().SetTimer(TH,
-		FTimerDelegate::CreateLambda([WeakAnim, WeakMontage]()
-		{
-			if (WeakAnim.IsValid() && WeakMontage.IsValid())
-			{
-				WeakAnim->Montage_Resume(WeakMontage.Get());
-			}
-		}), Duration, false);
-}
 
 void UGA_PlayerMeleeAttackBase::OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit)
 {
@@ -62,9 +38,16 @@ void UGA_PlayerMeleeAttackBase::OnTargetHit(AActor* HitActor, UAbilitySystemComp
 	CueParams.SourceObject = HitConfirmProfile;
 	
 	AttackerASC->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_PlayerHitConfirm, CueParams);
-	// 플레이어 공격에만 히트스탑 — 공격자(플레이어) + 피격자(적)
-	ApplyHitStop(GetAvatarActorFromActorInfo(), AttackerHitStopDuration);
-	ApplyHitStop(HitActor, VictimHitStopDuration);
+
+	// 히트스탑 윈도우 확보 - bIgnoreHitStop 확인 후 생략 가능
+	const UANS_MeleeTrace* Window = GetActiveWindow();
+	if (Window && Window->bIgnoreHitStop) { return; }
+	
+	// 정지 주체는 공격자 HitStopComponent
+	FGameplayEventData StopEvent;
+	StopEvent.EventMagnitude = AttackerHitStopDuration;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+		GetAvatarActorFromActorInfo(), GameplayTags::Event_Combat_HitStop, StopEvent);
 }
 
 void UGA_PlayerMeleeAttackBase::OnActivated()

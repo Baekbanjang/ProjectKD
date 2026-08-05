@@ -81,6 +81,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 {
 	// Race guard: cancel chain may EndAbility before this notify fires
 	if (!IsActive()) return;
+
 	AActor* Avatar = GetAvatarActorFromActorInfo();
 	
 	if (!IsValid(Avatar)) return;
@@ -96,6 +97,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 	ETraceMeshSource EffSource = MeshSource;
 	if (const UANS_MeleeTrace* Window = Cast<UANS_MeleeTrace>(Payload.OptionalObject))
 	{
+		ActiveWindow = Window;
 		if (Window->StartSocketOverride != NAME_None) EffStartSocket = Window->StartSocketOverride;
 		if (Window->EndSocketOverride != NAME_None) EffEndSocket = Window->EndSocketOverride;
 		if (Window->CapsuleRadiusOverride > 0.f) EffRadius = Window->CapsuleRadiusOverride;
@@ -113,9 +115,9 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 		// 본체엔 무기 소켓(Spear_*) 없음 — 노티 hand_l/foot_r 오버라이드 빠지면 몸통 원점서 잘못된 트레이스
 		if (IsValid(TraceMesh) && !TraceMesh->DoesSocketExist(EffStartSocket))
 		{
-			UE_LOG(LogTemp, Warning,
+			/*UE_LOG(LogTemp, Warning,
 				TEXT("[KD] OwnerBody 트레이스인데 '%s' 소켓/본 없음 — 노티 소켓 오버라이드 누락"),
-				*EffStartSocket.ToString());
+				*EffStartSocket.ToString());*/
 			return;
 		}
 	}
@@ -136,16 +138,16 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 	
 	if (!IsValid(TraceMesh))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[KD] Trace mesh not found (source=%d) on %s"),
-			(int32)EffSource, *Avatar->GetName());
+		/*UE_LOG(LogTemp, Warning, TEXT("[KD] Trace mesh not found (source=%d) on %s"),
+			(int32)EffSource, *Avatar->GetName());*/
 		return;
 	}
 
 	// 무기 소켓 존재 체크
 	if (!TraceMesh->DoesSocketExist(EffStartSocket) || !TraceMesh->DoesSocketExist(EffEndSocket))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[KD] 트레이스 소켓 없음 — '%s'/'%s' (mesh=%s)"),
-			*EffStartSocket.ToString(), *EffEndSocket.ToString(), *TraceMesh->GetName());
+		/*UE_LOG(LogTemp, Warning, TEXT("[KD] 트레이스 소켓 없음 — '%s'/'%s' (mesh=%s)"),
+			*EffStartSocket.ToString(), *EffEndSocket.ToString(), *TraceMesh->GetName());*/
 		return;
 	}
 	
@@ -169,6 +171,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 
 void UGA_MeleeTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
 {
+	ActiveWindow = nullptr;
 	if (ActiveTraceTask)
 	{
 		ActiveTraceTask->EndTask();
@@ -234,7 +237,7 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 
 void UGA_MeleeTraceBase::OnMontageCompleted()
 {
-	UE_LOG(LogTemp, Log, TEXT("[KD-Montage] %s: Completed"), *GetName());
+	//UE_LOG(LogTemp, Log, TEXT("[KD-Montage] %s: Completed"), *GetName());
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), false, false);
 }
 
@@ -269,4 +272,5 @@ void UGA_MeleeTraceBase::OnCleanup(bool bWasCancelled)
 		ActiveTraceTask = nullptr;
 	}
 	AlreadyHitActors.Reset();
+	ActiveWindow = nullptr;
 }

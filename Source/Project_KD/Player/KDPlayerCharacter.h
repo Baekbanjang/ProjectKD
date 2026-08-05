@@ -7,6 +7,7 @@
 #include "Character/BaseCharacter.h"
 #include "KDPlayerCharacter.generated.h"
 
+class UHitStopComponent;
 class USprintComponent;
 class UMotionWarpingComponent;
 class UCombatStateComponent;
@@ -91,6 +92,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UCombatStateComponent> CombatStateComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TObjectPtr<UHitStopComponent> HitStopComp;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Sprint")
 	TObjectPtr<USprintComponent> SprintComp;

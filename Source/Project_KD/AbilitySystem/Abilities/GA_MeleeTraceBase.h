@@ -5,6 +5,7 @@
 #include "AbilitySystem/Tasks/AT_MeleeTrace.h"
 #include "GA_MeleeTraceBase.generated.h"
 
+class UANS_MeleeTrace;
 class UAnimMontage;
 class UAT_MeleeTrace;
 class UGameplayEffect;
@@ -55,6 +56,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "0.1"))
 	float CapsuleRadius = 3.0f;
 
+	// 판정창 1개당 액터 1히트 - 검이 닿아 있는 동안 매 프레임 반복 타격 차단
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	bool bOncePerActor = true;
 
@@ -71,6 +73,8 @@ protected:
 	// Override must call Super (chains trace cleanup).
 	virtual void OnCleanup(bool bWasCancelled) override;
 
+	const UANS_MeleeTrace* GetActiveWindow() const { return ActiveWindow.Get(); }
+
 private:
 	UFUNCTION() void OnTraceBeginEvent(FGameplayEventData Payload);
 	UFUNCTION() void OnTraceEndEvent(FGameplayEventData Payload);
@@ -83,4 +87,6 @@ private:
 
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> AlreadyHitActors;
+	
+	TWeakObjectPtr<const UANS_MeleeTrace> ActiveWindow;
 };

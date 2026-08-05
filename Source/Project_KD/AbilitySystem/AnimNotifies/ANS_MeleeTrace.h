@@ -49,4 +49,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "예외 (비우면 GA 값 사용)",
 		meta = (EditCondition = "bOverrideMeshSource", DisplayName = "└ 바꿀 대상"))
 	ETraceMeshSource MeshSourceOverride = ETraceMeshSource::OwnerBody;
+	
+	UPROPERTY(EditAnywhere, Category = "예외 (비우면 GA 값 사용)",
+		meta = (DisplayName = "히트스톱 끄기"))
+	bool bIgnoreHitStop = false;
 };

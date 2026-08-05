@@ -12,6 +12,7 @@
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/Combo/ComboComponent.h"
 #include "Combat/CombatStateComponent.h"
+#include "Combat/HitStopComponent.h"
 #include "Combat/LockOnComponent.h"
 #include "Combat/WeaponComponent.h"
 #include "Components/SplineComponent.h"
@@ -83,6 +84,7 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	ComboComp = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
 	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	CombatStateComp = CreateDefaultSubobject<UCombatStateComponent>(TEXT("CombatStateComp"));
+	HitStopComp = CreateDefaultSubobject<UHitStopComponent>(TEXT("HitStopComp"));
 	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
 }
 
