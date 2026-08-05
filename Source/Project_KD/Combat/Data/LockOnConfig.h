@@ -29,7 +29,7 @@ public:
 	// 적까지 거리(cm)별 카메라 상하 각도
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target")
 	TObjectPtr<UCurveFloat> LockOnPitchCurve;
-
+	
 	// 카메라 회전 보간 속도
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Camera", meta = (ClampMin = "1.0", ClampMax = "20.0"))
 	float CameraInterpSpeed = 5.f;
@@ -38,6 +38,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Camera", meta = (ClampMin = "0.1", ClampMax = "10.0"))
 	float PitchInterpSpeed = 1.5f;
 
+	// 카메라 좌우 따라가는 속도
+	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Camera")
+	TObjectPtr<UCurveFloat> YawSpeedByAngle;
+	
 	// 시야 검사(Line of Sight) 활성화 — 장애물 뒤 적은 락온 후보 X, 락온 중 시야 잃으면 즉시 해제.
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target")
 	bool bUseLineOfSightCheck = true;

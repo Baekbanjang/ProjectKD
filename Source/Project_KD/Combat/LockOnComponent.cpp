@@ -66,9 +66,22 @@ void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 				const FVector TargetPoint = IKDTargetableInterface::Execute_GetLockOnPoint(Target);
 				const FVector ToTarget = TargetPoint - PC->PlayerCameraManager->GetCameraLocation(); // 카메라에서 적 방향 벡터
 				const FRotator CurrentRot = PC->GetControlRotation();
-				const FRotator LookRot = ToTarget.Rotation(); // 방향벡터를 각도 
-				const FRotator DesiredRot(CurrentRot.Pitch, LookRot.Yaw, CurrentRot.Roll); // 상하 유지(Pitch), 좌우만 적 쪽(Yaw)
-				FRotator InterpedRot = FMath::RInterpTo(CurrentRot, DesiredRot, DeltaTime, Config->CameraInterpSpeed); // 보간
+				const FRotator LookRot = ToTarget.Rotation(); // 방향벡터를 각도
+				
+				// 각도가 클수록 Yaw 회전 속도 증가
+				float YawSpeed = Config->CameraInterpSpeed;
+				if (Config->YawSpeedByAngle)
+				{
+					const float YawDiff = FMath::Abs(FRotator::NormalizeAxis(LookRot.Yaw - CurrentRot.Yaw));
+					YawSpeed = Config->YawSpeedByAngle->GetFloatValue(YawDiff);
+				}
+				
+				FRotator InterpedRot = CurrentRot;
+				if (YawSpeed > 0.f)   // 0을 넘기면 가만히가 아니라 즉시 스냅 - 생략
+				{
+					const FRotator DesiredRot(CurrentRot.Pitch, LookRot.Yaw, CurrentRot.Roll); // 상하 유지, 좌우만 적 쪽
+					InterpedRot = FMath::RInterpTo(CurrentRot, DesiredRot, DeltaTime, YawSpeed);
+				}
 
 				if (Config->LockOnPitchCurve)
 				{

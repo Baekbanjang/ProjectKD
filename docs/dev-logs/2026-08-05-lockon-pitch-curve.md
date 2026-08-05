@@ -169,16 +169,99 @@ const FRotator Delta = (Target - Current).GetNormalized();     // 한 바퀴 처
 계산상 기대치 — 붙으면 `뒤 371 / 높이 +204`, 멀면 `뒤 373 / 높이 +61`.
 **거리가 370쯤에서 안 무너지는 게 핵심.** 고장났을 땐 229/-57까지 갔다.
 
+---
+
+# 이어서 — 좌우 자동회전 속도 커브 + 사거리 (같은 날)
+
+## 왜
+
+좌우를 **항상 같은 속도(5)로** 당기고 있었다. 이미 적을 보고 있어도 계속 미세하게 건드린다.
+SB는 `SBSpringArmComponent`의 `YawAutoRotateSpeedByDirDiff`로 **각도별 속도**를 준다.
+
+| 벗어난 각도 | SB 속도 |
+|---|---|
+| 5° | **0** |
+| 90° | 32 |
+| 135° | 32 |
+| 160° | **0** |
+
+**핵심은 숫자가 아니라 양 끝의 0이다.** 정면 = 미세 떨림 방지, 등 뒤 = 확 휘둘리지 않게.
+(160°는 **해제가 아니다.** 해제는 거리 `1700 → 75` / `1701 → 0`)
+
+## ★ 함정 — `RInterpTo`에 속도 0을 넘기면 스냅한다
+
+```cpp
+// UnrealMath.cpp:2680
+if( InterpSpeed <= 0.f )
+{
+    return Target;          // "가만히"가 아니라 즉시 목표로 순간이동
+}
+```
+
+정면에 오는 순간 카메라가 적한테 딱 붙어버린다. **의도와 정반대.**
+→ **0 구간은 `RInterpTo` 호출 자체를 건너뛴다.**
+
+## 코드
+
+```cpp
+// 어긋난 각도가 클수록 빨리 따라감 - 정면과 등 뒤는 0이라 안 건드림
+float YawSpeed = Config->CameraInterpSpeed;
+if (Config->YawSpeedByAngle)
+{
+    const float YawDiff = FMath::Abs(FRotator::NormalizeAxis(LookRot.Yaw - CurrentRot.Yaw));
+    YawSpeed = Config->YawSpeedByAngle->GetFloatValue(YawDiff);
+}
+
+FRotator InterpedRot = CurrentRot;
+if (YawSpeed > 0.f)   // 0을 넘기면 가만히가 아니라 즉시 스냅 - 생략
+{
+    const FRotator DesiredRot(CurrentRot.Pitch, LookRot.Yaw, CurrentRot.Roll);
+    InterpedRot = FMath::RInterpTo(CurrentRot, DesiredRot, DeltaTime, YawSpeed);
+}
+```
+
+`NormalizeAxis`로 차이를 내므로 표현이 0~360이든 -180~180이든 상관없고, `Abs`라 커브는 **한쪽만** 그리면 된다.
+
+**외삽은 신경 안 써도 된다** — `FRealCurve` 기본이 `RCCE_Constant`(`RealCurve.h:122`)라 첫 키 앞·마지막 키 뒤가 평평하다. 설령 Linear로 만들어도 음수가 나올 뿐이고 `> 0.f` 가드에 걸려 똑같이 건너뛴다.
+
+## SB 32를 그대로 쓴 근거
+
+우리 상시값 5보다 6배라 처음엔 과해 보였는데, 실제 구간을 계산하면 겹친다.
+
+| 벗어난 각도 | 커브가 주는 속도 |
+|---|---|
+| 20° | **5.6** ← 기존 상시 5와 사실상 같다 |
+| 45° | 15 |
+| 90° | 32 |
+
+**평소 추적감은 그대로고 크게 벌어졌을 때만 확 잡아챈다.** SB 소비처 수식은 미상이라 단위가 다를 가능성은 남지만, 이 대조가 맞아떨어지므로 같은 종류로 판단.
+
+## 에셋
+
+```
+/Game/SB_Style_GameProject/Camera/Curves/CF_LockOnYawSpeedByAngle   (신규)
+```
+`5→0` / `90→32` / `135→32` / `160→0`
+
+`DA_LockOnConfig_Default` — 커브 지정 + **`Lock On Radius` 1000 → 1700**(SB값).
+사거리를 늘려서 피치 커브의 `1497` 키가 그제야 살아난다. 이전엔 1000에서 잘려 안 쓰였다.
+
+## 검증
+
+- PIE 체감 이상 없음 (승환)
+- **좌우 옆걸음 = 불편함 없음** → 조준 기준점(`GetCameraLocation()`)은 **그대로 둔다.** 랙이 회전으로 새는 양이 약 3.6도로 카메라 때(6.3도)의 절반이라 안 거슬리는 수준
+
 ## 남은 것
 
 | | 상태 |
 |---|---|
-| 좌우 조준 기준점이 **랙 먹은 실제 카메라 위치** | 미확인. 카메라 3부작과 같은 계열, 크기는 약 3.6도(그땐 6.3도). **옆걸음으로 재본 뒤 판단** |
-| 좌우 자동회전 속도 커브 (SB) | **다음 작업 확정** |
-| 락온 사거리 1000 → 1700 | **다음 작업 확정** |
-| 적 고르기 점수제 (각도×거리) | 폴리싱 단계로 |
-| 진입·해제 블렌드 커브 | 폴리싱 단계로 |
+| ~~좌우 조준 기준점이 랙 먹은 실측 위치~~ | ✅ 재봤고 안 거슬림. **안 고치기로** |
+| ~~좌우 자동회전 속도 커브~~ | ✅ 완료 |
+| ~~사거리 1000 → 1700~~ | ✅ 완료 |
+| 적 고르기 점수제 (각도×거리) | 폴리싱 단계로 (승환 결정) |
+| 진입·해제 블렌드 커브 | 폴리싱 단계로 (승환 결정) |
 | `GetLockOnPoint`의 `HalfHeight * 0.5` 갈래 | 적 작업 때. `LockOnSocketName` 채우면 안 탐 |
+| 락온 중 이동속도 감속 | SB는 Run 500 → **280**(44% 감속). 개념 자체가 없음. 폴리싱 |
 
 ## 참조
 

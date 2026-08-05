@@ -101,7 +101,7 @@
 | 2026-07-30 | [inaction-tag-system](dev-logs/2026-07-30-inaction-tag-system.md) | ★InAction 우산 태그 (가드·회피도 전투 진입+무기 부착) + 회피 캔슬 목록 통합 + ABP 슬롯 재배치 |
 | 2026-08-03 | [camera-rail-look-rotation](dev-logs/2026-08-03-camera-rail-look-rotation.md) | ★카메라 레일 2단계 완료 — 조준을 랙 전 이상 위치로 (버그 3개가 한 뿌리) + 마우스 감도 노출. PIE 6항목 통과 |
 | 2026-08-04 | [hitstop-component](dev-logs/2026-08-04-hitstop-component.md) | ★히트스톱을 액터 소유 컴포넌트로 — 정지가 노티를 끊어 데미지·판정이 중복되던 버그. CustomTimeDilation=0만 유효 |
-| 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 이식 |
+| 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
 
 ## handoffs/ — 인수인계
 
