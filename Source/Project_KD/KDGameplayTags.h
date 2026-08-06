@@ -14,6 +14,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_CounterThrust)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_AirCombo)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Execution)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Aim)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Movement_Turn)
 
@@ -63,6 +64,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_EnemyAttackHitWindow)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_CounterReady)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_AirComboLock)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Aiming)
 
 
 	// Poise-break 경직 상태. 적 GA가 ActivationBlockedTags로 자가 차단(BP Class Defaults 설정). 적 전용(플레이어 비대칭).
@@ -155,4 +157,5 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Parry)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Combo_Light)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Combo_Heavy)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Aim)
 }

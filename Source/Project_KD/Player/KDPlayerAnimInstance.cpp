@@ -59,6 +59,8 @@ void UKDPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsLockedOn = ASC->HasMatchingGameplayTag(GameplayTags::State_Character_LockOn);
 
 		bIsInBattleStance = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InCombat);
+
+		bIsAiming = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming);
 	}
 }
 

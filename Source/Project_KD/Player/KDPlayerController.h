@@ -61,6 +61,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
 	TObjectPtr<UInputAction> IA_Execute;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
+	TObjectPtr<UInputAction> IA_Aim;
 private:
 	void Handle_Move(const FInputActionValue& Value);
 	void Handle_Look(const FInputActionValue& Value);
@@ -76,4 +79,7 @@ private:
 	void Handle_ParryStop();
 	void Handle_LockOnToggle();
 	void Handle_Execute();
+
+	void Handle_AimStart();
+	void Handle_AimStop();
 };

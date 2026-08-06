@@ -10,6 +10,7 @@ namespace GameplayTags
     UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_CounterThrust, "Ability.Mugong.CounterThrust")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_AirCombo, "Ability.Mugong.AirCombo")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Execution, "Ability.Mugong.Execution")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Aim, "Ability.Mugong.Aim")
 	
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Movement_Turn, "Ability.Movement.Turn")
 	
@@ -69,6 +70,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_EnemyAttackHitWindow, "State.Combat.EnemyAttackHitWindow")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_CounterReady, "State.Combat.CounterReady")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_AirComboLock, "State.Combat.AirComboLock")
+	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Aiming, "State.Combat.Aiming")
 
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_TraceBegin, "Event.Montage.TraceBegin")
@@ -117,5 +119,6 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Parry, "Input.Action.Parry")
 	UE_DEFINE_GAMEPLAY_TAG(Input_Combo_Light, "Input.Combo.Light")
 	UE_DEFINE_GAMEPLAY_TAG(Input_Combo_Heavy, "Input.Combo.Heavy")
+	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Aim, "Input.Action.Aim")
 }
  

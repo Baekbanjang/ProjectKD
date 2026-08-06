@@ -78,6 +78,11 @@ void AKDPlayerController::SetupInputComponent()
 	{
 		EIC->BindAction(IA_Execute, ETriggerEvent::Started, this, &AKDPlayerController::Handle_Execute);
 	}
+	if (IA_Aim)
+	{
+		EIC->BindAction(IA_Aim, ETriggerEvent::Started, this, &AKDPlayerController::Handle_AimStart);
+		EIC->BindAction(IA_Aim, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_AimStop);
+	}
 }
 
 void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
@@ -191,4 +196,16 @@ void AKDPlayerController::Handle_Execute()
 {
 	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
 	if (PC) PC->TryExecute();
+}
+
+void AKDPlayerController::Handle_AimStart()
+{
+	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
+	if (PC) PC->TryAimStart();
+}
+
+void AKDPlayerController::Handle_AimStop()
+{
+	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
+	if (PC) PC->TryAimStop();
 }

@@ -57,6 +57,10 @@ public:
     // 락온 중. State.Character.LockOn loose 태그. Free<->LockOn 전환
     UPROPERTY(BlueprintReadOnly, Category = "State")
     bool bIsLockedOn = false;
+
+	// 조준 여부 - AimOffset 전환
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsAiming = false;
     
     // 주변 적 존재(InCombat 태그). Peaceful<->Battle 전환
     UPROPERTY(BlueprintReadOnly, Category = "State")

@@ -34,8 +34,23 @@ void ULockOnComponent::BeginPlay()
 	{
 		ReticleWidgetComponent->SetWidgetClass(Config->ReticleWidgetClass);
 	}
+
+	RegisterAimingTagListener();
 }
 
+void ULockOnComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (AimingTagHandle.IsValid())
+	{
+		if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner()))
+		{
+			ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_Aiming, EGameplayTagEventType::NewOrRemoved).Remove(AimingTagHandle);
+		}
+		AimingTagHandle.Reset();
+	}
+	
+	Super::EndPlay(EndPlayReason);
+}
 
 void ULockOnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -293,5 +308,32 @@ bool ULockOnComponent::IsTargetStillValid() const
 	}
 
 	return true;
+}
+
+void ULockOnComponent::RegisterAimingTagListener()
+{
+	// 기능 : 조준 태그 변화 확인 등록
+	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+	if (!ASC)
+	{
+		// ASC가 준비 X -> 재시도
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().SetTimerForNextTick(this, &ULockOnComponent::RegisterAimingTagListener);
+		}
+		return;
+	}
+
+	// 태그 구독
+	AimingTagHandle = ASC->RegisterGameplayTagEvent(GameplayTags::State_Combat_Aiming, EGameplayTagEventType::NewOrRemoved)
+		.AddUObject(this, &ULockOnComponent::OnAimingTagChanged);
+}
+
+void ULockOnComponent::OnAimingTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount > 0 && bIsLockedOn)
+	{
+		DisengageLockOn();
+	}
 }
 

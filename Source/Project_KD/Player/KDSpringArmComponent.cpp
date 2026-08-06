@@ -3,6 +3,9 @@
 
 #include "Player/KDSpringArmComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "KDGameplayTags.h"
 #include "Components/SplineComponent.h"
 
 UKDSpringArmComponent::UKDSpringArmComponent()
@@ -14,6 +17,7 @@ UKDSpringArmComponent::UKDSpringArmComponent()
 void UKDSpringArmComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
+	UpdateAimAlpha(DeltaTime);
 	ApplyRailPosition();   // 레일에서 프레임마다 위치 확보
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);   // 랙 | 충돌 | 소켓 갱신
 	UpdateLookRotation(); // 회전 업데이트
@@ -54,6 +58,26 @@ FTransform UKDSpringArmComponent::GetSocketTransform(FName InSocketName,
 	return RelativeTransform;
 }
 
+void UKDSpringArmComponent::UpdateAimAlpha(float DeltaTime)
+{
+	// 기능 : 조준 태그를 보고 두 스플라인 섞는 비율을 부드럽게 변경
+	if (!CachedASC.IsValid())
+	{
+		CachedASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+	}
+	// 조준 여부
+	const bool bAiming = CachedASC.IsValid()
+		&& CachedASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming);
+	AimAlpha = FMath::FInterpTo(AimAlpha, bAiming ? 1.f : 0.f, DeltaTime, AimBlendSpeed);
+}
+
+FVector UKDSpringArmComponent::SampleRail(const USplineComponent* Rail, float Alpha) const
+{
+	// 기능 : 진행도를 레일 번호로 바꿔서 그 자리 좌표를 추출
+	const float LastKey = static_cast<float>(Rail->GetNumberOfSplinePoints() - 1); // 마지막 포인트 추출
+	return Rail->GetLocationAtSplineInputKey(Alpha * LastKey, ESplineCoordinateSpace::Local); // 3d 좌표 추출
+}
+
 void UKDSpringArmComponent::ApplyRailPosition()
 {
 	// 기능 : 마우스의 각도를 보고 카메라스프링의 길이와 오프셋을 변경
@@ -75,13 +99,14 @@ void UKDSpringArmComponent::ApplyRailPosition()
 
 	// 각도 범위 0~1 범위로 변경
 	const float Alpha = FMath::Clamp((Pitch - PitchAtStart) / (PitchAtEnd - PitchAtStart), 0.f, 1.f);
+	
+	FVector Point = SampleRail(DollySpline, Alpha);
 
-	// 레일의 마지막 번호
-	const float LastKey = static_cast<float>(DollySpline->GetNumberOfSplinePoints() - 1);
-
-	// 진행도를 레일 번호로 바꿔서 그 자리 좌표를 꺼냄
-	const FVector Point = DollySpline->GetLocationAtSplineInputKey(Alpha * LastKey,
-		ESplineCoordinateSpace::Local);
+	// 조준 중이면 조준 스플라인과 섞음
+	if (AimDollySpline && AimAlpha > KINDA_SMALL_NUMBER)
+	{
+		Point = FMath::Lerp(Point, SampleRail(AimDollySpline, Alpha), AimAlpha);
+	}
 
 	TargetArmLength = -Point.X;                          // 카메라 걸이
 	SocketOffset = FVector(0.f, Point.Y, Point.Z);   // 카메라 오프셋

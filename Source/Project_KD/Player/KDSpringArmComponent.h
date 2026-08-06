@@ -6,6 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "KDSpringArmComponent.generated.h"
 
+class UAbilitySystemComponent;
 class USplineComponent;
 /**
  * 
@@ -20,9 +21,17 @@ public:
 	UKDSpringArmComponent();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolly")
-	TObjectPtr<USplineComponent> DollySpline;   
+	TObjectPtr<USplineComponent> DollySpline;
+
+	// 조준 스플라인 — 미지정 시 평상시 스플라인
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dolly")
+	TObjectPtr<USplineComponent> AimDollySpline;
+
+	// 조준 모드 블렌드 속도
+	UPROPERTY(EditAnywhere, Category = "Dolly", meta = (ClampMin = "1.0", ClampMax = "20.0"))
+	float AimBlendSpeed = 8.f;
 	
-	// 궤도 양 끝 = 시선 피치
+	// 스플라인 양 끝 = 시선 피치
 	UPROPERTY(EditAnywhere, Category = "Dolly")
 	float PitchAtStart = -89.f;   // 스플라인 시작점
 	
@@ -37,8 +46,14 @@ public:
 	virtual FTransform GetSocketTransform(FName InSocketName, ERelativeTransformSpace TransformSpace = RTS_World) const override;
 	
 private:
-	void ApplyRailPosition();     // 궤도 위 점 -> TargetArmLength | SocketOffset
+	void UpdateAimAlpha(float DeltaTime);   // 조준 태그 -> AimAlpha
+	FVector SampleRail(const USplineComponent* Rail, float Alpha) const;   // 스플라인 위 점
+
+	void ApplyRailPosition();     // 스플라인 위 점 -> TargetArmLength | SocketOffset
 	void UpdateLookRotation();    // 카메라 위치 기준 LookAt 회전
 	
 	FQuat RelativeLookRotation = FQuat::Identity;   // GetSocketTransform 캐시
+	
+	float AimAlpha = 0.f;   // 0 = 평상시 스플라인 | 1 = 조준 스플라인
+	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
 };

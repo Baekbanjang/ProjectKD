@@ -48,7 +48,7 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	// 요 = 컨트롤러 / 상하 = 궤도
+	// 요 = 컨트롤러 / 상하 = 스플라인
 	CameraBoom = CreateDefaultSubobject<UKDSpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->bInheritPitch = false; // 스프링암 길이 = 수평 거리
@@ -57,16 +57,29 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	CameraDollySpline->SetupAttachment(RootComponent);
 	CameraDollySpline->ClearSplinePoints(false); // 포인트 초기화
 	
-	// SB 원본 궤도 3점 - 위치 | 도착 탄젠트 | 출발 탄젠트 (탄젠트 수동 지정)
+	// SB 원본 스플라인 3점 - 위치 | 도착 탄젠트 | 출발 탄젠트 (탄젠트 수동 지정)
 	CameraDollySpline->AddPoints({
 		FSplinePoint(0.f, FVector(  -1.21f,  0.f, 514.18f), FVector(-594.58f, 0.f, -110.55f), FVector(-594.58f, 0.f, -110.55f)),   // 마우스 -89.0도 · 거리 514
 		FSplinePoint(1.f, FVector(-382.54f, 40.f, 117.58f), FVector(   1.27f, 0.f, -607.56f), FVector(   1.27f, 0.f, -607.56f)),   // 마우스 -24.8도 · 거리 400
 		FSplinePoint(2.f, FVector( -52.91f,  0.f, -82.98f), FVector(  57.84f, 0.f,   -0.34f), FVector(  57.84f, 0.f,   -0.34f)),   // 마우스 +45.0도 · 거리  98
 	}, false);
 	CameraDollySpline->UpdateSpline();
-	
 	CameraBoom->DollySpline = CameraDollySpline;
 
+	
+	AimDollySpline = CreateDefaultSubobject<USplineComponent>(TEXT("AimDollySpline"));
+	AimDollySpline->SetupAttachment(RootComponent);
+	AimDollySpline->ClearSplinePoints(false);
+
+	// 조준 스플라인 3점
+	AimDollySpline->AddPoints({
+		FSplinePoint(0.f, FVector(-180.f, 65.f,  90.f)),   // 마우스 위
+		FSplinePoint(1.f, FVector(-190.f, 65.f,  20.f)),   // 정면
+		FSplinePoint(2.f, FVector(-180.f, 65.f, -50.f)),   // 마우스 아래
+	}, false);
+	AimDollySpline->UpdateSpline();
+	CameraBoom->AimDollySpline = AimDollySpline;
+	
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
@@ -296,6 +309,22 @@ void AKDPlayerCharacter::TryExecute() const
 		Target, GameplayTags::Event_Combat_Hit, Data);
 }
 
+void AKDPlayerCharacter::TryAimStart() const
+{
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		ActivateByTag(ASC, GameplayTags::Ability_Mugong_Aim);
+	}
+}
+
+void AKDPlayerCharacter::TryAimStop() const
+{
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		CancelByTag(ASC, GameplayTags::Ability_Mugong_Aim);
+	}
+}
+
 void AKDPlayerCharacter::TryDodge() const
 {
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
@@ -382,15 +411,19 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	// 락온 회전 모드 — 락온이면 타겟 보게, 아니면 가는 쪽 보게
+	// 락온 | 조준 회전 모드 — 락온이면 타겟 방향, 아니면 카메라 방향
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
 		const bool bLocked = LockOnComponent && LockOnComponent->IsLockedOn();
-		Move->bUseControllerDesiredRotation = bLocked;   
-		Move->bOrientRotationToMovement = !bLocked;
+		const bool bAiming = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming);
+
+		// 둘중 하나면 카메라 방향
+		const bool bFaceCamera = bLocked || bAiming;
+		Move->bUseControllerDesiredRotation = bFaceCamera;   
+		Move->bOrientRotationToMovement = !bFaceCamera;
 		RefreshMaxWalkSpeed(); 
 	}
-
+	
 	// 버퍼를 사용하기 위한 현재 상태
 	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
 	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
@@ -480,9 +513,26 @@ void AKDPlayerCharacter::CancelByTag(UAbilitySystemComponent* ASC, const FGamepl
 
 void AKDPlayerCharacter::RefreshMaxWalkSpeed()
 {
-	if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	// 기능 : 락온 | 조준 감속을 반영해서 MaxWalkSpeed 갱신
+
+	UCharacterMovementComponent* Move = GetCharacterMovement();
+	if (!Move) return;
+
+	// 감속 조건 겹치면 더 느린 쪽
+	float Speed = BaseWalkSpeed;
+	
+	if (LockOnComponent && LockOnComponent->IsLockedOn())
 	{
-		const bool bLocked = LockOnComponent && LockOnComponent->IsLockedOn();
-		Move->MaxWalkSpeed = bLocked ? FMath::Min(BaseWalkSpeed, LockOnMoveSpeed) : BaseWalkSpeed;
+		Speed = FMath::Min(Speed, LockOnMoveSpeed);
 	}
+
+	if (const UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
+		{
+			Speed = FMath::Min(Speed, AimMoveSpeed);
+		}
+	}
+
+	Move->MaxWalkSpeed = Speed;
 }

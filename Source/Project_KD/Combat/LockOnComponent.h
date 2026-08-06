@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "LockOnComponent.generated.h"
 
@@ -18,6 +19,7 @@ public:
 	ULockOnComponent();
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Controller의 Handle_LockOnToggle에서 호출.
@@ -31,6 +33,9 @@ public:
 	AActor* GetLockedTarget() const { return LockedTarget.Get(); }
 
 	const ULockOnConfig* GetConfig() const { return Config; }
+
+	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과한 가장 가까운 적.
+	AActor* FindBestTarget() const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn")
@@ -40,10 +45,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "LockOn")
 	TObjectPtr<UWidgetComponent> ReticleWidgetComponent;
 
-public:	
-	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과한 가장 가까운 적.
-	AActor* FindBestTarget() const;
-
+private:	
 	// 활성화 — 타겟 저장, GAS 태그 부여, 마커 부착, 인터페이스 알림.
 	void EngageLockOn(AActor* NewTarget);
 
@@ -55,4 +57,11 @@ public:
 
 	TWeakObjectPtr<AActor> LockedTarget;
 	bool bIsLockedOn = false;
+
+	// 조준 시작 시 락온 해제
+	FDelegateHandle AimingTagHandle;
+	void RegisterAimingTagListener();
+	
+	UFUNCTION()
+	void OnAimingTagChanged(const FGameplayTag Tag, int32 NewCount);
 };

@@ -54,6 +54,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryExecute() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TryAimStart() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TryAimStop() const;
+
 	void StartSprint();
 	void StopSprint();
 
@@ -69,6 +75,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USplineComponent> CameraDollySpline;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<USplineComponent> AimDollySpline;
 	
 	// 붐 끝단 카메라. 자체 회전 없음(붐이 회전 담당).
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -112,6 +121,9 @@ protected:
 	// 락온 중 최고 이동속도 
 	UPROPERTY(EditAnywhere, Category = "LockOn", meta = (ClampMin = "50.0", ClampMax = "800.0"))
 	float LockOnMoveSpeed = 280.f;
+
+	UPROPERTY(EditAnywhere, Category = "Aim", meta = (ClampMin = "50.0", ClampMax = "800.0"))
+	float AimMoveSpeed = 167.f;
 	
 public:
 	UComboComponent* GetComboComponent() const {return ComboComp;}
