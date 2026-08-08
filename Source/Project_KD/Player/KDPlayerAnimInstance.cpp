@@ -42,6 +42,7 @@ void UKDPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	CachedActorRotation = OwningPlayer->GetActorRotation();
 	CachedControlYaw = OwningPlayer->GetControlRotation().Yaw;
 	CachedRailAlpha = OwningPlayer->GetCameraRailAlpha();
+	CachedAimPitchScale = OwningPlayer->GetAimPitchScale();
 	CachedAcceleration = MovementComp ? MovementComp->GetCurrentAcceleration() : FVector::ZeroVector;
 	CachedJumpCount = OwningPlayer ? OwningPlayer->JumpCurrentCount : 0;
 
@@ -79,7 +80,7 @@ void UKDPlayerAnimInstance::NativeThreadSafeUpdateAnimation(float DeltaSeconds)
 	TurnYawOffset = FMath::FindDeltaAngleDegrees(CachedActorRotation.Yaw, CachedControlYaw);
 	
 	// AimOffset 축 값  조준 X 0 = 중앙 = 상체 유지
-	AimPitch = bIsAiming ? (CachedRailAlpha * 2.f - 1.f) : 0.f;
+	AimPitch = bIsAiming ? FMath::Clamp((CachedRailAlpha * 2.f - 1.f) * CachedAimPitchScale, -1.f, 1.f) : 0.f;
 	AimYaw   = bIsAiming ? FMath::Clamp(TurnYawOffset / AimYawRange, -1.f, 1.f) : 0.f;
 
 	const FVector AccelDir = CachedAcceleration.GetSafeNormal2D();

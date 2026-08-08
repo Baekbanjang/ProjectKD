@@ -124,12 +124,17 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Aim", meta = (ClampMin = "50.0", ClampMax = "800.0"))
 	float AimMoveSpeed = 167.f;
+
+	UPROPERTY(EditAnywhere, Category = "Aim", meta = (ClampMin = "0.05", ClampMax = "1.0"))
+	float AimPitchScale = 0.33f;
 	
 public:
 	UComboComponent* GetComboComponent() const {return ComboComp;}
 	ULockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
+	
 	// 마우스 상하 각도 0~1  애님 조준용
 	float GetCameraRailAlpha() const;
+	float GetAimPitchScale() const { return AimPitchScale; }
 
 	bool IsSprinting() const;     
 	bool IsFullSprinting() const; 
