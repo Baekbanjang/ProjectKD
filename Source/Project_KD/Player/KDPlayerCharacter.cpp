@@ -387,20 +387,14 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC) return;
 
-	// 제자리 턴 — 가던 방향 반대로 입력하면 Turn 어빌리티
+	// 제자리 턴 — 가던 방향 반대로 입력하면 Turn 어빌리티. 상태 조건은 GA_Turn의 ActivationBlockedTags 담당
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
 	{
 		const FVector Accel = Move->GetCurrentAcceleration(); // 지금 누르고 있는 입력 방향
-		const bool bGrounded = !Move->IsFalling(); // 땅 유무
-		const bool bFree = !ASC->HasMatchingGameplayTag(GameplayTags::State_Character_LockOn); // 락온 X
-		const bool bTurning = ASC->HasMatchingGameplayTag(GameplayTags::State_Movement_Turning); // 이미 턴 X
-		const bool bInCombat = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InCombat); // 전투모드 X
-
-		// b변수 4개 + 입력 있는지, 현재 움직이는 지
-		if (bGrounded && bFree && !bTurning && !bInCombat && !Accel.IsNearlyZero() && GetVelocity().Size2D() > 50.f)
+		if (!Accel.IsNearlyZero() && GetVelocity().Size2D() > 50.f)
 		{
-			// 지금 메시가 보는 방향(ActorYaw)과 가고 싶은 방향(입력Yaw)의 부호있는 각도 차.
-			// 0=정면, +-180=정반대. FindDeltaAngleDegrees가 -180~180으로 정규화해줌.
+			// 지금 메시가 보는 방향(ActorYaw)과 가고 싶은 방향(입력Yaw)의 부호있는 각도 차
+			// 0=정면, +-180=정반대. FindDeltaAngleDegrees가 -180~180으로 정규화
 			const float Angle = FMath::FindDeltaAngleDegrees(GetActorRotation().Yaw, Accel.Rotation().Yaw);
 			if (FMath::Abs(Angle) >= 135.f)
 			{
@@ -482,6 +476,11 @@ void AKDPlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, u
 		ASC->AddLooseGameplayTag(GameplayTags::State_Movement_InAir);
 	else
 		ASC->RemoveLooseGameplayTag(GameplayTags::State_Movement_InAir);
+}
+
+float AKDPlayerCharacter::GetCameraRailAlpha() const
+{
+	return CameraBoom ? CameraBoom->GetRailAlpha() : 0.f;
 }
 
 bool AKDPlayerCharacter::IsSprinting() const

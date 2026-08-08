@@ -117,9 +117,25 @@ void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
 
 void AKDPlayerController::Handle_Look(const FInputActionValue& Value)
 {
+	// 기능 : 마우스 입력에 감도를 곱해 시점 회전
 	const FVector2D Axis = Value.Get<FVector2D>();
-	AddYawInput(Axis.X * LookSensitivityYaw);
-	AddPitchInput(Axis.Y * LookSensitivityPitch);
+	
+	// 조준 중엔 배율을 낮춰 정밀 조준
+	float Scale = 1.f;
+	float PitchSign = 1.f;   // 상하 반전 여부
+	if (const UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn()))
+	{
+		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
+		{
+			Scale = AimSensitivityScale;
+			if (bInvertAimPitch) // 조준 상하반전 활성화 시
+			{
+				PitchSign = -1.f;
+			}
+		}
+	}
+	AddYawInput(Axis.X * LookSensitivityYaw * Scale);
+	AddPitchInput(Axis.Y * LookSensitivityPitch * Scale * PitchSign);
 }
 
 void AKDPlayerController::Handle_Jump()

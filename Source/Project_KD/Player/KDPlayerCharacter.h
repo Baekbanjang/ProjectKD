@@ -128,6 +128,8 @@ protected:
 public:
 	UComboComponent* GetComboComponent() const {return ComboComp;}
 	ULockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
+	// 마우스 상하 각도 0~1  애님 조준용
+	float GetCameraRailAlpha() const;
 
 	bool IsSprinting() const;     
 	bool IsFullSprinting() const; 

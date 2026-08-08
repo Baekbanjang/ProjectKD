@@ -30,9 +30,19 @@ protected:
 	// 마우스 감도 좌우
 	UPROPERTY(EditAnywhere, Category = "Input|Look")
 	float LookSensitivityYaw = 1.f;
+	
 	// 상하
 	UPROPERTY(EditAnywhere, Category = "Input|Look")
 	float LookSensitivityPitch = 0.7f;
+
+	// 조준 중 감도 배율
+	UPROPERTY(EditAnywhere, Category = "Input|Look", meta = (ClampMin = "0.1", ClampMax = "1.0"))
+	float AimSensitivityScale = 0.5f;
+
+	// 조준 중 상하 반전
+	UPROPERTY(EditAnywhere, Category = "Input|Look")
+	bool bInvertAimPitch = true;
+	
 	//----------------------------------------------------------
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Movement")

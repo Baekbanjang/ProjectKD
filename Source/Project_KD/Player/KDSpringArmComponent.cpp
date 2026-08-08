@@ -18,6 +18,7 @@ void UKDSpringArmComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	UpdateAimAlpha(DeltaTime);
+	RecenterPitchOnAimExit(DeltaTime);
 	ApplyRailPosition();   // 레일에서 프레임마다 위치 확보
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);   // 랙 | 충돌 | 소켓 갱신
 	UpdateLookRotation(); // 회전 업데이트
@@ -66,9 +67,9 @@ void UKDSpringArmComponent::UpdateAimAlpha(float DeltaTime)
 		CachedASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
 	}
 	// 조준 여부
-	const bool bAiming = CachedASC.IsValid()
+	bAimActive = CachedASC.IsValid()
 		&& CachedASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming);
-	AimAlpha = FMath::FInterpTo(AimAlpha, bAiming ? 1.f : 0.f, DeltaTime, AimBlendSpeed);
+	AimAlpha = FMath::FInterpTo(AimAlpha, bAimActive ? 1.f : 0.f, DeltaTime, AimBlendSpeed);
 }
 
 FVector UKDSpringArmComponent::SampleRail(const USplineComponent* Rail, float Alpha) const
@@ -99,8 +100,16 @@ void UKDSpringArmComponent::ApplyRailPosition()
 
 	// 각도 범위 0~1 범위로 변경
 	const float Alpha = FMath::Clamp((Pitch - PitchAtStart) / (PitchAtEnd - PitchAtStart), 0.f, 1.f);
+	RailAlpha = Alpha;   // 조준 각도로 사용
 	
-	FVector Point = SampleRail(DollySpline, Alpha);
+	// 평상시 레일 진행도 - 조준 해제 중엔 복귀 지점에서 출발
+	float NormalAlpha = Alpha;
+	if (bRecenterPitchOnAimExit && !bAimActive)
+	{
+		NormalAlpha = FMath::Lerp(Alpha, AimExitRecenterAlpha, AimAlpha);
+	}
+	
+	FVector Point = SampleRail(DollySpline, NormalAlpha);
 
 	// 조준 중이면 조준 스플라인과 섞음
 	if (AimDollySpline && AimAlpha > KINDA_SMALL_NUMBER)
@@ -136,4 +145,22 @@ void UKDSpringArmComponent::UpdateLookRotation()
 	
 	// GetSocketTransform이 GetComponentTransform을 다시 곱해 월드로 복원
 	RelativeLookRotation = GetComponentQuat().Inverse() * WorldLook.Quaternion();
+}
+
+void UKDSpringArmComponent::RecenterPitchOnAimExit(float DeltaTime)
+{
+	// 기능 : 조준을 놓는 동안만 컨트롤 피치를 레일 중앙으로 끌어옴
+	if (!bRecenterPitchOnAimExit || bAimActive) return;
+	if (AimAlpha <= KINDA_SMALL_NUMBER) return;   // 블렌드 종료 
+	
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	AController* OwnerController = OwnerPawn ? OwnerPawn->GetController() : nullptr;
+	if (!OwnerController) return;
+	
+	const float TargetPitch = FMath::Lerp(PitchAtStart, PitchAtEnd, AimExitRecenterAlpha);
+	
+	FRotator Rot = OwnerController->GetControlRotation();
+	
+	Rot.Pitch = FMath::FInterpTo(FRotator::NormalizeAxis(Rot.Pitch), TargetPitch, DeltaTime, AimBlendSpeed);
+	OwnerController->SetControlRotation(Rot);
 }

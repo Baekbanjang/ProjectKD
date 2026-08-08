@@ -61,6 +61,18 @@ public:
 	// 조준 여부 - AimOffset 전환
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsAiming = false;
+
+	// 조준 상하  아래 -1 | 정면 0 | 위 +1  조준 X 0
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	float AimPitch = 0.f;
+
+	// 조준 좌우  왼쪽 -1 | 정면 0 | 오른쪽 +1  조준 X 0
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	float AimYaw = 0.f;
+
+	// AimYaw 최대가 되는 좌우 각도
+	UPROPERTY(EditDefaultsOnly, Category = "Aim", meta = (ClampMin = "10.0", ClampMax = "180.0"))
+	float AimYawRange = 60.f;
     
     // 주변 적 존재(InCombat 태그). Peaceful<->Battle 전환
     UPROPERTY(BlueprintReadOnly, Category = "State")
@@ -97,7 +109,7 @@ private:
 	
 	int32 CachedJumpCount = 0;
 	int32 PrevJumpCount = 0;
-
-	// 전투 타이머.
+	
 	float CachedControlYaw = 0.f;
+	float CachedRailAlpha = 0.f;   // 마우스 상하 각도 0~1  게임스레드 스냅샷
 };
