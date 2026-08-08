@@ -2,7 +2,7 @@
 
 
 #include "AbilitySystem/Abilities/Player/GA_Shoot.h"
-
+#include "Animation/AnimMontage.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
 UGA_Shoot::UGA_Shoot()
