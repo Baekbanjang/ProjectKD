@@ -33,12 +33,19 @@ void UGA_AimMode::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 			StartTask->ReadyForActivation();   // 태스크 시작 | 종료 콜백 X
 		}
 	}
-	{
-		const FName SlotName = (AimStartMontage && AimStartMontage->SlotAnimTracks.Num() > 0)
-			? AimStartMontage->SlotAnimTracks[0].SlotName : NAME_None;
-		UE_LOG(LogTemp, Warning, TEXT("[KD][AimMode] Montage=%s Task=%s Slot=%s"),
-			*GetNameSafe(AimStartMontage), StartTask ? TEXT("OK") : TEXT("NULL"), *SlotName.ToString());
-	}
+	
 	// 안전 타이머 X — 홀드 GA
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+}
+
+void UGA_AimMode::OnCleanup(bool bWasCancelled)
+{
+	// 조준 해제 몽타주 — 어빌리티가 끝나는 중이라 태스크 X, 애님에 직접
+	if (!AimEndMontage) return;
+	
+	const FGameplayAbilityActorInfo* Info = GetCurrentActorInfo();
+	UAnimInstance* AnimInst = Info ? Info->GetAnimInstance() : nullptr;
+	if (!AnimInst) return;
+	
+	AnimInst->Montage_Play(AimEndMontage, MontagePlayRate);
 }

@@ -15,6 +15,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_AirCombo)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Execution)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Aim)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Shoot)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Movement_Turn)
 

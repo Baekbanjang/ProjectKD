@@ -184,6 +184,15 @@ void AKDPlayerCharacter::TryLightAttack() const
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC) return;
 
+	// 조준 중이면 근접 대신 사격
+	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
+	{
+		FGameplayTagContainer ShootTags;
+		ShootTags.AddTag(GameplayTags::Ability_Mugong_Shoot);
+		ASC->TryActivateAbilitiesByTag(ShootTags);
+		return; // 발사 실패해도 근접 공격 X
+	}
+
 	// 퍼펙트 닷지 직후 -> 찌르기 
 	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady))
 	{
