@@ -103,6 +103,7 @@
 | 2026-08-04 | [hitstop-component](dev-logs/2026-08-04-hitstop-component.md) | ★히트스톱을 액터 소유 컴포넌트로 — 정지가 노티를 끊어 데미지·판정이 중복되던 버그. CustomTimeDilation=0만 유효 |
 | 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
 | 2026-08-08 | [aim-offset](dev-logs/2026-08-08-aim-offset.md) | ★조준 상체 오프셋 — 레일 진행도를 -1~+1로 정규화(SB 실측), Mesh Space 판단 근거, 감도 배율이 필요했던 이유(134도 대 42도) |
+| 2026-08-08 | [gun-fire-crosshair](dev-logs/2026-08-08-gun-fire-crosshair.md) | ★총 2단계 — 사격 GA(상속 대신 태그 조건표), 해제 몽타주는 태스크로 못 켠다, 첫 화면 HUD, `Set Visibility(self)`가 Tick을 죽인 함정, SB 발사 확산 커브 실측 |
 
 ## handoffs/ — 인수인계
 
