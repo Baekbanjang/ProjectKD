@@ -66,6 +66,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_CounterReady)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_AirComboLock)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Aiming)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Shooting)
 
 
 	// Poise-break 경직 상태. 적 GA가 ActivationBlockedTags로 자가 차단(BP Class Defaults 설정). 적 전용(플레이어 비대칭).
@@ -150,6 +151,7 @@ namespace GameplayTags
 	
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_DashTrail)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_Execution)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_ShootRecoil);
 
 
 	// Input 

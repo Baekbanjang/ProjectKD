@@ -72,7 +72,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_CounterReady, "State.Combat.CounterReady")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_AirComboLock, "State.Combat.AirComboLock")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Aiming, "State.Combat.Aiming")
-
+	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Shooting, "State.Combat.Shooting")
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_TraceBegin, "Event.Montage.TraceBegin")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Shoot, "Event.Montage.Shoot")
@@ -110,6 +110,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_PerfectDodge, "GameplayCue.Combat.PerfectDodge")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_HitReact, "GameplayCue.Combat.HitReact")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_Execution, "GameplayCue.Camera.Execution")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_ShootRecoil, "GameplayCue.Camera.ShootRecoil")
 
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_CounterThrust, "GameplayCue.Combat.CounterThrust")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_DashTrail, "GameplayCue.Camera.DashTrail")
