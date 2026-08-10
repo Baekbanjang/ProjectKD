@@ -6,8 +6,11 @@
 #include "AbilitySystem/Abilities/GA_ActionBase.h"
 #include "GA_Shoot.generated.h"
 
+class UAnimMontage;      
+class UGameplayEffect;   
+class AKDProjectile;
 // 사격 GA — 조준 중 좌클릭
-// 상체 슬롯 발사 몽타주 1회 재생 발사체는 2단계
+// 상체 슬롯 몽타주 재생 + 발사 노티 프레임에 총알 스폰
 UCLASS()
 class PROJECT_KD_API UGA_Shoot : public UGA_ActionBase
 {
@@ -24,8 +27,27 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage", meta = (ClampMin = "0.1", ClampMax = "3.0"))
 	float MontagePlayRate = 1.0f;
+
+	// 스폰할 총알 BP
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
+	TSubclassOf<AKDProjectile> ProjectileClass;
+
+	// 총알이 운반할 데미지 GE
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+
+	// 총구 소켓
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
+	FName MuzzleSocket = TEXT("Muzzle");
+
+	// 조준 트레이스 사거리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot", meta = (ClampMin = "1000.0", ClampMax = "50000.0"))
+	float AimTraceRange = 10000.f;
 	
 private:
 	UFUNCTION()
 	void OnMontageFinished();
+
+	UFUNCTION()
+	void OnShootEvent(FGameplayEventData Payload);
 };
