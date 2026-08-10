@@ -195,7 +195,7 @@ bool UGA_Dodge::IsInPerfectDodgeWindow(const FGameplayAbilityActorInfo* ActorInf
         // 발사체 경로 — 플래그 검사
         if (const AKDProjectile* Proj = Cast<AKDProjectile>(Other))
         {
-            if (Proj->IsPerfectDodgeable())
+            if (Proj->IsPerfectDodgeable() && Proj->GetInstigator() != Avatar)
             {
                 return true;
             }
