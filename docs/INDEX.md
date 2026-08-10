@@ -12,7 +12,7 @@
 
 > ★ **[2026-07-30 핸드오프 — 2세션 병행 체제](handoffs/2026-07-30-parallel-sessions.md)** — **현재 진행상황·다음 할 일·보류 목록·레인 구분.** 세션 시작 시 여기부터.
 
-최신 dev-log: [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
+최신 dev-log: [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
 - **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
@@ -104,6 +104,7 @@
 | 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
 | 2026-08-08 | [aim-offset](dev-logs/2026-08-08-aim-offset.md) | ★조준 상체 오프셋 — 레일 진행도를 -1~+1로 정규화(SB 실측), Mesh Space 판단 근거, 감도 배율이 필요했던 이유(134도 대 42도) |
 | 2026-08-08 | [gun-fire-crosshair](dev-logs/2026-08-08-gun-fire-crosshair.md) | ★총 2단계 — 사격 GA(상속 대신 태그 조건표), 해제 몽타주는 태스크로 못 켠다, 첫 화면 HUD, `Set Visibility(self)`가 Tick을 죽인 함정, SB 발사 확산 커브 실측 |
+| 2026-08-10 | [gun-projectile](dev-logs/2026-08-10-gun-projectile.md) | ★총 3단계 — 발사체 결함 2건(무성 통과·자기 총알 퍼펙트회피) + 스폰 경로를 `KDAbilityStatics` 하나로. `Muzzle Socket` 무성 실패, CDO가 비어도 미설정이 아닌 사례 |
 
 ## handoffs/ — 인수인계
 

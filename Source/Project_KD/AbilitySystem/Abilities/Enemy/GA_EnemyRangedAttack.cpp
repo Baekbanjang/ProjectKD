@@ -2,19 +2,15 @@
 
 #include "AbilitySystem/Abilities/Enemy/GA_EnemyRangedAttack.h"
 
-#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/AS_Combat.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Animation/AnimMontage.h"
 #include "Combat/KDProjectile.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Engine/World.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "KDGameplayTags.h"
+#include "AbilitySystem/Library/KDAbilityStatics.h"
 
 void UGA_EnemyRangedAttack::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle,
@@ -76,16 +72,8 @@ void UGA_EnemyRangedAttack::OnReleaseProjectile(FGameplayEventData Payload)
 	}
 
 	// 발사 위치 = 메시 소켓(없으면 actor 위치).
-	FVector SpawnLoc = Avatar->GetActorLocation();
+	const FVector SpawnLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
 	FRotator SpawnRot = Avatar->GetActorRotation();
-	if (ACharacter* Char = Cast<ACharacter>(Avatar))
-	{
-		if (USkeletalMeshComponent* Mesh = Char->GetMesh())
-		{
-			if (MuzzleSocket != NAME_None && Mesh->DoesSocketExist(MuzzleSocket))
-				SpawnLoc = Mesh->GetSocketLocation(MuzzleSocket);
-		}
-	}
 
 	// 조준 = muzzle→플레이어 직선(높이차/공중 더블점프 대응). actor forward(수평)면 점프한 플레이어를 못 맞춤.
 	// 싱글플레이어 1명 가정, 현재위치 조준(리딩 없음). 못 찾으면 actor rotation 폴백(수평).
@@ -95,25 +83,8 @@ void UGA_EnemyRangedAttack::OnReleaseProjectile(FGameplayEventData Payload)
 		if (!AimDir.IsNearlyZero()) SpawnRot = AimDir.Rotation();
 	}
 
-	// 데미지 Spec을 근접 OnWeaponHit과 동일하게 빌드 → 발사체가 들고 가게 넘김.
-	const float AttackPower = ASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute());
-	FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
-	Context.AddSourceObject(Avatar);
-	FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
-	if (!SpecHandle.IsValid()) return;
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-		SpecHandle, GameplayTags::SetByCaller_AttackPower, AttackPower);
-
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	FActorSpawnParameters Params;
-	Params.Owner = Avatar;
-	Params.Instigator = Cast<APawn>(Avatar);
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AKDProjectile* Projectile = World->SpawnActor<AKDProjectile>(ProjectileClass, SpawnLoc, SpawnRot, Params);
-	if (Projectile)
-		Projectile->InitProjectile(SpecHandle, ASC, GetAssetTags());
+	UKDAbilityStatics::SpawnDamageProjectile(
+		ASC, Avatar, ProjectileClass, DamageEffectClass, SpawnLoc, SpawnRot, GetAssetTags());
 }
 
 void UGA_EnemyRangedAttack::OnMontageCompleted()

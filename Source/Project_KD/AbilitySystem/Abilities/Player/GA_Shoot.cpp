@@ -3,16 +3,14 @@
 
 #include "AbilitySystem/Abilities/Player/GA_Shoot.h"
 
-#include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
 #include "Animation/AnimMontage.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "AbilitySystem/Attributes/AS_Combat.h"
 #include "Combat/KDProjectile.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
-#include "Components/SkeletalMeshComponent.h"
+#include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
@@ -85,12 +83,7 @@ void UGA_Shoot::OnShootEvent(FGameplayEventData Payload)
 	}
 	
 	// 총구 위치
-	FVector MuzzleLoc = Avatar->GetActorLocation();
-	if (USkeletalMeshComponent* Mesh = Avatar->GetMesh())
-	{
-		if (MuzzleSocket != NAME_None && Mesh->DoesSocketExist(MuzzleSocket))
-			MuzzleLoc = Mesh->GetSocketLocation(MuzzleSocket);
-	}
+	const FVector MuzzleLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
 	
 	// 시점 = 카메라 실제 값  컨트롤 피치는 레일 눈금이라 시선 각도 X
 	FVector ViewLoc = MuzzleLoc;
@@ -113,22 +106,6 @@ void UGA_Shoot::OnShootEvent(FGameplayEventData Payload)
 	const FRotator SpawnRot = (AimPoint - MuzzleLoc).Rotation();
 	
 	// 데미지 Spec
-	const float AttackPower = ASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute());
-	FGameplayEffectContextHandle Context = ASC->MakeEffectContext(); // 컨텍스트 핸들 생성
-	Context.AddSourceObject(Avatar); // 컨텍스트에 데미지 주체 추가
-	
-	FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
-	if (!SpecHandle.IsValid()) return;
-
-	// 공격력 수치 주입
-	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-		SpecHandle, GameplayTags::SetByCaller_AttackPower, AttackPower);
-	FActorSpawnParameters Params;
-	Params.Owner = Avatar;
-	Params.Instigator = Avatar;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	if (AKDProjectile* Projectile = World->SpawnActor<AKDProjectile>(ProjectileClass, MuzzleLoc, SpawnRot, Params))
-	{
-		Projectile->InitProjectile(SpecHandle, ASC, GetAssetTags());
-	}
+	UKDAbilityStatics::SpawnDamageProjectile(
+		ASC, Avatar, ProjectileClass, DamageEffectClass, MuzzleLoc, SpawnRot, GetAssetTags());
 }
