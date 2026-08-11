@@ -7,15 +7,17 @@
 class UNiagaraSystem;
 class UNiagaraComponent;
 
-// Drag onto Montage timeline to drive the weapon's Niagara trail VFX.
-// Begin → spawns the system attached to SocketName and pushes blade dimensions.
-// End → deactivates so the ribbon fades out naturally instead of cutting.
+// 몽타주 타임라인에 배치 — 무기 나이아가라 트레일 제어
+// Begin = SocketName에 시스템 부착 + 등록된 유저 파라미터 전달
+// End = Deactivate로 리본 자연 소멸
 UCLASS(meta = (DisplayName = "Weapon Trail"))
 class PROJECT_KD_API UANS_WeaponTrail : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
+	UANS_WeaponTrail();
+	
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
@@ -35,13 +37,18 @@ protected:
 		meta = (DisplayName = "붙일 소켓", ToolTip = "무기 메시의 소켓명. 검은 Sword_Bottom(손잡이)"))
 	FName SocketName = TEXT("Sword_Bottom");
 
+	// 나이아가라 유저 파라미터 - float / Color / Vector
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail",
-		meta = (DisplayName = "칼 길이 (NS 변수)", ToolTip = "나이아가라의 SwordLength 변수로 전달"))
-	float SwordLength = 120.f;
+		meta = (DisplayName = "float 파라미터", ToolTip = "키 = NS 유저 파라미터 이름. NS마다 다름"))
+	TMap<FName, float> FloatParams;
 	
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail",
-		meta = (DisplayName = "트레일 폭 (NS 변수)", ToolTip = "나이아가라의 TrailWidth 변수로 전달"))
-	float TrailWidth = 100.f;
+		meta = (DisplayName = "Color 파라미터", ToolTip = "키 = NS 유저 파라미터 이름"))
+	TMap<FName, FLinearColor> ColorParams;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Trail",
+		meta = (DisplayName = "Vector 파라미터", ToolTip = "키 = NS 유저 파라미터 이름"))
+	TMap<FName, FVector> VectorParams;
 	
 	UPROPERTY(EditAnywhere, Category = "Weapon Trail", meta = (DisplayName = "위치 보정"))
 	FVector LocationOffset = FVector::ZeroVector;

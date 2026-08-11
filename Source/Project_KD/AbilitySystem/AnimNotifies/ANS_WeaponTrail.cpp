@@ -4,11 +4,15 @@
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
-void UANS_WeaponTrail::NotifyBegin(
-	USkeletalMeshComponent* MeshComp,
-	UAnimSequenceBase* Animation,
-	float TotalDuration,
-	const FAnimNotifyEventReference& EventReference)
+UANS_WeaponTrail::UANS_WeaponTrail()
+{
+	// 기능 : 현재 NS 계열의 기본 파라미터 등록
+	FloatParams.Add(TEXT("Trail Width"), 200.f);      // 트레일 폭
+	FloatParams.Add(TEXT("Lifetime_Trail"), 0.12f);   // 라이프타임
+}
+
+void UANS_WeaponTrail::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+                                   float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
@@ -42,8 +46,19 @@ void UANS_WeaponTrail::NotifyBegin(
 			EAttachLocation::SnapToTarget, true);
 	if (!IsValid(Trail)) return;
 	
-	Trail->SetVariableFloat(TEXT("SwordLength"), SwordLength);   // 무기 길이
-	Trail->SetVariableFloat(TEXT("TrailWidth"), TrailWidth);     // 트레일 폭
+	// 노티에 등록된 이름만 전달
+	for (const TPair<FName, float>& P : FloatParams)
+	{
+		Trail->SetVariableFloat(P.Key, P.Value);
+	}
+	for (const TPair<FName, FLinearColor>& P : ColorParams)
+	{
+		Trail->SetVariableLinearColor(P.Key, P.Value);
+	}
+	for (const TPair<FName, FVector>& P : VectorParams)
+	{
+		Trail->SetVariableVec3(P.Key, P.Value);
+	}
 
 	//  NotifyEnd 없이 사라진 경우(액터 파괴 / 레벨 전환) 대비
 	for (auto It = SpawnedTrails.CreateIterator(); It; ++It)
@@ -53,9 +68,7 @@ void UANS_WeaponTrail::NotifyBegin(
 	SpawnedTrails.Add(MeshComp, Trail);   // 액터별 등록 
 }
 
-void UANS_WeaponTrail::NotifyEnd(
-	USkeletalMeshComponent* MeshComp,
-	UAnimSequenceBase* Animation,
+void UANS_WeaponTrail::NotifyEnd(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
