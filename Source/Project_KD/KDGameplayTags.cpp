@@ -76,6 +76,7 @@ namespace GameplayTags
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_TraceBegin, "Event.Montage.TraceBegin")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_Shoot, "Event.Montage.Shoot")
+	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_ShotBlast, "Event.Montage.ShotBlast")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Montage_TraceEnd, "Event.Montage.TraceEnd")
 
 	UE_DEFINE_GAMEPLAY_TAG(Event_Rush_Warp, "Event.Rush.Warp")

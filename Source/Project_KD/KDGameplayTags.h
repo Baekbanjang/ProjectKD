@@ -98,6 +98,7 @@ namespace GameplayTags
 	// Animation events sent from AnimNotify, consumed by GA via WaitGameplayEvent.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_TraceBegin)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Shoot)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_ShotBlast)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_TraceEnd)
 
 	// 돌진 재조준 — 런지 윈도우 시작 시 AN_SendGameplayEvent가 발화, GA_EnemyRushAttack이 현재 위치로 워프 타겟 재계산(stale-overshoot 방지).

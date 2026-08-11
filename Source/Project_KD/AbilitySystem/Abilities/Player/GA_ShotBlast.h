@@ -1,0 +1,60 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "AbilitySystem/Abilities/GA_ActionBase.h"
+#include "GA_ShotBlast.generated.h"
+
+class UHitConfirmProfile;
+// 콤보 속 총 발사 판정 GA 
+// AN_ShotBlast의 Event.Montage.ShotBlast로 자동 활성 후 즉시 종료
+// 판정 = 총구 콘 히트스캔. Overlap 수집 -> 각도 필터 -> 시야 확인
+UCLASS()
+class PROJECT_KD_API UGA_ShotBlast : public UGA_ActionBase
+{
+	GENERATED_BODY()
+
+public:
+	UGA_ShotBlast();
+
+protected:
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	// 총구 소켓 — 캐릭터 스켈레톤 소속
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot")
+	FName MuzzleSocket = TEXT("Gun_Muzzle");
+	
+	// 사거리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "100.0", ClampMax = "3000.0"))
+	float ShotRange = 500.f;
+	
+	// 총알 확산 반(Half)각 — 총구 정면 기준
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "1.0", ClampMax = "89.0"))
+	float ShotHalfAngle = 20.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+	
+	// 공격자 히트 스탑 시간
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.0", ClampMax = "0.5"))
+	float AttackerHitStopDuration = 0.06f;
+	
+	// 타격감 큐 크기
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float HitConfirmMagnitude = 1.0f;
+	
+	// 무기별 타격감 DA
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
+	TObjectPtr<UHitConfirmProfile> HitConfirmProfile;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Debug")
+	bool bDrawDebug = false;
+
+private:
+	// 범위 안 유효 타겟 수집
+	void GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, TArray<FHitResult>& OutHits) const;
+	
+	// 대상 1명 처리 — 데미지 + 히트 이벤트 + 타격감
+	bool ApplyHit(const FHitResult& Hit);
+};
