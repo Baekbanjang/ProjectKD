@@ -8,7 +8,11 @@
 
 ## 0. 작업 영역
 
-- **`.h` / `.cpp` = AI** — 작성자 의도 1~2줄 → AI draft → 작성자 30초 review → 승인/수정 1줄. architecture 통제권은 작성자 (의도 = 계약)
+- **`.h` / `.cpp` = 작성자가 직접 작성. AI는 설계·가이드까지** (2026-08-12 변경) — 작성자 의도 1~2줄 → **AI가 설계 + 넣을 위치·코드 제시** → **작성자가 직접 입력** → AI 검토. architecture 통제권은 작성자 (의도 = 계약)
+  - **이유 = 작성자가 코드를 직접 보고 이해하기 위함.** AI가 대신 치면 그 기회가 사라진다
+  - **AI의 코드 편집은 작성자가 "네가 수정해"라고 명시 요청할 때만.** "구현해줘" "코드 수정하고 빌드 가자"는 편집 허가 X
+  - 가이드 형식 = `파일 경로 : 줄 위치` + 코드 블록 + include·전방선언 등 부수 변경까지
+  - **서브에이전트에도 동일 적용** — 조사·설계까지만, Edit/Write 위임 금지
 - **BP / 에셋 / Editor = 사람 원칙** — 단, 아래는 Unreal MCP로 AI 허용 (2026-07-12 결정):
   - 테스트맵/그레이박스 생성, 몽타주 노티파이 배치, 일괄 반복작업(수치 일괄 변경 등), 조회/스크린샷/PIE 검증
   - **본편 레벨·핵심 BP 로직·아트 에셋은 사람 유지**
@@ -51,9 +55,9 @@
 
 1. **작성자 의도** (1~2줄) — 클래스명 + 책임 + 핵심 노출
    - 예: `"HitStop 컴포넌트, 0.05~0.15s 시간 제어, BP에서 Duration 노출"`
-2. **AI `.h` draft** — 의도 직결 멤버만 (사변적 virtual / hook / "혹시나" 추가 금지). UE5 매크로(UPROPERTY/UFUNCTION) + TObjectPtr + Null 체크 자동. 가정 1~2줄 보고
+2. **AI `.h` 설계 제시** — 의도 직결 멤버만 (사변적 virtual / hook / "혹시나" 추가 금지). UE5 매크로(UPROPERTY/UFUNCTION) + TObjectPtr + Null 체크 자동. 가정 1~2줄 보고. **작성자가 입력**
 3. **작성자 review** (30초) — 승인 / 멤버 1줄 수정 / 가정 거부
-4. **AI `.cpp`** — 헤더 시그니처 그대로. 1회용 인라인 OK, 2회+ 시 함수 분리 (Karpathy YAGNI)
+4. **AI `.cpp` 설계 제시** — 헤더 시그니처 그대로. 1회용 인라인 OK, 2회+ 시 함수 분리 (Karpathy YAGNI). **작성자가 입력 후 AI 검토**
 
 **Edge cases:**
 
@@ -65,16 +69,16 @@
 
 **합격본 = `Source/Project_KD/Combat/KDProjectile.h` / `.cpp`.** 새 주석은 이 파일을 기준으로 삼는다.
 
-| 규칙 | X | O |
-| --- | --- | --- |
-| **명사구로 끝낸다** (문장체 X) | `발사체는 Pawn이 아니다` | `발사체 = Projectile` |
-| **이게 무엇인지만** (왜·누가 읽는지 X) | `퍼펙트 회피 대상 여부 — GA_Dodge가 읽음` | `퍼펙트 회피 대상 여부` |
-| **부정은 `X` / `x`** | `인스턴싱 안 됨` | `인스턴싱 X` |
-| **특수문자 X** (`★` `⚠️` 한자) | `★ 필수` | `필수` — `—` `\|` `/` `=` `→` 는 OK |
-| **결과·경고 문장 삭제** | `안 하면 판정이 조용히 죽는다` | (주석에서 빼고 dev-log·대화로) |
-| **불리언은 `~ 유무`** | `조준 해제 시 피치 복귀` | `피치 중앙 복귀 유무` |
-| **추상 표현 X → 실제 변수명** | `위치 = 부모 결과` | `위치 = RelativeSocketLocation` |
-| **비유·의인화 X** | `카메라가 설 자리` | `카메라 위치` |
+| 규칙                                   | X                                         | O                                   |
+| -------------------------------------- | ----------------------------------------- | ----------------------------------- |
+| **명사구로 끝낸다** (문장체 X)         | `발사체는 Pawn이 아니다`                  | `발사체 = Projectile`               |
+| **이게 무엇인지만** (왜·누가 읽는지 X) | `퍼펙트 회피 대상 여부 — GA_Dodge가 읽음` | `퍼펙트 회피 대상 여부`             |
+| **부정은 `X` / `x`**                   | `인스턴싱 안 됨`                          | `인스턴싱 X`                        |
+| **특수문자 X** (`★` `⚠️` 한자)         | `★ 필수`                                  | `필수` — `—` `\|` `/` `=` `→` 는 OK |
+| **결과·경고 문장 삭제**                | `안 하면 판정이 조용히 죽는다`            | (주석에서 빼고 dev-log·대화로)      |
+| **불리언은 `~ 유무`**                  | `조준 해제 시 피치 복귀`                  | `피치 중앙 복귀 유무`               |
+| **추상 표현 X → 실제 변수명**          | `위치 = 부모 결과`                        | `위치 = RelativeSocketLocation`     |
+| **비유·의인화 X**                      | `카메라가 설 자리`                        | `카메라 위치`                       |
 
 - **함수 본문 첫 줄에 `// 기능 : ~`** — 헤더 선언부가 아니라 여는 중괄호 다음 줄
 - **계산 단계마다 위쪽 한 줄** — 무엇을 구하는 줄인지만
@@ -91,7 +95,7 @@
 ### 1-1. 금지 패턴
 
 - 싱글톤 금지 (UE5 Subsystem 제외)
-- `*Manager` 이름 클래스 금지
+- `*Manager` 이름 클래스 금지 — 단 **엔진 기반 클래스 상속으로 이름이 강제되는 경우 제외**(`APlayerCameraManager` 등)
 - GameInstance에 게임 로직 추가 금지 (런칭/영속성 관심사만)
 - **Pawn 500줄 초과 금지** → 컴포넌트 분리
 - **Component 300줄 초과 시 분리 검토**
@@ -102,7 +106,10 @@
 ### 1-2. 필수 패턴
 
 - 비주얼 / 오디오 효과 → **GameplayCue**
-- 데미지 계산 → **ExecCalc** (인라인 금지) — 단, 단순 케이스는 `SetByCaller` 1회성
+- **데미지 계산 = `SetByCaller` + 메타어트리뷰트 게이트웨이** (2026-08-12 명문화 — 실제 구현이 이쪽인데 룰이 반대로 적혀 있었다)
+  - 모든 데미지는 `UAS_Combat::IncomingDamage` 한 곳으로 들어와 `PostGameplayEffectExecute`에서 분기한다(전방판정·퍼펙트패링·일반패링·피격). **새 데미지 로직은 거기 붙인다**
+  - ExecCalc는 현재 **0개.** 계산이 여러 어트리뷰트를 곱하고 나누기 시작하면 그때 도입 검토
+  - ⚠️ `PostGameplayEffectExecute` **사후 로직 금지** — Health 0이면 `HandleDeath`가 동기 완료되므로 그 뒤에 코드 추가 X
 - 카메라 / HitStop / HitReact → **전용 Component**
 - 캐릭터 간 통신 → **GE Context** (직접 포인터 금지)
 - 영속성 → **SaveGameSubsystem**
@@ -119,9 +126,15 @@
 
 **금지:**
 
-- Component → Pawn (Owner 캐스팅 금지)
-- Component → Component (직접 참조 금지, 메시지/델리게이트 사용)
-- GA → Component 직접 참조 금지 (**GC 또는 GameplayEvent 경유** — 2026-08-03 개정. GC는 BP 큐라 파라미터 전달이 불편한 경우가 있어 GameplayEvent도 허용)
+- **Component → Pawn** — 엔진 기반 클래스(`APawn`/`ACharacter`) 캐스팅은 ✅ 허용(컨트롤러·시점 조회에 불가피). **구체 프로젝트 Pawn 캐스팅(`Cast<AKDPlayerCharacter>`)은 ❌ 금지** — 컴포넌트가 특정 캐릭터 전용으로 굳는다
+- **Component → Component** — 엔진 컴포넌트(`UCapsuleComponent`·`USkeletalMeshComponent` 등) 조회는 ✅ 허용. 엔진의 `FGameplayAbilityActorInfo::InitFromActor`가 쓰는 패턴이다. **우리 컴포넌트끼리의 직접 참조·상태 변경은 ❌ 금지** — 메시지/델리게이트
+- **GA → Component — 읽기 허용 / 구체 Pawn 캐스팅 금지** (2026-08-12 개정. 엔진 소스 실측으로 이전 룰을 뒤집음. 근거 = 볼트 `notes/언리얼/GAS_어빌리티_컴포넌트접근_룰근거.md`)
+  - ✅ **읽기(조회) 허용.** `FGameplayAbilityActorInfo`가 `SkeletalMeshComponent`·`AnimInstance`·`MovementComponent`를 `BlueprintReadOnly`로 이미 넘겨준다(`GameplayAbilityTypes.h:138`). `UGameplayAbility`에도 `GetOwningComponentFromActorInfo()`가 있다(`GameplayAbility.h:180`)
+  - ✅ 그 외 컴포넌트는 **`AvatarActor->FindComponentByClass<T>()`** — 엔진의 `InitFromActor` 자신이 이 방식을 쓴다(`GameplayAbilityTypes.cpp:23`)
+  - ❌ **구체 Pawn 클래스 캐스팅 금지** (`Cast<AKDPlayerCharacter>`). 이게 진짜 결합이다 — GA가 그 Pawn 전용으로 굳고 다른 Pawn에선 **에러도 로그도 없이 조용히 죽는다.** Epic 예제도 캐스팅은 하되 엔진 기반 클래스(`ACharacter`)까지만
+  - ❌ **컴포넌트 상태 변경(쓰기) 금지** — GameplayEvent / GC 경유
+  - **접근자는 `UGA_ActionBase` 한 곳에 모은다.** 이름은 Epic 규약 `Get○○ComponentFromActorInfo`
+  - ⚠️ `AvatarActor`는 **null이거나 기대한 타입이 아닐 수 있다** — ActorInfo는 할당(`OnRegister`)과 채움(`InitAbilityActorInfo`)이 2단계라 그 사이 구간이 정상 존재한다. 접근자에서 항상 null 체크
 - AS → 다른 시스템 (데이터만)
 
 ### 1-4. 슈퍼 싱글톤 방지 의식
@@ -194,7 +207,7 @@
 
 **대상**: 아키텍처 변경 / 새 Component / 새 GA / 새 `.h` / 200줄+ 변경
 
-1. **AI 코드 작성** (§0 프로토콜)
+1. **AI 코드 설계·가이드 -> 작성자 입력** (§0 프로토콜)
 2. **AI 설계 브리핑** — 클래스 목록+책임 / 의존성 방향 / 줄 수(§1 한도 대비)
 3. **본인 리뷰** — 설계가 의도에 맞는지 판단 (승인 / 수정 지시)
 4. **code-reviewer agent 검수** — §1·§2 위반, 잠재 버그 기계 검출
@@ -232,20 +245,20 @@
 
 ### OMC agent 위임 (컨텍스트 격리 + 모델 선택)
 
-| 작업        | 위임 대상                               | 비고                        |
-| ----------- | --------------------------------------- | --------------------------- |
-| 설계 검토   | `architect` agent (READ-ONLY)           | 구현 전 대안 비교           |
-| `.cpp` 구현 | `executor` agent (`model=opus` 복잡 시) | 작성자 `.h` 시그니처 준수   |
-| 결함 검출   | `code-reviewer` agent                   | §5-2 리뷰 게이트 4단계 담당 |
-| 에러 진단   | `debugger` agent                        | 빌드 / 런타임 근본 원인     |
-| 구조 개선   | `code-simplifier` agent                 | 동작 변경 X                 |
-| 검증        | `verifier` agent                        | 변경이 실제로 작동하는지    |
+| 작업        | 위임 대상                               | 비고                                                            |
+| ----------- | --------------------------------------- | --------------------------------------------------------------- |
+| 설계 검토   | `architect` agent (READ-ONLY)           | 구현 전 대안 비교                                               |
+| `.cpp` 설계 | `executor` agent (`model=opus` 복잡 시) | **코드블록 반환만. 파일 편집 금지** — 작성자 `.h` 시그니처 준수 |
+| 결함 검출   | `code-reviewer` agent                   | §5-2 리뷰 게이트 4단계 담당                                     |
+| 에러 진단   | `debugger` agent                        | 빌드 / 런타임 근본 원인                                         |
+| 구조 개선   | `code-simplifier` agent                 | 동작 변경 X                                                     |
+| 검증        | `verifier` agent                        | 변경이 실제로 작동하는지                                        |
 
 ### 프로젝트 skill (`.claude/skills/`)
 
-| skill            | 시점                  | 역할                                           |
-| ---------------- | --------------------- | ---------------------------------------------- |
-| `ue-build-check` | `.h`/`.cpp` 수정 직후 | UE5.6 Build.bat 자동 호출, 에러/경고 분리 보고 |
+| skill             | 시점                            | 역할                                                                   |
+| ----------------- | ------------------------------- | ---------------------------------------------------------------------- |
+| `ue-build-check`  | `.h`/`.cpp` 수정 직후           | UE5.6 Build.bat 자동 호출, 에러/경고 분리 보고                         |
 | `explain-plainly` | 코드·엔진 동작 설명 시 **항상** | 추상 표현·지어낸 이름·미검증 단정 금지. 유저 전역(`~/.claude/skills/`) |
 
 ### Unreal MCP (에디터 자동화 — McpAutomationBridge)
@@ -254,7 +267,7 @@
 - 연결: 에디터 실행 + `● MCP :3000` 확인 → `.mcp.json` 자동 인식
 - 안전: 토큰 인증 켜짐 / loopback 전용 / **작업 전 Content 커밋**
 
-> `.h` = 사람 승인 영역. agent도 `.h` 수정 금지 — 시그니처 변경 필요 시 작성자 승인 후.
+> `.h` / `.cpp` = 작성자 입력 영역. **agent도 코드 파일 수정 금지** — 설계·코드블록 반환까지만 (§0)
 
 ---
 
