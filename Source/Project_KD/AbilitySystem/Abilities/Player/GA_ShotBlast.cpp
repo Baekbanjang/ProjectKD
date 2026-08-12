@@ -5,13 +5,14 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
+#include "AbilitySystem/AnimNotifies/AN_ShotBlast.h"
 #include "AbilitySystem/Attributes/AS_Combat.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/Data/HitConfirmProfile.h"
 #include "Combat/LockOnComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
-#include "Player/KDPlayerCharacter.h"
 
 UGA_ShotBlast::UGA_ShotBlast()
 {
@@ -45,17 +46,29 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	// 총구 위치
 	const FVector MuzzleLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
 	
-	// 발사 방향 = 락온 타겟 우선 | 폴백 = 액터 전방
+	// 노티 설정 — 히트스톱 끄기 | 총구 방향
+	const UAN_ShotBlast* Notify = TriggerEventData
+		? Cast<UAN_ShotBlast>(TriggerEventData->OptionalObject) : nullptr;
+
+	// 발사 방향 = 총구 | 락온 타겟 | 폴백 = 액터 전방
 	FVector ShotDir = Avatar->GetActorForwardVector();
-	if (AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(Avatar))
+	if (Notify && Notify->bUseMuzzleDirection)
 	{
-		if (ULockOnComponent* LockOn = PC->GetLockOnComponent())
+		// 회전 연사 — 소켓 X축 = 총열
+		if (const USkeletalMeshComponent* Mesh = GetOwningComponentFromActorInfo())
 		{
-			if (const AActor* Target = LockOn->GetLockedTarget())
+			if (Mesh->DoesSocketExist(MuzzleSocket))
 			{
-				const FVector ToTarget = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
-				if (!ToTarget.IsNearlyZero()) ShotDir = ToTarget;
+				ShotDir = Mesh->GetSocketRotation(MuzzleSocket).Vector();
 			}
+		}
+	}
+	else if (const ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo())
+	{
+		if (const AActor* Target = LockOn->GetLockedTarget())
+		{
+			const FVector ToTarget = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
+			if (!ToTarget.IsNearlyZero()) ShotDir = ToTarget;
 		}
 	}
 
@@ -67,8 +80,8 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		if (ApplyHit(Hit)) bAnyHit = true;
 	}
 	
-	// 히트스톱 1회 — 다중 명중에도 중복 X
-	if (bAnyHit && AttackerHitStopDuration > 0.f)
+	// 히트스톱 1회 — 다중 명중에도 중복 X | 노티가 끄면 생략
+	if (bAnyHit && AttackerHitStopDuration > 0.f && !(Notify && Notify->bIgnoreHitStop))
 	{
 		FGameplayEventData StopEvent;
 		StopEvent.EventMagnitude = AttackerHitStopDuration;

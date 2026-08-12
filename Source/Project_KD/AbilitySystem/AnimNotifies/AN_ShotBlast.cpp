@@ -21,6 +21,7 @@ void UAN_ShotBlast::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
 	FGameplayEventData Payload;
 	Payload.EventTag = GameplayTags::Event_Montage_ShotBlast;
 	Payload.Instigator = Owner;
+	Payload.OptionalObject = this;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
