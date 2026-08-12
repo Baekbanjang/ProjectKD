@@ -19,6 +19,7 @@ class UInputBufferComponent;
 class UKDSpringArmComponent;
 class USplineComponent;
 class UComboComponent;
+class UKDPlayerAbilityInputComponent;
 
 UCLASS()
 class PROJECT_KD_API AKDPlayerCharacter : public ABaseCharacter
@@ -96,6 +97,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UComboComponent> ComboComp;
 
+	// 입력 -> 어빌리티 활성화 담당
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TObjectPtr<UKDPlayerAbilityInputComponent> AbilityInputComp;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
 	TObjectPtr<ULockOnComponent> LockOnComponent;
 
@@ -114,11 +119,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Motion")
 	TObjectPtr<UMotionWarpingComponent> MotionWarping;
 
-	// 처형 발동 거리
-	UPROPERTY(EditAnywhere, Category = "Combat", meta = (ClampMin = "50", ClampMax = "1000"))
-	float ExecutionRange = 250.f;
-	
-	// 락온 중 최고 이동속도 
+	// 락온 중 최고 이동속도
 	UPROPERTY(EditAnywhere, Category = "LockOn", meta = (ClampMin = "50.0", ClampMax = "800.0"))
 	float LockOnMoveSpeed = 280.f;
 
@@ -141,13 +142,8 @@ public:
 	bool IsWalking() const;       
 
 private:
-	void TryConsumeAndActivate(UAbilitySystemComponent* ASC, bool bCanCancel, const FGameplayTag& InputTag, const FGameplayTag& AbilityTag);
-	
 	UFUNCTION()
 	void ApplyMaxWalkSpeed(float NewSpeed);
-
-	bool ActivateByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const;
-	void CancelByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const;
 
 	void RefreshMaxWalkSpeed();
 	float BaseWalkSpeed = 500.f;

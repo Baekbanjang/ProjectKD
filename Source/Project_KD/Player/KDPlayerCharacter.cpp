@@ -19,25 +19,7 @@
 #include "Input/InputBufferComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Movement/SprintComponent.h"
-
-// 헬퍼
-namespace
-{
-	// 캔슬 윈도우에서 끊을 수 있는 공격 GA 목록
-	const FGameplayTagContainer& GetCancelableAttackTags()
-	{
-		static const FGameplayTagContainer Tags = []
-		{
-			FGameplayTagContainer C;
-			C.AddTag(GameplayTags::Ability_Mugong_Light);
-			C.AddTag(GameplayTags::Ability_Mugong_Heavy);
-			C.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
-			C.AddTag(GameplayTags::Ability_Mugong_CounterThrust);
-			return C;
-		}();
-		return Tags;
-	}
-}
+#include "Player/KDPlayerAbilityInputComponent.h"
 
 
 AKDPlayerCharacter::AKDPlayerCharacter()
@@ -95,6 +77,7 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
 	GunWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("GunWeaponComponent"));
 	ComboComp = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
+	AbilityInputComp = CreateDefaultSubobject<UKDPlayerAbilityInputComponent>(TEXT("AbilityInputComponent"));
 	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
 	CombatStateComp = CreateDefaultSubobject<UCombatStateComponent>(TEXT("CombatStateComp"));
 	HitStopComp = CreateDefaultSubobject<UHitStopComponent>(TEXT("HitStopComp"));
@@ -129,26 +112,6 @@ void AKDPlayerCharacter::ToggleLockOn()
 	}
 }
 
-void AKDPlayerCharacter::TryConsumeAndActivate(UAbilitySystemComponent* ASC, bool bCanCancel,
-                                             const FGameplayTag& InputTag, const FGameplayTag& AbilityTag)
-{
-	if (!InputBuffer || !ASC) return;
-	if (!InputBuffer->TryConsume(InputTag)) return;
-
-	// CancelWindow 시점에 진행 중 모든 공격/회피 GA 강제 종료 -> 즉시 새 GA 활성화.
-	if (bCanCancel)
-	{
-		FGameplayTagContainer CancelTags = GetCancelableAttackTags();
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_Dodge);     // 회피 후딜에서 공격으로 잇기
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_AirCombo);  // 공중 콤보 사이 갈아타기
-		ASC->CancelAbilities(&CancelTags);
-	}
-
-	FGameplayTagContainer ActivateTags;
-	ActivateTags.AddTag(AbilityTag);
-	ASC->TryActivateAbilitiesByTag(ActivateTags);
-}
-
 void AKDPlayerCharacter::ApplyMaxWalkSpeed(float NewSpeed)
 {
 	BaseWalkSpeed = NewSpeed;
@@ -179,200 +142,45 @@ void AKDPlayerCharacter::PossessedBy(AController* NewController)
 	}
 }
 
+// 아래 Try* 8개 = BP 호환용 위임. 실제 판단은 KDPlayerAbilityInputComponent
 void AKDPlayerCharacter::TryLightAttack() const
 {
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC) return;
-
-	// 조준 중이면 근접 대신 사격
-	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
-	{
-		FGameplayTagContainer ShootTags;
-		ShootTags.AddTag(GameplayTags::Ability_Mugong_Shoot);
-		ASC->TryActivateAbilitiesByTag(ShootTags);
-		return; // 발사 실패해도 근접 공격 X
-	}
-
-	// 퍼펙트 닷지 직후 -> 찌르기 
-	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady))
-	{
-		FGameplayTagContainer CounterTags;
-		CounterTags.AddTag(GameplayTags::Ability_Mugong_CounterThrust);
-		if (ASC->TryActivateAbilitiesByTag(CounterTags)) return;
-	}
-
-	// 공중 공격
-	if (GetCharacterMovement() && GetCharacterMovement()->IsFalling())
-	{
-		FGameplayTagContainer AirTags;
-		AirTags.AddTag(GameplayTags::Ability_Mugong_AirCombo);
-		if (!ASC->TryActivateAbilitiesByTag(AirTags) && InputBuffer)
-		{
-			InputBuffer->Push(GameplayTags::Input_Action_Light); // 캔슬윈도우 밖이면 버퍼링
-		}
-		return; // 공중에선 스프린트/지상 Light 공격 진행 X
-	}
-	
-	// 달리기 공격
-	if (IsSprinting())
-	{
-		FGameplayTagContainer SprintTags;
-		SprintTags.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
-		if (ASC->TryActivateAbilitiesByTag(SprintTags)) return;
-	}
-
-	// 회피 중이어도 캔슬 윈도우면 회피부터 끊고 공격 — 회피 쪽 처리와 대칭
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-	if (bDodging && bCanCancel)
-	{
-		FGameplayTagContainer DodgeTags;
-		DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-		ASC->CancelAbilities(&DodgeTags);
-	}
-
-	FGameplayTagContainer ActivationTags;
-	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Light);
-
-	// 켜기 막혔을 때만 버퍼에 저장 — 콤보 진행 중이거나 캔슬 윈도우 밖 회피 중
-	const bool bActivated = ASC->TryActivateAbilitiesByTag(ActivationTags);
-	
-	if (!bActivated && InputBuffer)
-	{
-		InputBuffer->Push(GameplayTags::Input_Action_Light);
-	}
+	if (AbilityInputComp) AbilityInputComp->TryLightAttack();
 }
 
 void AKDPlayerCharacter::TryHeavyAttack() const
 {
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC) return;
-
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-	if (bDodging && bCanCancel)
-	{
-		FGameplayTagContainer DodgeTags;
-		DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-		ASC->CancelAbilities(&DodgeTags);
-	}
-
-	FGameplayTagContainer ActivationTags;
-	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Heavy);
-
-	if (!ASC->TryActivateAbilitiesByTag(ActivationTags) && InputBuffer)
-	{
-		InputBuffer->Push(GameplayTags::Input_Action_Heavy);
-	}
+	if (AbilityInputComp) AbilityInputComp->TryHeavyAttack();
 }
 
 void AKDPlayerCharacter::TryParry() const
 {
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC) return;
-
-	FGameplayTagContainer ActivationTags;
-	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Parry);
-	ASC->TryActivateAbilitiesByTag(ActivationTags);
+	if (AbilityInputComp) AbilityInputComp->TryParry();
 }
 
 void AKDPlayerCharacter::TryParryStop() const
 {
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC) return;
-
-	FGameplayTagContainer CancelTags;
-	CancelTags.AddTag(GameplayTags::Ability_Mugong_Parry);
-	ASC->CancelAbilities(&CancelTags);
+	if (AbilityInputComp) AbilityInputComp->TryParryStop();
 }
 
 void AKDPlayerCharacter::TryExecute() const
 {
-	AActor* Target = nullptr;
-	if (LockOnComponent)
-	{
-		Target = LockOnComponent->IsLockedOn()
-			? LockOnComponent->GetLockedTarget()
-			: LockOnComponent->FindBestTarget();
-	}
-	if (!Target) { return; }
-
-	// 거리 밖에 있으면 처형 발동 불가
-	if (FVector::Dist(GetActorLocation(), Target->GetActorLocation()) > ExecutionRange)
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* TargetASC =
-		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target);
-	if (!TargetASC
-		|| !TargetASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Staggered))
-	{
-		return;
-	}
-
-	FGameplayEventData Data;
-	Data.Instigator = this;
-	Data.InstigatorTags.AddTag(GameplayTags::Ability_Mugong_Execution);
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
-		Target, GameplayTags::Event_Combat_Hit, Data);
+	if (AbilityInputComp) AbilityInputComp->TryExecute();
 }
 
 void AKDPlayerCharacter::TryAimStart() const
 {
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
-	{
-		ActivateByTag(ASC, GameplayTags::Ability_Mugong_Aim);
-	}
+	if (AbilityInputComp) AbilityInputComp->TryAimStart();
 }
 
 void AKDPlayerCharacter::TryAimStop() const
 {
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
-	{
-		CancelByTag(ASC, GameplayTags::Ability_Mugong_Aim);
-	}
+	if (AbilityInputComp) AbilityInputComp->TryAimStop();
 }
 
 void AKDPlayerCharacter::TryDodge() const
 {
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (!ASC) return;
-
-	// GA_Dodge는 ActivationBlockedTags(Attacking) 때문에 공격 중엔 못 켜짐
-	// 캔슬 윈도우면 공격을 먼저 끊어서 태그를 없앤 뒤 켠다
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-
-	if (bDodging && !bCanCancel)
-	{
-		return;
-	}
-	
-	if (bAttacking && bCanCancel)
-	{
-		ASC->CancelAbilities(&GetCancelableAttackTags());
-	}
-
-	FGameplayTagContainer ActivationTags;
-	ActivationTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-
-	// 켜기 실패하면 버퍼로 — Attacking 태그가 풀리거나 캔슬 윈도우 열릴 때 Tick이 다시 시도
-	if (ASC->TryActivateAbilitiesByTag(ActivationTags))
-	{
-		// 회피도 콤보 노드 — 퍼펙트면 별도 노드
-		if (ComboComp)
-		{
-			const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
-			ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
-		}
-	}
-	// 회피가 안켜졌으면
-	else if (InputBuffer)
-	{
-		InputBuffer->Push(GameplayTags::Input_Action_Dodge);
-	}
+	if (AbilityInputComp) AbilityInputComp->TryDodge();
 }
 
 void AKDPlayerCharacter::Tick(float DeltaTime)
@@ -390,29 +198,9 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 		}
 	}
 
-	// 가드 — 아래는 전부 버퍼/ASC가 있어야 도는 로직
-	if (!InputBuffer) return;
-
+	// 가드 — 아래는 ASC가 있어야 도는 로직
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
 	if (!ASC) return;
-
-	// 제자리 턴 — 가던 방향 반대로 입력하면 Turn 어빌리티. 상태 조건은 GA_Turn의 ActivationBlockedTags 담당
-	if (UCharacterMovementComponent* Move = GetCharacterMovement())
-	{
-		const FVector Accel = Move->GetCurrentAcceleration(); // 지금 누르고 있는 입력 방향
-		if (!Accel.IsNearlyZero() && GetVelocity().Size2D() > 50.f)
-		{
-			// 지금 메시가 보는 방향(ActorYaw)과 가고 싶은 방향(입력Yaw)의 부호있는 각도 차
-			// 0=정면, +-180=정반대. FindDeltaAngleDegrees가 -180~180으로 정규화
-			const float Angle = FMath::FindDeltaAngleDegrees(GetActorRotation().Yaw, Accel.Rotation().Yaw);
-			if (FMath::Abs(Angle) >= 135.f)
-			{
-				FGameplayTagContainer TurnTags;
-				TurnTags.AddTag(GameplayTags::Ability_Movement_Turn);
-				ASC->TryActivateAbilitiesByTag(TurnTags);
-			}
-		}
-	}
 
 	// 락온 | 조준 회전 모드 — 락온이면 타겟 방향, 아니면 카메라 방향
 	if (UCharacterMovementComponent* Move = GetCharacterMovement())
@@ -427,52 +215,6 @@ void AKDPlayerCharacter::Tick(float DeltaTime)
 		RefreshMaxWalkSpeed(); 
 	}
 	
-	// 버퍼를 사용하기 위한 현재 상태
-	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-
-
-	// 버퍼된 회피 꺼내기 — 공격이 끝났거나 캔슬 윈도우 열렸을 때만
-	if (!bAttacking || bCanCancel)
-	{
-		// TryConsume — 버퍼에 있으면 꺼내면서 지움, 0.2초 지난 입력은 이미 만료
-		if (InputBuffer->TryConsume(GameplayTags::Input_Action_Dodge))
-		{
-			// GA_Dodge는 Attacking 태그 있으면 못 켜짐 — 공격부터 종료시켜 태그 제거
-			if (bAttacking && bCanCancel)
-			{
-				ASC->CancelAbilities(&GetCancelableAttackTags());
-			}
-			FGameplayTagContainer DodgeTags;
-			DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-
-			// 버퍼 경유로 켜져도 콤보 위치는 똑같이 옮김
-			if (ASC->TryActivateAbilitiesByTag(DodgeTags) && ComboComp)
-			{
-				const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
-				ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
-			}
-		}
-	}
-
-	// 버퍼된 공격 꺼내기 — 회피 쪽과 대칭, 공격/회피 둘 다 아닐 때 OR 캔슬 윈도우 열렸을 때만
-	if ((!bAttacking && !bDodging) || bCanCancel)
-	{
-		const bool bAir = GetCharacterMovement() && GetCharacterMovement()->IsFalling();
-		if (bAir)
-		{
-			// 공중 — 버퍼된 Light를 AirCombo로 바꿔서 발동
-			TryConsumeAndActivate(ASC, bCanCancel,
-				GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_AirCombo);
-		}
-		else
-		{
-			// 지상 — 약공/강공 각각 버퍼 확인 후 발동, 콤보 노드 이동은 GA가 담당
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_Light);
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Mugong_Heavy);
-		}
-	}
 }
 
 void AKDPlayerCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
@@ -505,18 +247,6 @@ bool AKDPlayerCharacter::IsFullSprinting() const
 bool AKDPlayerCharacter::IsWalking() const
 {
 	return SprintComp ? SprintComp->IsWalking() : false;
-}
-
-bool AKDPlayerCharacter::ActivateByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const
-{
-	FGameplayTagContainer C;
-	C.AddTag(Tag); return ASC->TryActivateAbilitiesByTag(C);
-}
-
-void AKDPlayerCharacter::CancelByTag(UAbilitySystemComponent* ASC, const FGameplayTag& Tag) const
-{
-	FGameplayTagContainer C;
-	C.AddTag(Tag); return ASC->CancelAbilities(&C);
 }
 
 void AKDPlayerCharacter::RefreshMaxWalkSpeed()
