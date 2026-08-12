@@ -6,8 +6,8 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Combo/ComboComponent.h"
 #include "AbilitySystem/Combo/ComboTreeDataAsset.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Player/KDPlayerCharacter.h"
 
 void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                               const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -16,9 +16,8 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	// 매 활성화마다 막타 플래그 리셋 (InstancedPerActor 잔류 차단).
 	bIsFinisher = false;
 
-	// 적이 이 GA 쓰면 Cast 실패 -> Combo == nullptr -> 몽타주 없이 종료
-	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
-	UComboComponent* Combo = IsValid(Player) ? Player->GetComboComponent() : nullptr;
+	// 콤보 컴포넌트 없으면 몽타주 없이 종료
+	UComboComponent* Combo = GetComboComponentFromActorInfo();
 
 	// 공중 컨텍스트 -> AirComboTree만 봄
 	const FComboNode* Node = IsValid(Combo)

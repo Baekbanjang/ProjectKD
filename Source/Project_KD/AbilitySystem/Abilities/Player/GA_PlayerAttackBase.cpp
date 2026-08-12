@@ -4,7 +4,6 @@
 #include "AbilitySystem/Abilities/Player/GA_PlayerAttackBase.h"
 #include "AbilitySystem/Combo/ComboComponent.h"
 #include "AbilitySystem/Combo/ComboTreeDataAsset.h"
-#include "Player/KDPlayerCharacter.h"
 
 
 void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -12,8 +11,7 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	const FGameplayEventData* TriggerEventData)
 {
 	// 콤보 컴포넌트가 없으면(= 플레이어가 아니면) 노드도 없음 -> 몽타주 없이 종료
-	AKDPlayerCharacter* Player = Cast<AKDPlayerCharacter>(GetAvatarActorFromActorInfo());
-	UComboComponent* Combo = IsValid(Player) ? Player->GetComboComponent() : nullptr;
+	UComboComponent* Combo = GetComboComponentFromActorInfo();
 
 	const FComboNode* Node = IsValid(Combo)
 		? Combo->ProcessInput(ComboInputTag)

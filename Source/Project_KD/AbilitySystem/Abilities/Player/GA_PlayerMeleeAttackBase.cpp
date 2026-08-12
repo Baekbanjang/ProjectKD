@@ -7,7 +7,6 @@
 #include "AbilitySystemComponent.h"
 #include "Combat/LockOnComponent.h"
 #include "GameFramework/Character.h"
-#include "Player/KDPlayerCharacter.h"
 #include "KDGameplayTags.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 #include "Combat/Data/HitConfirmProfile.h"
@@ -58,10 +57,10 @@ void UGA_PlayerMeleeAttackBase::OnActivated()
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
 	if (!ASC || !ASC->HasMatchingGameplayTag(GameplayTags::State_Character_LockOn)) return;
 	
-	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(Attacker);
-	if (!PC || !PC->GetLockOnComponent()) return;
-	
-	AActor* Target = PC->GetLockOnComponent()->GetLockedTarget();
+	ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
+	if (!LockOn) return;
+
+	AActor* Target = LockOn->GetLockedTarget();
 	if (!Target) return;
 	
 	// 락온 자동 조준 — 뒤쪽 135도 초과는 제외

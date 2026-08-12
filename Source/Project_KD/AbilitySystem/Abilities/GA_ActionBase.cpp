@@ -2,6 +2,8 @@
 
 #include "Engine/World.h"
 #include "TimerManager.h"
+#include "AbilitySystem/Combo/ComboComponent.h"
+#include "Combat/LockOnComponent.h"
 
 UGA_ActionBase::UGA_ActionBase()
 {
@@ -50,4 +52,18 @@ void UGA_ActionBase::OnSafetyTimeout()
 	}
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(),
 		GetCurrentActivationInfo(), false, true);
+}
+
+ULockOnComponent* UGA_ActionBase::GetLockOnComponentFromActorInfo() const
+{
+	// 기능 : 아바타에서 락온 컴포넌트 조회
+	const AActor* Avatar = GetAvatarActorFromActorInfo();
+	return IsValid(Avatar) ? Avatar->FindComponentByClass<ULockOnComponent>() : nullptr;
+}
+
+UComboComponent* UGA_ActionBase::GetComboComponentFromActorInfo() const
+{
+	// 기능 : 아바타에서 콤보 컴포넌트 조회
+	const AActor* Avatar = GetAvatarActorFromActorInfo();
+	return IsValid(Avatar) ? Avatar->FindComponentByClass<UComboComponent>() : nullptr;
 }

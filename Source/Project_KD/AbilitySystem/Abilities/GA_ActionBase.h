@@ -4,6 +4,9 @@
 #include "Abilities/GameplayAbility.h"
 #include "GA_ActionBase.generated.h"
 
+class ULockOnComponent;
+class UComboComponent;
+
 // Common base for all action GAs (LightAttack, Dodge, EnemyAttack).
 // Centralizes SafetyTimer (montage length / play rate × mult) and EndAbility → OnCleanup pipeline.
 // bRetriggerInstancedAbility: Dodge=true (cancel-friendly), Attack=false (combo buffer).
@@ -33,6 +36,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Safety", meta = (ClampMin = "1.0", ClampMax = "5.0"))
 	float MaxDurationSafetyMult = 1.5f;
+
+	// 아바타에서 컴포넌트 조회
+	UFUNCTION(BlueprintPure, Category = "Ability")
+	ULockOnComponent* GetLockOnComponentFromActorInfo() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability")
+	UComboComponent* GetComboComponentFromActorInfo() const;
 
 private:
 	void OnSafetyTimeout();
