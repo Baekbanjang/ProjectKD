@@ -5,8 +5,10 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "KDGameplayTags.h"
 
 UANS_EnemyAttackWindow::UANS_EnemyAttackWindow()
+: AttackWindowTag(GameplayTags::State_Combat_EnemyAttackHitWindow)
 {
 #if WITH_EDITORONLY_DATA
 	NotifyColor = FColor::Blue; 

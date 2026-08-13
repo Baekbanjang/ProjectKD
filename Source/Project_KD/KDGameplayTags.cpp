@@ -12,6 +12,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Execution, "Ability.Mugong.Execution")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Aim, "Ability.Mugong.Aim")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Shoot, "Ability.Mugong.Shoot")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_ShotBlast, "Ability.Mugong.ShotBlast")
 	
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Movement_Turn, "Ability.Movement.Turn")
 	
