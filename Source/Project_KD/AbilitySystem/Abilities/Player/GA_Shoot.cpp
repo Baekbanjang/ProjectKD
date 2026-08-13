@@ -83,7 +83,7 @@ void UGA_Shoot::OnShootEvent(FGameplayEventData Payload)
 	}
 	
 	// 총구 위치
-	const FVector MuzzleLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
+	const FVector MuzzleLoc = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag).GetLocation();
 	
 	// 시점 = 카메라 실제 값  컨트롤 피치는 레일 눈금이라 시선 각도 X
 	FVector ViewLoc = MuzzleLoc;

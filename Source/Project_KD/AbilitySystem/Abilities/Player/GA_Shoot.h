@@ -40,6 +40,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
 	FName MuzzleSocket = TEXT("Muzzle");
 
+	// 무기 태그
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
+	FName WeaponTag = TEXT("Gun");
+
 	// 조준 트레이스 사거리
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot", meta = (ClampMin = "1000.0", ClampMax = "50000.0"))
 	float AimTraceRange = 10000.f;

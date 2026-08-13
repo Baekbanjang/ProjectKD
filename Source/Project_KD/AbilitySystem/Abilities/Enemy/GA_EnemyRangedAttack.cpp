@@ -72,7 +72,7 @@ void UGA_EnemyRangedAttack::OnReleaseProjectile(FGameplayEventData Payload)
 	}
 
 	// 발사 위치 = 메시 소켓(없으면 actor 위치).
-	const FVector SpawnLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
+	const FVector SpawnLoc = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket).GetLocation();
 	FRotator SpawnRot = Avatar->GetActorRotation();
 
 	// 조준 = muzzle→플레이어 직선(높이차/공중 더블점프 대응). actor forward(수평)면 점프한 플레이어를 못 맞춤.

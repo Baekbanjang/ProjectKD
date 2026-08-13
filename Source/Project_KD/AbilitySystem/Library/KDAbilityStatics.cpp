@@ -12,21 +12,40 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
 #include "KDGameplayTags.h"
+#include "Combat/WeaponComponent.h"
 
-FVector UKDAbilityStatics::GetMuzzleLocation(const AActor* Avatar, FName MuzzleSocket)
+FTransform UKDAbilityStatics::GetMuzzleTransform(const AActor* Avatar, FName MuzzleSocket, FName WeaponTag)
 {
-	if (!IsValid(Avatar)) return FVector::ZeroVector;
+	if (!IsValid(Avatar)) return FTransform::Identity;
 
+	// 무기 메시 — 검/총 구분: WeaponComponentTag
+	if (WeaponTag != NAME_None)
+	{
+		TArray<UWeaponComponent*> Weapons;
+		Avatar->GetComponents<UWeaponComponent>(Weapons);
+		for (const UWeaponComponent* Weapon : Weapons)
+		{
+			if (!IsValid(Weapon) || Weapon->GetWeaponComponentTag() != WeaponTag) continue;
+			const UMeshComponent* Mesh = Weapon->GetWeaponMesh();
+			if (Mesh && Mesh->DoesSocketExist(MuzzleSocket))
+			{
+				return Mesh->GetSocketTransform(MuzzleSocket);
+			}
+		}
+	}
+
+	// 폴백 — 캐릭터 메시 소켓
 	if (const ACharacter* Char = Cast<ACharacter>(Avatar))
 	{
 		if (const USkeletalMeshComponent* Mesh = Char->GetMesh())
 		{
-			if (MuzzleSocket != NAME_None && Mesh->DoesSocketExist(MuzzleSocket))
-				return Mesh->GetSocketLocation(MuzzleSocket);
+			if (Mesh->DoesSocketExist(MuzzleSocket))
+			{
+				return Mesh->GetSocketTransform(MuzzleSocket);
+			}
 		}
 	}
-	
-	return Avatar->GetActorLocation();
+	return Avatar->GetActorTransform();
 }
 
 AKDProjectile* UKDAbilityStatics::SpawnDamageProjectile(

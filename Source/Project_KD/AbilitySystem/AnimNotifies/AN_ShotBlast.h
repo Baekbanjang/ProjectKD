@@ -22,4 +22,9 @@ public:
 	// 총구 방향 발사 유무 — 회전 연사
 	UPROPERTY(EditAnywhere, Category = "Shot", meta = (DisplayName = "총구 방향으로 발사"))
 	bool bUseMuzzleDirection = false;
+
+	// 발사 각도
+	UPROPERTY(EditAnywhere, Category = "Shot",
+		meta = (ClampMin = "0.0", ClampMax = "180.0", DisplayName = "각도 예외 (0 = GA 값)"))
+	float ShotHalfAngleOverride = 0.f;
 };

@@ -19,8 +19,9 @@ class PROJECT_KD_API UKDAbilityStatics : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	// 캐릭터 메시 소켓 위치 없으면 액터 위치
-	static FVector GetMuzzleLocation(const AActor* Avatar, FName MuzzleSocket);
+	// 총구 트랜스폼 — 무기 메시 소켓 | 캐릭터 메시 소켓 | 액터 순
+	// WeaponTag 비우면 무기 메시  생략
+	static FTransform GetMuzzleTransform(const AActor* Avatar, FName MuzzleSocket, FName WeaponTag = NAME_None);
 
 	// 공격력 실은 데미지 Spec 운반 발사체 스폰
 	static AKDProjectile* SpawnDamageProjectile(

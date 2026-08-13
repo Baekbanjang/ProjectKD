@@ -21,9 +21,13 @@ public:
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	// 총구 소켓 — 캐릭터 스켈레톤 소속
+	// 총구 소켓
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot")
-	FName MuzzleSocket = TEXT("Gun_Muzzle");
+	FName MuzzleSocket = TEXT("Muzzle");
+
+	// 무기 태그
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot")
+	FName WeaponTag = TEXT("Gun");
 	
 	// 사거리
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "100.0", ClampMax = "3000.0"))
@@ -53,7 +57,7 @@ protected:
 
 private:
 	// 범위 안 유효 타겟 수집
-	void GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, TArray<FHitResult>& OutHits) const;
+	void GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const;
 	
 	// 대상 1명 처리 — 데미지 + 히트 이벤트 + 타격감
 	bool ApplyHit(const FHitResult& Hit);

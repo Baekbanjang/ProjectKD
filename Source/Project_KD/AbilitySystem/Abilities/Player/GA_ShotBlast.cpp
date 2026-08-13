@@ -10,7 +10,6 @@
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/Data/HitConfirmProfile.h"
 #include "Combat/LockOnComponent.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 
@@ -43,8 +42,9 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
-	// 총구 위치
-	const FVector MuzzleLoc = UKDAbilityStatics::GetMuzzleLocation(Avatar, MuzzleSocket);
+	// 총구 트랜스폼 — 무기 메시 소켓
+	const FTransform MuzzleXf = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag);
+	const FVector MuzzleLoc = MuzzleXf.GetLocation();
 	
 	// 노티 설정 — 히트스톱 끄기 | 총구 방향
 	const UAN_ShotBlast* Notify = TriggerEventData
@@ -55,13 +55,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	if (Notify && Notify->bUseMuzzleDirection)
 	{
 		// 회전 연사 — 소켓 X축 = 총열
-		if (const USkeletalMeshComponent* Mesh = GetOwningComponentFromActorInfo())
-		{
-			if (Mesh->DoesSocketExist(MuzzleSocket))
-			{
-				ShotDir = Mesh->GetSocketRotation(MuzzleSocket).Vector();
-			}
-		}
+		ShotDir = MuzzleXf.GetUnitAxis(EAxis::X);
 	}
 	else if (const ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo())
 	{
@@ -72,8 +66,12 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		}
 	}
 
+	// 각도 = 노티파이 우선, 0이면 GA 값
+	const float HalfAngle = (Notify && Notify->ShotHalfAngleOverride > 0.f)
+		? Notify->ShotHalfAngleOverride : ShotHalfAngle;
 	TArray<FHitResult> Hits;
-	GatherTargets(MuzzleLoc, ShotDir, Hits);
+	GatherTargets(MuzzleLoc, ShotDir, HalfAngle, Hits);
+	
 	bool bAnyHit = false;
 	for (const FHitResult& Hit : Hits)
 	{
@@ -92,7 +90,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
-void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, TArray<FHitResult>& OutHits) const
+void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const
 {
 	// 기능 : 사거리 구체 후보 -> 콘 각도 -> 시야 순 필터
 	const AActor* Avatar = GetAvatarActorFromActorInfo();
@@ -107,9 +105,9 @@ void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotD
 	World->OverlapMultiByChannel(Overlaps, MuzzleLoc, FQuat::Identity, ECC_Pawn,
 		FCollisionShape::MakeSphere(ShotRange), Params);
 	
-	const float CosHalfAngle = FMath::Cos(FMath::DegreesToRadians(ShotHalfAngle));
+	const float CosHalfAngle = FMath::Cos(FMath::DegreesToRadians(HalfAngle));
 	const float DebugLife = 1.f;   // 디버그 표시 시간
-	const float ConeRad = FMath::DegreesToRadians(ShotHalfAngle);
+	const float ConeRad = FMath::DegreesToRadians(HalfAngle);
 	if (bDrawDebug)
 	{
 		DrawDebugCone(World, MuzzleLoc, ShotDir, ShotRange, ConeRad, ConeRad,
