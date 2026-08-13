@@ -36,6 +36,10 @@ protected:
 	// 총알 확산 반(Half)각 — 총구 정면 기준
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "1.0", ClampMax = "89.0"))
 	float ShotHalfAngle = 20.f;
+
+	// 자동 조준 범위 각도 — 180 = 정면 좌우 90도
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "30.0", ClampMax = "360.0"))
+	float AutoAimConeAngle = 180.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
@@ -57,7 +61,7 @@ protected:
 
 private:
 	// 범위 안 유효 타겟 수집
-	void GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const;
+	void GatherTargets(const FVector& Origin, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const;
 	
 	// 대상 1명 처리 — 데미지 + 히트 이벤트 + 타격감
 	bool ApplyHit(const FHitResult& Hit);

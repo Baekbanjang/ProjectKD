@@ -9,7 +9,6 @@
 #include "AbilitySystem/Attributes/AS_Combat.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/Data/HitConfirmProfile.h"
-#include "Combat/LockOnComponent.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 
@@ -44,7 +43,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	// 총구 트랜스폼 — 무기 메시 소켓
 	const FTransform MuzzleXf = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag);
-	const FVector MuzzleLoc = MuzzleXf.GetLocation();
+	const FVector ConeOrigin = Avatar->GetActorLocation();
 	
 	// 노티 설정 — 히트스톱 끄기 | 총구 방향
 	const UAN_ShotBlast* Notify = TriggerEventData
@@ -57,20 +56,17 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		// 회전 연사 — 소켓 X축 = 총열
 		ShotDir = MuzzleXf.GetUnitAxis(EAxis::X);
 	}
-	else if (const ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo())
+	else if (const AActor* Target = FindAutoAimTarget(ShotRange, AutoAimConeAngle))
 	{
-		if (const AActor* Target = LockOn->GetLockedTarget())
-		{
-			const FVector ToTarget = (Target->GetActorLocation() - MuzzleLoc).GetSafeNormal();
-			if (!ToTarget.IsNearlyZero()) ShotDir = ToTarget;
-		}
+		const FVector ToTarget = (Target->GetActorLocation() - ConeOrigin).GetSafeNormal();
+		if (!ToTarget.IsNearlyZero()) ShotDir = ToTarget;
 	}
-
+	
 	// 각도 = 노티파이 우선, 0이면 GA 값
 	const float HalfAngle = (Notify && Notify->ShotHalfAngleOverride > 0.f)
 		? Notify->ShotHalfAngleOverride : ShotHalfAngle;
 	TArray<FHitResult> Hits;
-	GatherTargets(MuzzleLoc, ShotDir, HalfAngle, Hits);
+	GatherTargets(ConeOrigin, ShotDir, HalfAngle, Hits);
 	
 	bool bAnyHit = false;
 	for (const FHitResult& Hit : Hits)
@@ -90,7 +86,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
-void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const
+void UGA_ShotBlast::GatherTargets(const FVector& Origin, const FVector& ShotDir, float HalfAngle, TArray<FHitResult>& OutHits) const
 {
 	// 기능 : 사거리 구체 후보 -> 콘 각도 -> 시야 순 필터
 	const AActor* Avatar = GetAvatarActorFromActorInfo();
@@ -102,16 +98,25 @@ void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotD
 	
 	// 후보 수집 — 총구 중심 사거리 구체
 	TArray<FOverlapResult> Overlaps;
-	World->OverlapMultiByChannel(Overlaps, MuzzleLoc, FQuat::Identity, ECC_Pawn,
+	World->OverlapMultiByChannel(Overlaps, Origin, FQuat::Identity, ECC_Pawn,
 		FCollisionShape::MakeSphere(ShotRange), Params);
 	
 	const float CosHalfAngle = FMath::Cos(FMath::DegreesToRadians(HalfAngle));
 	const float DebugLife = 1.f;   // 디버그 표시 시간
-	const float ConeRad = FMath::DegreesToRadians(HalfAngle);
+	
 	if (bDrawDebug)
 	{
-		DrawDebugCone(World, MuzzleLoc, ShotDir, ShotRange, ConeRad, ConeRad,
+		if (HalfAngle >= 90.f)
+		{
+			DrawDebugSphere(World, Origin, ShotRange, 24, FColor::Yellow, false, DebugLife);
+		}
+		else
+		{
+			const float ConeRad = FMath::DegreesToRadians(HalfAngle);
+			DrawDebugCone(World, Origin, ShotDir, ShotRange, ConeRad, ConeRad,
 			16, FColor::Yellow, false, DebugLife);
+		}
+		
 	}
 	
 	TSet<AActor*> Seen;
@@ -126,19 +131,19 @@ void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotD
 		const FVector TargetLoc = Candidate->GetActorLocation();
 		
 		// 콘 각도
-		const FVector ToTarget = (TargetLoc - MuzzleLoc).GetSafeNormal();
+		const FVector ToTarget = (TargetLoc - Origin).GetSafeNormal();
 		if (FVector::DotProduct(ShotDir, ToTarget) < CosHalfAngle)
 		{
-			if (bDrawDebug) DrawDebugLine(World, MuzzleLoc, TargetLoc, FColor::Silver, false, DebugLife);
+			if (bDrawDebug) DrawDebugLine(World, Origin, TargetLoc, FColor::Silver, false, DebugLife);
 			continue;
 		}
 		
 		// 시야 확인 — 벽 차단 시 탈락
 		FHitResult Hit;
-		const bool bTraced = World->LineTraceSingleByChannel(Hit, MuzzleLoc, TargetLoc, ECC_Visibility, Params);
+		const bool bTraced = World->LineTraceSingleByChannel(Hit, Origin, TargetLoc, ECC_Visibility, Params);
 		if (bTraced && Hit.GetActor() != Candidate)
 		{
-			if (bDrawDebug) DrawDebugLine(World, MuzzleLoc, Hit.ImpactPoint, FColor::Red, false, DebugLife);
+			if (bDrawDebug) DrawDebugLine(World, Origin, Hit.ImpactPoint, FColor::Red, false, DebugLife);
 			continue;
 		}
 		
@@ -153,7 +158,7 @@ void UGA_ShotBlast::GatherTargets(const FVector& MuzzleLoc, const FVector& ShotD
 		
 		if (bDrawDebug)
 		{
-			DrawDebugLine(World, MuzzleLoc, Hit.ImpactPoint, FColor::Green, false, DebugLife);
+			DrawDebugLine(World, Origin, Hit.ImpactPoint, FColor::Green, false, DebugLife);
 			DrawDebugSphere(World, Hit.ImpactPoint, 12.f, 8, FColor::Green, false, DebugLife);
 		}
 		OutHits.Add(Hit);

@@ -5,7 +5,6 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "Combat/LockOnComponent.h"
 #include "GameFramework/Character.h"
 #include "KDGameplayTags.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
@@ -54,19 +53,14 @@ void UGA_PlayerMeleeAttackBase::OnActivated()
 	ACharacter* Attacker = Cast<ACharacter>(GetAvatarActorFromActorInfo());
 	if (!Attacker) return;
 	
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-	if (!ASC || !ASC->HasMatchingGameplayTag(GameplayTags::State_Character_LockOn)) return;
-	
-	ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
-	if (!LockOn) return;
-
-	AActor* Target = LockOn->GetLockedTarget();
+	AActor* Target = FindAutoAimTarget(AutoAimRange, AutoAimConeAngle);
 	if (!Target) return;
 	
-	// 락온 자동 조준 — 뒤쪽 135도 초과는 제외
+	// 락온 자동 조준 
 	const FVector ToTarget = (Target->GetActorLocation() - Attacker->GetActorLocation()).GetSafeNormal2D();
 	if (ToTarget.IsNearlyZero()) return;
-	
+
+	// 뒤쪽 135도 초과는 제외
 	const float DeltaYaw = FMath::FindDeltaAngleDegrees(Attacker->GetActorRotation().Yaw, ToTarget.Rotation().Yaw);
 	if (FMath::Abs(DeltaYaw) <= 135.f)
 		Attacker->SetActorRotation(FRotator(0.f, ToTarget.Rotation().Yaw, 0.f));

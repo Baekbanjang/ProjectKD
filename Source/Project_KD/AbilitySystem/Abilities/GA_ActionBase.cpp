@@ -67,3 +67,12 @@ UComboComponent* UGA_ActionBase::GetComboComponentFromActorInfo() const
 	const AActor* Avatar = GetAvatarActorFromActorInfo();
 	return IsValid(Avatar) ? Avatar->FindComponentByClass<UComboComponent>() : nullptr;
 }
+
+AActor* UGA_ActionBase::FindAutoAimTarget(float Range, float ConeAngle) const
+{
+	// 기능 : 자동 조준 대상 1명 반환
+	ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
+	if (!LockOn) return nullptr;
+	
+	return LockOn->IsLockedOn() ? LockOn->GetLockedTarget() : LockOn->FindBestTarget(Range, ConeAngle);
+}

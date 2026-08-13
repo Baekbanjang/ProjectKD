@@ -44,6 +44,9 @@ protected:
 	UFUNCTION(BlueprintPure, Category = "Ability")
 	UComboComponent* GetComboComponentFromActorInfo() const;
 
+	// 자동 조준 대상 — 락온 중이면 고정 타겟 / 그 외 범위 안 각도 최소 적
+	AActor* FindAutoAimTarget(float Range, float ConeAngle) const;
+
 private:
 	void OnSafetyTimeout();
 

@@ -29,9 +29,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
 	TObjectPtr<UHitConfirmProfile> HitConfirmProfile;
 
+	// 일반 자동 조준 사거리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "0.0", ClampMax = "2000.0"))
+	float AutoAimRange = 500.f;
+	
+	// 자동 조준 부채꼴 각도 — 180 = 카메라 정면 좌우 90도
+	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "30.0", ClampMax = "360.0"))
+	float AutoAimConeAngle = 180.f;
+
 	// 타격 시 플레이어 전용 HitConfirm 큐 실행
 	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) override;
 
-	// 락온 중 타겟 방향 자동 조준
+	// 공격 시작 시 대상 방향 자동 조준 — 락온 중이면 고정 조준
 	virtual void OnActivated() override;
 };

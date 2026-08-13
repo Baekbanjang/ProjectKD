@@ -129,7 +129,7 @@ void ULockOnComponent::ToggleLockOn()
 	}
 }
 
-AActor* ULockOnComponent::FindBestTarget() const
+AActor* ULockOnComponent::FindBestTarget(float OverrideRadius, float OverrideConeAngle) const
 {
 	if (!Config) return nullptr;
 	APawn* Owner = Cast<APawn>(GetOwner());
@@ -139,13 +139,17 @@ AActor* ULockOnComponent::FindBestTarget() const
 
 	const FVector OwnerLoc = Owner->GetActorLocation();
 
-	// 카메라 forward — 시야 콘 기준점.
+	// 인자 없으면 기본값 -1, 있으면  Config(>0.f는 기본값 -1.f라서)
+	const float SearchRadius = (OverrideRadius > 0.f) ? OverrideRadius : Config->LockOnRadius;
+	const float SearchConeAngle = (OverrideConeAngle > 0.f) ? OverrideConeAngle : Config->ViewConeAngle;
+
+	// 카메라 forward — 시야 콘 기준점
 	FVector CamLoc;
 	FRotator CamRot;
 	PC->GetPlayerViewPoint(CamLoc, CamRot);
 	const FVector CamForward = CamRot.Vector();
 
-	// LockOnRadius 반경 Pawn 후보 모두 수집.
+	// SearchRadius 반경 Pawn 후보 모두 수집
 	TArray<FOverlapResult> Overlaps;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Owner);
@@ -154,15 +158,15 @@ AActor* ULockOnComponent::FindBestTarget() const
 		OwnerLoc,
 		FQuat::Identity,
 		FCollisionObjectQueryParams(ECC_Pawn),
-		FCollisionShape::MakeSphere(Config->LockOnRadius),
+		FCollisionShape::MakeSphere(SearchRadius),
 		Params);
 	
 	// 시야 콘 임계값 — ViewConeAngle=90이면 ±45도 → cos(45)≈0.707.
-	const float HalfAngleRad = FMath::DegreesToRadians(Config->ViewConeAngle * 0.5f);
+	const float HalfAngleRad = FMath::DegreesToRadians(SearchConeAngle * 0.5f);
 	const float CosThreshold = FMath::Cos(HalfAngleRad);
 
 	AActor* BestTarget = nullptr;
-	float BestDistSq = TNumericLimits<float>::Max();
+	float BestDot = -1.f; // 각도 최소 = 내적 최대 (마주보면 +1)
 	TSet<AActor*> Seen;
 
 	for (const FOverlapResult& Overlap : Overlaps)
@@ -193,11 +197,10 @@ AActor* ULockOnComponent::FindBestTarget() const
 			if (bBlocked && LosHit.GetActor() != Candidate) continue;
 		}
 
-		// 가장 가까운 적 우선. 최단거리 갱신 — DistSquared로 Sqrt 회피 
-		const float DistSq = FVector::DistSquared(OwnerLoc, Candidate->GetActorLocation());
-		if (DistSq < BestDistSq)
+		// 콘 중심선에 가장 가까운 적 우선 — 내적이 클수록 각도가 작음
+		if (Dot > BestDot)
 		{
-			BestDistSq = DistSq;
+			BestDot = Dot;
 			BestTarget = Candidate;
 		}
 	}

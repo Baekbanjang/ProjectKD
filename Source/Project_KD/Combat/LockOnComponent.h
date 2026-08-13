@@ -34,8 +34,9 @@ public:
 
 	const ULockOnConfig* GetConfig() const { return Config; }
 
-	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과한 가장 가까운 적.
-	AActor* FindBestTarget() const;
+	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과 중 각도 최소
+	// Radius / ConeAngle 음수 = Config 값
+	AActor* FindBestTarget(float OverrideRadius = -1.f, float OverrideConeAngle = -1.f) const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn")
