@@ -54,7 +54,8 @@
 - `ABaseCharacter` (Abstract) — `ACharacter`+`IAbilitySystemInterface`. Player/Enemy 공통 조상. ASC 포인터만 보유(생성은 하위가).
 
 **Player/**
-- `AKDPlayerCharacter` (549줄, ★한도초과) — 플레이어 Pawn. 컴포넌트 다수 소유(CameraBoom/FollowCamera/InputBuffer/**WeaponComp+GunWeaponComp**/ComboComp/LockOnComponent/CombatStateComp/SprintComp/MotionWarping). `Try{Light,Heavy}Attack/TryDodge/TryParry/TryExecute`가 태그 기반 GA activate/cancel. `Tick`에서 InputBuffer 소비(공중/지상/캔슬윈도우 분기).
+- `AKDPlayerCharacter` (426줄, 2026-08-12 리팩토링으로 500줄 한도 해소) — 플레이어 Pawn. 컴포넌트 다수 소유(CameraBoom/FollowCamera/InputBuffer/**WeaponComp+GunWeaponComp**/ComboComp/LockOnComponent/CombatStateComp/SprintComp/MotionWarping/**AbilityInputComponent**). 남은 `Try{Light,Heavy}Attack/TryDodge/TryParry/TryExecute`는 `AbilityInputComponent`로 위임하는 한 줄 래퍼(BP 호환용).
+- `UKDPlayerAbilityInputComponent` (`.cpp` 352줄) — `Try*` 8개 본문 + 입력버퍼 소비 + 제자리 턴 실제 구현. 태그 기반 GA activate/cancel. `TickComponent`에서 InputBuffer 소비(공중/지상/캔슬윈도우 분기). `BeginPlay`에서 형제 컴포넌트 4개(`InputBuffer`/`ComboComp`/`LockOnComp`/`SprintComp`) `FindComponentByClass` 1회 조회.
 - `AKDPlayerController` — Enhanced Input 바인딩, `Handle_*`가 캐릭터로 얇게 위임. `Handle_Move`만 `State.Combat.MovementCanCancel` 읽어 이동 캔슬(Controller가 GAS 만지는 유일 지점).
 - `AKDPlayerState` — **플레이어 ASC 실소유자**. `UAS_Player`+`UAS_Combat` 생성. `GrantStartupAbilities()`(1회 가드).
 - `UKDPlayerAnimInstance` — ABP 로코모션/상태변수(GroundSpeed, VelocityX/Y, TurnYawOffset, bIsLockedOn, bIsInBattleStance). ThreadSafe 업데이트.
@@ -131,10 +132,10 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 
 ### 2-4. 아키텍처 규칙 준수 현황
 - **ASC 초기화**(§2-8): Player=`PossessedBy`에서 `InitAbilityActorInfo(PS, this)`, Enemy=`InitAbilityActorInfo(this, this)`. `OnRep_PlayerState` 미구현(싱글 전제, 의도적).
-- **의존성 방향**: 대체로 준수. Component→Pawn 캐스팅 없음(ASC 태그/인터페이스 경유). GC→Component는 델리게이트. 예외 = `Handle_Move`가 GAS 태그 직접 읽음.
+- **의존성 방향**: 대체로 준수. Component→Pawn 캐스팅 없음(ASC 태그/인터페이스 경유). GC→Component는 델리게이트. GA→Component도 2026-08-12부로 `Cast<AKDPlayerCharacter>` 4곳 제거 — `UGA_ActionBase`의 `GetLockOnComponentFromActorInfo()`/`GetComboComponentFromActorInfo()` 접근자로 통일(`AbilitySystem/` 폴더에서 `KDPlayerCharacter.h` include 0개). 예외 = `Handle_Move`가 GAS 태그 직접 읽음.
 - **GC 개수**: Telegraph 부모라우팅 + Combat 8종 + Camera 2종 ≈ 5~10개 룰 부합.
 - **GE 자식 CDO**: `CreateDefaultSubobject`+`GEComponents.Add` 패턴 준수(§2-7 fatal 회피).
-- **줄수 한도 위반** (리팩토링 후보): `AKDEnemyBaseCharacter`(723), `AKDPlayerCharacter`(549), `ULockOnComponent`(330), `UExecutionComponent`(306), `GA_Dodge`(338), `GA_Parry`(232). ※`GA_MeleeTraceBase`(349)는 base라 의도적.
+- **줄수 한도 위반** (리팩토링 후보): `AKDEnemyBaseCharacter`(723), `ULockOnComponent`(330), `UExecutionComponent`(306), `GA_Dodge`(338), `GA_Parry`(232), `UKDPlayerAbilityInputComponent.cpp`(352, 신규). ※`GA_MeleeTraceBase`(349)는 base라 의도적. `AKDPlayerCharacter`는 2026-08-12 리팩토링으로 426줄까지 내려가 해소됨(입력 판단이 `UKDPlayerAbilityInputComponent`로 이동).
 
 ### 2-5. ★코드 주의/함정 (문서화된 설계 결정)
 - **데미지는 ExecCalc가 아님** — SetByCaller + 메타어트리뷰트(`IncomingDamage`) 게이트웨이 방식. CLAUDE.md §1-2 원문만 보면 ExecCalc가 기본으로 읽히나, 실제는 "단순케이스 SetByCaller 예외"를 데미지 전체로 확장한 구조. **새 데미지 로직은 `AS_Combat::PostGameplayEffectExecute`에 붙는다**.

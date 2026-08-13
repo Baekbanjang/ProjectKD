@@ -1,7 +1,23 @@
-# 현재 상태 — 2026-08-03
+# 현재 상태 — 2026-08-12
 
 > **세션 시작 시 여기부터.** 진행상황·다음 할 일·보류 목록·설계 미결.
 > ⛔ 2세션 병행(A/B 레인)은 **2026-07-31 종료**. §0 참조 — 그 규칙을 따르지 말 것.
+
+---
+
+## ★★ 2026-08-12 갱신 — 콤보 속 총격 히트스캔 완료 + 입력 리팩토링
+
+**확정 순서 ①카메라 → ②히트스톱 → ③총 발사** 는 08-03/08-04/08-05~08-11에 걸쳐 전부 끝났다. 오늘은 그 위에서 나온 후속 작업.
+
+`GA_ShotBlast`(콤보 중 총격 = 근접 콘 히트스캔, 08-12 오전 `93cb7fe`로 신설) **완료·PIE 통과.** 총구를 캐릭터 소켓에서 무기 메시 소켓(`Gun_Muzzle`→`Muzzle`)으로 옮기고, 노티별 예외(총구 방향 발사/히트스톱 끄기/각도 오버라이드) 배선까지 끝냈다. 결함 2건도 같이 닫혔다 — 어빌리티 태그 충돌(`GA_ShotBlast`/`GA_Shoot`이 같은 태그를 써서 조준 사격마다 콘 히트스캔이 공짜로 붙던 문제), `ANS_EnemyAttackWindow` 태그 미초기화(퍼펙트 회피가 한 번도 성립한 적 없던 문제, §3 참조).
+
+같은 세션에 `AKDPlayerCharacter` 700→426줄(입력 판단을 `UKDPlayerAbilityInputComponent`로 분리, §1 500줄 한도 해소) + GA의 구체 Pawn 캐스팅 4곳 제거(`UGA_ActionBase` 접근자로 통일)도 끝났다.
+
+**dev-log = `docs/dev-logs/2026-08-12-input-component-and-muzzle-socket.md`**
+
+커밋 — 소스 `d65d21a` `171e786` `ae076f3` `512c3a4`(push 완료) / Content `b1dc4e8`(로컬). **미커밋 = 소스 11파일 + Content 5에셋.**
+
+**→ 다음 = 발사체 리팩토링 3건(착수 가능) 또는 `DA_ComboTree.InputWindow` 값 채우기(작성자가 "나중에"로 보류).** 아래 §3 참조.
 
 ---
 
@@ -509,11 +525,26 @@ Config/DefaultGame.ini:17-19  현재
 |---|---|---|
 1 | **`DA_ComboTree` 값 채우기** ★ | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
 2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
-3 | **`ANS_EnemyAttackWindow`의 `AttackWindowTag`** | 증상은 맞다 — 비어 있으면 퍼펙트 회피가 영원히 안 뜬다.<br>**단 해법이 전수 점검이 아니다 (2026-07-31 정정).** 형제 클래스 `ANS_CancelWindow`가 이미 생성자에서 기본값을 넣는다:<br>`UANS_CancelWindow::UANS_CancelWindow() : CancelTag(GameplayTags::State_Combat_CanCancel)`<br>`ANS_EnemyAttackWindow` 생성자엔 `NotifyColor`만 있고 태그 초기화가 없다. **한 줄 추가로 끝난다.**<br>★ **이미 배치된 노티에도 소급된다** — UE는 CDO와 같은 값을 직렬화하지 않으므로, 비워둔 노티는 저장된 값이 없어 **새 CDO 기본값을 읽는다**. 명시적으로 다른 태그를 넣어둔 것만 자기 값 유지<br>→ 작업 = **코드 1줄 + 몽타주 1개로 검증.** 전수 점검 불필요 |
-4 | **발사체 리팩토링 3건** | §1-B 참조. **총 작업 착수와 함께** 처리하기로 결정(2026-07-31 승환). ②번은 플레이어 총이 붙으면 확실히 터진다 |
+4 | **발사체 리팩토링 3건** ★착수 가능 | §1-B 참조. **총 작업(③)이 08-12로 끝났으니 이제 착수 가능** — "총 작업 착수와 함께"라는 조건은 충족됐다. ②번(`GA_Dodge`가 발사체 발사자를 안 봄)은 플레이어 총이 이미 붙어 실제로 터질 수 있는 상태 |
 5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
 6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일. **제약**: `AttachWeaponToHand()`에 1회성 작업(사운드·이펙트) 넣지 말 것 |
 7 | **트레일 NS 변수 검증** | `SwordLength`/`TrailWidth`가 새 NS에 먹는지 PIE 확인. 안 먹으면 NS User Parameter 이름을 맞춰야 함 |
+
+### 2026-08-12 신규 보류 (dev-log `2026-08-12-input-component-and-muzzle-socket.md` 참조)
+
+| # | 항목 | 내용 |
+|---|---|---|
+8 | **`AM_SB_Combo_05_03` 첫 `Shot` 노티 각도** | 5개 중 1번만 각도 예외 10, 나머지 4개는 179. 첫 발만 정면 조준탄으로 둘지 결정 필요 |
+9 | **360° 콘이면 한 적이 5번 맞는다** | 발당 데미지 분배를 정해야 함. `ShotRange` 500도 링 치고 멀다(250~350 검토) |
+10 | **디버그 구체 그리기 미적용** | 각도 90° 이상이면 `DrawDebugSphere`로 대체하는 코드 조각은 나왔으나 아직 미적용 (`DrawDebugCone`은 180°에서 뒤쪽 한 점으로 뭉쳐 바늘로 보임 — 판정과 무관한 그리기 문제) |
+11 | **일반 공격 자동 조준(미착수)** | 락온 안 걸었을 때 가장 가까운 적 쪽으로 자동 회전. `ULockOnComponent::FindBestTarget()`이 public이라 재사용 가능 — `GA_PlayerMeleeAttackBase::OnActivated`의 락온 게이트만 바꾸면 됨. 미결 = 카메라 정면 기준(현재 동작, ±45°)이냐 스틱 입력 방향 기준이냐 |
+12 | **`UKDPlayerAbilityInputComponent.cpp` 352줄** | §1 Component 300줄 선 초과. 분리 여부 미결 |
+13 | **`DA_Sword_Bandit` 등 적 정의 4개 `PoiseDamageByAttack` 키 미확정 관측** | python 조회 결과 비어 보이나 조회 한계일 수 있음. 에디터에서 직접 확인 필요 |
+
+### 닫힌 항목 (2026-08-12)
+
+- ✅ **`ANS_EnemyAttackWindow`의 `AttackWindowTag`** — 생성자 이니셜라이저 한 줄 추가(`: AttackWindowTag(GameplayTags::State_Combat_EnemyAttackHitWindow)`). 이미 배치된 노티에도 소급 적용(CDO 기본값 직렬화 미포함). 코드 1줄로 끝났다 — 아래는 원인 기록
+  - 증상은 맞았다 — 비어 있으면 퍼펙트 회피가 영원히 안 뜬다. 형제 클래스 `ANS_CancelWindow`가 이미 생성자에서 기본값을 넣는 패턴인데(`CancelTag(GameplayTags::State_Combat_CanCancel)`) 이쪽만 빠져 있었다
 
 ### 닫힌 항목 (2026-07-30~31)
 
