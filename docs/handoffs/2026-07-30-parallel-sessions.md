@@ -1,7 +1,89 @@
-# 현재 상태 — 2026-08-12
+# 현재 상태 — 2026-08-13
 
 > **세션 시작 시 여기부터.** 진행상황·다음 할 일·보류 목록·설계 미결.
 > ⛔ 2세션 병행(A/B 레인)은 **2026-07-31 종료**. §0 참조 — 그 규칙을 따르지 말 것.
+
+---
+
+## ★★ 2026-08-13 — 일반 공격 자동 조준. **코드 완료 / 빌드·PIE 미검증**
+
+08-12의 "다음 = 일반 공격 자동 조준"을 착수했다. **락온을 안 걸어도 공격마다 가장 알맞은 적 쪽으로 몸이 돈다.**
+
+### 결정 (SB 덤프 실측 근거)
+
+| 항목 | 값 | 근거 |
+|---|---|---|
+| 고르는 규칙 | **각도 최소** (거리 최소에서 바꿈) | Eve 검 콤보 17개가 전부 `SortType = SmallAngle` |
+| 부채꼴 | **±90°** (`AutoAimConeAngle 180`) | `P_Eve_Sword_0500_180_500_Target` |
+| 사거리 | **500cm** | 같은 필터 `FarDistance` |
+| 방향 기준 | **카메라 forward** (현행 유지) | SB는 기준 벡터가 표에 없음 = C++. 추측 배제 |
+| 총격 판정 원점 | **캡슐 중심** (총구에서 이동) | 총구가 앞서 있어 몸에 붙은 적이 콘 밖으로 빠지던 문제 |
+
+### 바꾼 것 (소스 8파일, 미커밋)
+
+```
+GA_ActionBase.h/.cpp          FindAutoAimTarget(Range, ConeAngle) 신설
+                              = 락온 중이면 GetLockedTarget / 아니면 FindBestTarget
+LockOnComponent.h/.cpp        FindBestTarget 에 인자 2개(반경·각도, 음수면 Config)
+                              정렬을 최단거리 → 콘 중심선 각도 최소로
+GA_PlayerMeleeAttackBase.h/.cpp   락온 태그 게이트 삭제 + AutoAimRange/AutoAimConeAngle 칸
+GA_ShotBlast.h/.cpp           락온 전용 조회 → FindAutoAimTarget / 판정 원점을 캡슐로
+                              + AutoAimConeAngle 칸
+```
+
+`GA_PlayerAirAttackBase`가 `Super::OnActivated()`를 부르므로 **공중 콤보에도 자동으로 붙는다.**
+
+### 🔴 정리 안 된 것 (빌드 전에)
+
+1. **`Source/.../GA_ShotBlast.cpp~` 백업 파일 untracked** — `.gitignore`에 `*~` 패턴이 없어 커밋에 딸려 들어간다. 삭제할 것
+2. **고아 include** — `GA_ShotBlast.cpp:12` `Combat/LockOnComponent.h`. 락온 블록 삭제로 사용 0건
+3. **주석 4줄** — `GA_ShotBlast.cpp:31,53,99`(총구 → 원점) / `GA_PlayerMeleeAttackBase.cpp:59`(락온 전용 아님) / `LockOnComponent.cpp:142`(**뜻이 반대로 적혀 있다** — "있으면 Config"가 아니라 "없으면 Config")
+
+### ⚠️ PIE에서 같이 볼 회귀 — 락온 토글도 바뀌었다
+
+`ToggleLockOn`(`LockOnComponent.cpp:126`)과 타겟 자동 전환(`:66`)이 같은 `FindBestTarget`을 쓴다.
+→ **락온 키가 이제 "가장 가까운 적"이 아니라 "화면 한가운데 적"을 잡는다.** 의도한 변경(SB 락온 필터도 `SmallAngle`)이지만 "락온이 이상해졌다"로 오해하기 쉽다.
+
+### PIE 검증 항목
+
+```
+1  락온 X, 적 옆에서 공격        몸이 도는가
+2  적 둘(정면 8m / 측면 2m)      정면 쪽을 치는가        ← 각도순 확인
+3  5m 밖 적                      안 돌아야 한다
+4  등 뒤 적                      안 돌아야 한다           ← 135도 예외
+5  락온 X 로 콤보 총격           콘이 적 쪽으로 도는가    ← 신규
+6  몸에 붙은 적                  맞는가                   ← 캡슐 원점 효과
+7  AM_SB_Combo_05_03 윈드밀      5발이 사방으로 도는가    ← bUseMuzzleDirection 회귀
+8  락온 걸고 공격                종전과 같은가
+9  락온 토글                     화면 중앙 적을 잡는다(변경됨, 정상)
+```
+
+6번에서 앞쪽 사거리가 짧아진 게 느껴지면 `ShotRange`를 올린다 — 원점이 총구에서 몸으로 왔으니 총구가 앞서 있던 만큼(미실측, 눈대중 50~80cm) 앞 도달이 준다.
+
+### 이 세션의 조사 산출물
+
+**옵시디언 `notes/Reference/StellarBlade_스킬테이블_3층구조.md` (신규)** — SB 스킬 테이블 3층 구조 + `TargetFilterTable` 전수. `JSON덤프_전체구조분석` §2와 `이브_콤보트리_전체복원` 상단에 포인터 추가.
+
+밝힌 것 셋:
+- **SB는 `_Target`(누구를 향하나)과 `_HitArea`(누가 맞나)를 별도 필터로 나눈다.** 타격 판정은 `ActiveCollision` 1552 / `TargetFilter` 437 — **대부분 무기 콜리전.** 우리 `ANS_MeleeTrace`와 같은 구조
+- **`RotateInputDirection`** — 전체 1414개 중 true 177개, 그 중 **175개가 Eve.** 이름대로면 "입력 방향 회전". SB가 입력 방향을 쓴다는 근거는 이 칸뿐이고 **정확한 동작은 C++이라 확인 불가**
+- **스킬마다 필터 칸이 있지만 Eve 검 17개는 값이 전부 같다.** 노드마다 사거리 칸을 파는 건 근거 없음
+
+### 🟡 폴리싱으로 미룸 (승환 결정, 2026-08-13)
+
+**`FComboNode.DamageMultiplier` + `InputWindow` 26칸 값** — SB 표를 보면서 같이 하기로. 설계는 다 나왔다:
+
+```
+① ComboTreeDataAsset.h  FComboNode 에 float DamageMultiplier = 0.f  (0 = GA 기본값)
+② GA_MeleeTraceBase.h   DefaultDamageMultiplier(EditDefaultsOnly) + DamageMultiplier(런타임)
+③ GA_MeleeTraceBase.cpp:210  AttackPower * DamageMultiplier    ← 곱하는 자리는 여기 하나
+④ GA_PlayerAttackBase.cpp    :21 옆에 리셋 / :34 아래에 노드 값 덮어쓰기
+```
+
+**이미 있는 패턴의 확장이다** — `DamageEffectClass`가 정확히 같은 방식으로 돈다(GA 기본값 → 노드가 있으면 덮어씀). 새 클래스 0개.
+SB 계수 = 라이트 `0.7/1.0/1.0/1.8/0.9/3.0/2.2/1.7` · 스트롱 `0.9/1.9/1.8/…/4.0` · 가드 데미지는 항상 정확히 절반. 입력창 `0.7/0.8/0.8`.
+
+⚠️ **`GA_ShotBlast`는 `UGA_ActionBase` 직속이라 이 경로를 안 탄다.** 총격 계수는 별도.
 
 ---
 
@@ -525,7 +607,7 @@ Config/DefaultGame.ini:17-19  현재
 |---|---|---|
 1 | **`DA_ComboTree` 값 채우기** ★ | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
 2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
-4 | **발사체 리팩토링 3건** ★착수 가능 | §1-B 참조. **총 작업(③)이 08-12로 끝났으니 이제 착수 가능** — "총 작업 착수와 함께"라는 조건은 충족됐다. ②번(`GA_Dodge`가 발사체 발사자를 안 봄)은 플레이어 총이 이미 붙어 실제로 터질 수 있는 상태 |
+4 | ~~발사체 리팩토링 3건~~ **2/3 이미 닫힘** (2026-08-13 실측) | ① 델리게이트 바인딩 → `KDProjectile.cpp:53~54`에서 **`BeginPlay`로 이미 이동됨**(08-10 `b36c1c2`) ✅<br>② `GA_Dodge`가 발사자를 안 봄 → `GA_Dodge.cpp:198`에 **`&& Proj->GetInstigator() != Avatar` 이미 있음** ✅<br>③ faction 게이트 비대칭 → `KDProjectile.cpp:72~77`이 "적→적 통과"만 검사. **살아 있으나 소환수·동료가 생겨야 터진다. 급하지 않음**<br>곁가지 = `InitProjectile`에 방향을 정하는 줄이 없다(스폰 회전을 그대로 씀). 버그가 아니라 현재 설계 |
 5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
 6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일. **제약**: `AttachWeaponToHand()`에 1회성 작업(사운드·이펙트) 넣지 말 것 |
 7 | **트레일 NS 변수 검증** | `SwordLength`/`TrailWidth`가 새 NS에 먹는지 PIE 확인. 안 먹으면 NS User Parameter 이름을 맞춰야 함 |
@@ -534,9 +616,9 @@ Config/DefaultGame.ini:17-19  현재
 
 | # | 항목 | 내용 |
 |---|---|---|
-8 | **`AM_SB_Combo_05_03` 첫 `Shot` 노티 각도** | 5개 중 1번만 각도 예외 10, 나머지 4개는 179. 첫 발만 정면 조준탄으로 둘지 결정 필요 |
-9 | **360° 콘이면 한 적이 5번 맞는다** | 발당 데미지 분배를 정해야 함. `ShotRange` 500도 링 치고 멀다(250~350 검토) |
-10 | **디버그 구체 그리기 미적용** | 각도 90° 이상이면 `DrawDebugSphere`로 대체하는 코드 조각은 나왔으나 아직 미적용 (`DrawDebugCone`은 180°에서 뒤쪽 한 점으로 뭉쳐 바늘로 보임 — 판정과 무관한 그리기 문제) |
+8 | ~~`AM_SB_Combo_05_03` 첫 `Shot` 노티 각도~~ **닫힘** (2026-08-13 MCP 실측) | **5개 전부 `muzzleDir=True` / `halfAngle=180` / `ignoreHitStop=True`로 이미 통일돼 있다.** "1번만 10, 나머지 179"는 지나간 기록<br>**총격 노티 전수 = 13개 몽타주 20발.** 05_03(5발)만 위 설정이고 **나머지 12개는 전부 기본값**(`muzzleDir=False` / `halfAngle=0`→GA 값 20도 / `ignoreHitStop=False`)<br>→ 08-13에 붙인 총격 자동 조준은 **12개 몽타주 15발에 먹는다.** 05_03은 각도 180(=전방위)이라 방향이 판정에 영향 없음 |
+9 | ~~360° 콘이면 한 적이 5번 맞는다~~ **의도로 확정** (2026-08-13 승환) | 발당 데미지 분배 **안 한다.** 5연타 전방위가 의도. `ignoreHitStop=True`도 그 의도와 맞물림(SB도 다단히트 스텝은 히트스톱을 끈다). `ShotRange` 500도 유지 |
+10 | **디버그 구체 그리기 미적용** ★ | 각도 90° 이상이면 `DrawDebugSphere`로 대체. **05_03이 정확히 그 경우라 지금 그 판정 범위를 눈으로 볼 방법이 없다**(`DrawDebugCone`이 180°에서 뒤쪽 한 점으로 뭉쳐 바늘로 보임 — `LineBatchComponent.cpp:515~546`). 판정은 정상, 그리기만 문제<br>코드 = `GA_ShotBlast.cpp:107`의 `ConeRad` 선언을 `else` 안으로 옮기고 `if (HalfAngle >= 90.f) DrawDebugSphere(World, Origin, ShotRange, 24, ...)` 분기. include 불필요(`:163`에서 이미 사용) |
 11 | **일반 공격 자동 조준(미착수)** | 락온 안 걸었을 때 가장 가까운 적 쪽으로 자동 회전. `ULockOnComponent::FindBestTarget()`이 public이라 재사용 가능 — `GA_PlayerMeleeAttackBase::OnActivated`의 락온 게이트만 바꾸면 됨. 미결 = 카메라 정면 기준(현재 동작, ±45°)이냐 스틱 입력 방향 기준이냐 |
 12 | **`UKDPlayerAbilityInputComponent.cpp` 352줄** | §1 Component 300줄 선 초과. 분리 여부 미결 |
 13 | **`DA_Sword_Bandit` 등 적 정의 4개 `PoiseDamageByAttack` 키 미확정 관측** | python 조회 결과 비어 보이나 조회 한계일 수 있음. 에디터에서 직접 확인 필요 |
@@ -609,8 +691,20 @@ SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·�
 ### ⑤ 미착수 폴리싱
 ~~트레일 NS 27개 미배정~~ **✅ 완료 (2026-07-31, Content `4f1ac60`)** / **사운드 노티 없음** / 데미지 GE 26노드 비어 있음 / LoP식 방사형 회피 이펙트.
 
-> **사운드가 이제 제일 큰 구멍이다.** 트레일 27개가 붙어서 **볼 건 생겼는데 들을 게 없다.** 검이 지나가는 소리·타격음·발소리가 전부 없으면 트레일만으로는 타격감이 안 산다.
+> **사운드가 이제 제일 큰 구멍이다.** 트레일 27개가 붙어서 **볼 건 생겼는데 들을 게 없다.**
 > 노티 자리는 이미 잡혀 있다(`ANS_MeleeTrace` 위치 그대로) — 사운드 노티를 얹는 작업이다. SB도 `FootStepL/R` + `CheckPhyMat`(물리재질 연동)으로 발소리를 따로 관리한다.
+
+> **★ 2026-08-13 MCP 전수 실측으로 그림이 바뀌었다 — 상세 = 메모리 `reference_project_sound_inventory`**
+>
+> | | 실제 |
+> |---|---|
+> **발소리** | ❌"전부 없다" → ✅ **`/Game/MotionMatchingAnimation/Audio` 에 286개 이미 있다.** 걷기30·달리기29·스트레이프29·착지20·점프17·구르기9 + `MSS_FoleySound_*` **동작별 래퍼 13개**. **없는 건 재료가 아니라 배선.** Sonniss 없이 지금 붙일 수 있다 |
+> **검 소리** | 배선 완료(08-11). `SC_Sword_Hit`→`Metal_Hit_Flesh_1~20` / `SC_Sword_Swing`→`Metal_Light_Whoosh_1~12` / `_Heavy`→`Metal_Heavy_Whoosh_1~10`. **랜덤 풀은 넉넉하다** |
+> **"빈 철봉" 정체** | `Metal_Light_Whoosh` = **공기 가르는 소리만 든 팩.** 금속 울림 성분이 없다. → `SlashTrailElemental/Resource/SW_Basic_Slash`·`SW_Distortion_Slash` 를 큐 안에서 Mixer 로 겹치면 붙는다(⚠️ 미시험) |
+> **총성** | **0개.** Sonniss GDC 7.47GB 필요. `Gun_and_Sword` 팩엔 사운드가 하나도 없다 |
+> **그 밖 없는 것** | 피격 보이스·신음 / UI / 발검·납검 금속음 = 전부 0. 앰비언트는 MM 샘플 딸림 4개뿐 |
+>
+> 우리가 만든 사운드 에셋은 `/Game/SB_Style_GameProject/Audio/Combat` **큐 3개가 전부**다. `/Game/Assets/Sfx` 2개는 길동 잔재.
 
 ### ⑥ 카메라 (2026-07-31 신규)
 1단계 값 표는 §1-B에 **완성돼 있다**(BP 6 + 코드 1줄, 30분). 2단계 스플라인 돌리도 실현 가능 확인됨.
