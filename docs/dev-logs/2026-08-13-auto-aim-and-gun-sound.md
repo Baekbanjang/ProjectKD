@@ -155,6 +155,68 @@ Epic 원본   MaxCount 1 / LimitToOwner true / StopLowestPriority / RetriggerTim
 
 ⚠️ `LimitToOwner`를 켜야 한다. 끄면 월드 전체로 세어 **적 발소리가 플레이어 발소리를 막는다.**
 
+## 6. 발소리 확대 + 점프·착지
+
+**Combat DB 3개 / Aim DB 3개**까지 넓혀 **클립 199개 / 노티 488개.** 검출 규칙은 §5와 동일.
+
+노티 0개인 3개(`AS_Idle_Seq` / `AS_Idle_Combat_Seq` / `AS_Aim_the_Target_Loop_Seq`)는 제자리 대기라 발이 안 움직인다 — `MIN_LIFT`가 정상 제외한 것.
+
+### 점프는 검출 방향이 반대다
+
+**점프는 MM DB가 아니라 `ABP_SB`가 직접 재생한다**(참조 8개). 그리고 도약은 **발이 떠나는** 순간이라 접지 검출로는 안 잡힌다.
+
+```
+AS_Jump_Start_0_Seq   0~11 양발 8(지면) → 12부터 상승
+                      = 마지막 접지 프레임 11 이 도약        -> MSS_SB_FoleySound_Jump
+AS_Jump_End_0_Seq     R f13 착지 / L f47 / f63 재접지
+                      = 첫 접지만 Land, 나머지는 Walk        -> Land + Walk ×2
+Jump_Loop / Double_Jump   공중이라 없음
+```
+
+## 7. 단발 공격·사격 몽타주 사운드
+
+```
+AM_SB_Run_Attack_01            t=0.2003  SC_Sword_Swing      vol 1.0
+AM_SB_Parry_Counter_Attack_L   t=0.3003  SC_Sword_Swing      vol 1.0
+AM_SB_Aim_the_Target_Shoot     t=0.0001  ShotGun_Shot_Sound  vol 0.5
+```
+
+**스윙 사운드는 `ANS_MeleeTrace`보다 0.033초 앞.** 기존 콤보 20개가 그 간격이다 — 칼 지나가는 소리가 판정보다 살짝 먼저 나야 자연스럽다. 사격은 `AN_Shoot`과 같은 프레임.
+
+## 8. 공중 콤보 1·3타 = 총 공격
+
+`AM_SB_Combo_Air_01`은 `AN_WeaponAttach` 하나뿐인 **빈 타**였다(판정도 소리도 없음). `Air_03`은 **칼이 도는 모션이라 검 공격으로 오인**돼 `MeleeTrace`·`WeaponTrail`이 붙어 있었다.
+
+지상 콤보에 썼던 방법(총·검 본 속도비, `gun_weapon_l`/`sword_weapon_r`/`pelvis`)으로 실측:
+
+```
+Air_01   총 peak 2662 @f22 / 검 peak 561   총·검 비 4.75   ← 지상 최고 03_03(2.91)보다 크다
+```
+
+**총 우세 + 단일 스파이크** = 지상 4개를 확정할 때와 같은 기준. 발사 = f22(t=0.3667).
+
+⚠️ **총구 방향으로는 검증할 수 없다.** `gun_weapon_l` 본의 X축이 총열이 아니기 때문이다(08-12에 총구 소켓을 무기 메시로 옮긴 이유가 그것). 각도를 재보면 f21~24에 91°→82°로 돌고 그 뒤 82°에서 고정되는데, 이건 "겨누는 동작이 f24에 끝난다"까지만 말해준다.
+
+```
+Air_01   AN_ShotBlast f22            + 총성 0.5
+Air_03   AN_ShotBlast f23, f41       + 총성 0.5   (MeleeTrace·WeaponTrail 삭제)
+Air_02 / Air_04   검 그대로
+```
+
+`AN_ShotBlast`는 기본값(`muzzleDir=False` / `halfAngle=0` / `ignoreHitStop=False`) — 지상 15발과 같다.
+
+### ★ 공중이라고 태그를 추가할 필요가 없었다
+
+```
+GA_ShotBlast        activation_blocked / required   둘 다 비어 있음
+GA_AirLightAttack   block_abilities_with_tag        비어 있음
+BP_PlayerState      Startup Abilities 15개에 GA_ShotBlast_C 포함
+```
+
+**`GA_ShotBlast`는 이벤트만 오면 어디서든 켜진다.** 비교로 `GA_LightCombo`는 `State.Movement.InAir`로 공중을 막는다.
+
+⚠️ **콤보 중 총격에 `AN_Shoot`을 쓰면 안 된다.** 트리거는 걸리는데 `GA_Shoot`이 `State.Combat.Aiming`을 요구해서 활성화 단계에서 조용히 죽는다. 노티가 어빌리티를 켜는 구조 전반은 메모리 `reference_animnotify_ability_trigger`에.
+
 ---
 
 ## 검증 (PIE 9항목 전수 통과)
@@ -211,6 +273,8 @@ Epic 원본   MaxCount 1 / LimitToOwner true / StopLowestPriority / RetriggerTim
 1. **총성 조달** — Sonniss GDC 2026 번들(347개 전수)에 **총기 라이브러리가 0개**. 답은 **The Free Firearm Sound Library**(CC0, 194MB, OpenGameArt). 샷건 수록이라 `GA_ShotBlast`와 맞는다
 2. **`SC_Shotgun_Shot` 큐** — 지금 SoundWave 직결이라 5연사가 같은 소리. Modulator로 피치 흩뜨리기 + 감쇠
 3. **검 스윙 소재 교체** — `_SoundPicks/01_Sword/METLFric_SWING SCRAPE ... Long Blade 14`가 `Metal_Light_Whoosh` 대체 1순위. 되면 지금 Mixer 구조가 통째로 불필요
-4. **발소리 확대** — 이번엔 Unarmed 계열 83개만. **Combat DB 3개 / Aim DB 3개는 클립이 달라 따로 돌려야 한다**(각 40~50초). 점프·착지(`MSS_SB_FoleySound_Jump` / `_Land`)와 급정지(`_Scuff`)도 미배선
+4. **급정지 발소리(`_Scuff` / `_ScuffPivot`)** — MSS 복사본은 있고 미배선. Stop 클립의 발 미끄러짐 구간을 따로 잡아야 한다
+4-1. **`AM_SB_Combo_Air_02` / `_04` 재확인** — 검으로 두고 있으나 `Air_01`·`Air_03`이 총이었던 전례가 있다. 본 속도비로 재보면 숫자로 확정된다
+4-2. **공중 총격 PIE 미검증** — `GA_ShotBlast`가 공중에서 도는 건 처음이다. 태그상 막힐 이유는 없으나 실행 확인 안 됨
 5. **`FComboNode.DamageMultiplier` + `InputWindow` 26칸** — 폴리싱으로 미룸(승환 결정). 설계 4단계는 핸드오프에
 6. `AutoAimRange 500` / `ShotRange 500` 튜닝 — 원점이 몸으로 와서 앞쪽 도달이 줄었다. 체감으로 조정

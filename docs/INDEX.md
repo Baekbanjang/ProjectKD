@@ -107,7 +107,7 @@
 | 2026-08-10 | [gun-projectile](dev-logs/2026-08-10-gun-projectile.md) | ★총 3단계 — 발사체 결함 2건(무성 통과·자기 총알 퍼펙트회피) + 스폰 경로를 `KDAbilityStatics` 하나로. `Muzzle Socket` 무성 실패, CDO가 비어도 미설정이 아닌 사례 |
 | 2026-08-11 | [weapon-sound-trail](dev-logs/2026-08-11-weapon-sound-trail.md) | ★검 사운드 49칸 배선(타격음은 Cue로 일원화 — 빗나가면 소리 X) + 트레일 27개가 안 보이던 원인(`Distortion_Only`=굴절 전용) + `ANS_WeaponTrail` 파라미터 TMap화. `Trail Width` 공백 하나에 조용히 실패 |
 | 2026-08-12 | [input-component-and-muzzle-socket](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) | ★`AKDPlayerCharacter` 700→426줄(입력 컴포넌트 분리) + GA의 구체 Pawn 캐스팅 4곳 제거(접근자 통일) + 총구를 무기 메시 소켓으로 이전. 결함 2건(어빌리티 태그 충돌로 콘 히트스캔 공짜 발동 / `ANS_EnemyAttackWindow` 태그 미초기화로 퍼펙트 회피 no-op) |
-| 2026-08-13 | [auto-aim-and-gun-sound](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) | ★락온 없이도 자동 조준(고르는 규칙을 거리→각도 최소로, SB 실측 ±90°/500cm) + 총격 판정 원점을 총구→캡슐 + 총격 사운드 21발 + **발소리 202개(뼈 좌표로 접지 프레임 자동 검출)**. 문서가 틀렸던 것 3건 실측 정정 / SoundCue Mixer 파이썬 생성이 재생 순간 에디터를 죽인 사고 / Concurrency 는 Prevent New 가 발소리를 죽인다 |
+| 2026-08-13 | [auto-aim-and-gun-sound](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) | ★락온 없이도 자동 조준(규칙을 거리→각도 최소로, SB 실측 ±90°/500cm) + 총격 판정 원점을 총구→캡슐 + **사운드 전면 배선**(총성 21발·발소리 488개·점프착지·공중 총격). 뼈 좌표로 접지 프레임 자동 검출 / 본 속도비로 총·검 판별(Air_01 = 4.75) / 문서가 틀렸던 것 3건 정정 / SoundCue Mixer 파이썬 생성이 재생 순간 에디터를 죽인 사고 / Concurrency 의 Prevent New 가 발소리를 죽인다 |
 
 ## handoffs/ — 인수인계
 
