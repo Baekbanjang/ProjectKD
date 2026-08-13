@@ -94,6 +94,67 @@ ShotGun_Shot_Sound (SoundWave 직결) / Volume 0.5 / Pitch 1.0
 
 ⚠️ **땜빵이다.** SoundWave 직결이라 매번 같은 소리가 난다 — 05_03의 5연사에서 티가 난다. 감쇠도 없다(2D 재생). 나중에 `SC_Shotgun_Shot` 큐로 감싸 Modulator로 피치를 흩뜨리고 볼륨·감쇠를 한 곳에서 잡을 것. **노티의 `Sound` 칸만 바꾸면 되므로 재배치는 불필요.**
 
+## 5. 발소리 — 뼈 좌표로 접지 프레임 자동 검출
+
+**재료는 이미 프로젝트에 있었다.** `/Game/MotionMatchingAnimation/Audio`에 Foley wav 286개 + `MSS_FoleySound_*` 동작별 MetaSound 래퍼 13개. 없는 건 배선이었다.
+
+**대상은 580개가 아니라 83개.** 팩엔 Walk 292 + Run 288이 있지만 **MM DB 9개가 실제로 참조하는 건 83개뿐**이다(`get_dependencies`로 역추적). 나머지는 재생되지 않으므로 노티가 필요 없다.
+
+Epic 샘플은 972개 클립에 전용 BP 노티(`BP_AnimNotify_FoleyEvent_Walk_L/R` 등)를 7000개 넘게 박아뒀다. 우리 클립은 0개라 직접 찾아야 했다.
+
+### 검출 방법
+
+`foot_l` / `foot_r`의 **컴포넌트 공간 Z**를 프레임마다 뽑아 최저 구간의 시작을 접지로 본다. 로컬 트랜스폼을 `foot → calf → thigh → pelvis → root` 체인으로 누적 곱해서 구한다.
+
+```
+TOL 1.0cm      Z 최저 + 1.0 이내 진입 시점
+MIN_GAP 6프레임  0.1초 미만 간격은 같은 접지로 병합
+루프 경계 규칙   이름에 "Loop" 있을 때만 프레임 0을 시작으로 인정
+MIN_LIFT 2.0cm   발 진폭이 이보다 작으면 이벤트 없음 (Idle 제외용)
+```
+
+**규칙 넷이 다 필요했다.** 하나씩 빠뜨렸을 때 나온 오검출:
+
+| 증상 | 원인 | 규칙 |
+|---|---|---|
+| `Run_Fast_Stop`에서 R이 22·25로 쪼개짐 | 임계선을 0.01cm 차로 스침(8.73 → 8.75 → 8.74) | TOL 0.5 → 1.0 |
+| `Run_Loop_F_L_90`에서 L 검출 0개 | 접지가 루프 경계(39→0)에서 일어남 | 루프 경계 규칙 |
+| `Walk_Start_F_L_45`에서 L[0] 오검출 | 정지 상태로 이미 땅에 있던 발을 "새로 딛음"으로 봄 | 루프 클립에만 적용 |
+| `Idle_Seq`(600f) 오검출 | 발이 안 움직이는데 미세 변동을 접지로 봄 | MIN_LIFT |
+
+결과 = **83개 클립 / 202개 접지 이벤트.** 0개인 건 `AS_Idle_Seq` 하나뿐이고 그건 맞다.
+
+### 배선
+
+`Sound_Footstep` 트랙 신설. 클립 이름으로 사운드 자동 분류:
+```
+Run  + _B_ → RunBackwards / Run + _90 → RunStrafe / Run → Run
+Walk + _B_ → WalkBackwards / Walk → Walk
+```
+
+Epic 원본을 안 건드리려고 `MSS_SB_FoleySound_*`로 복사해 그걸 물렸다. ⚠️ **wav 285개는 여전히 원본 폴더를 참조하므로 `/Game/MotionMatchingAnimation`을 지우면 안 된다.**
+
+### ★ Concurrency — 원본이 이미 갖고 있었다
+
+MM 전환 때 발소리가 겹쳤다. 원인을 "Concurrency가 없어서"로 봤는데 **틀렸다.** Epic 원본이 이미 `Override Concurrency`로 들고 있었다.
+
+```
+Epic 원본   MaxCount 1 / LimitToOwner true / StopLowestPriority / RetriggerTime 0.05
+```
+
+**진짜 원인은 `RetriggerTime` 0.05가 짧았던 것.** 그런데 별도 에셋을 만들면서 `Resolution Rule`까지 `Prevent New`로 바꿨더니 **발소리가 대량으로 사라졌다.**
+
+```
+발소리 wav 길이   0.107 ~ 0.540초 (중앙 0.344)
+발소리 간격       0.233 ~ 0.583초
+```
+
+**소리 길이가 간격보다 길다.** `Prevent New`는 "울리는 중이면 새 소리를 버린다"라 달리기(간격 0.3초)에서 절반이 통째로 날아갔다. Epic이 `Stop Lowest Priority`를 쓴 이유가 이것이다 — 발소리는 닿는 앞부분이 중요하고 꼬리는 잘려도 안 티 난다.
+
+→ `SC_Concurrency_Footstep` = `MaxCount 1` / `LimitToOwner ☑` / **`Stop Oldest`** / **`Retrigger 0.08`**
+
+⚠️ `LimitToOwner`를 켜야 한다. 끄면 월드 전체로 세어 **적 발소리가 플레이어 발소리를 막는다.**
+
 ---
 
 ## 검증 (PIE 9항목 전수 통과)
@@ -150,6 +211,6 @@ ShotGun_Shot_Sound (SoundWave 직결) / Volume 0.5 / Pitch 1.0
 1. **총성 조달** — Sonniss GDC 2026 번들(347개 전수)에 **총기 라이브러리가 0개**. 답은 **The Free Firearm Sound Library**(CC0, 194MB, OpenGameArt). 샷건 수록이라 `GA_ShotBlast`와 맞는다
 2. **`SC_Shotgun_Shot` 큐** — 지금 SoundWave 직결이라 5연사가 같은 소리. Modulator로 피치 흩뜨리기 + 감쇠
 3. **검 스윙 소재 교체** — `_SoundPicks/01_Sword/METLFric_SWING SCRAPE ... Long Blade 14`가 `Metal_Light_Whoosh` 대체 1순위. 되면 지금 Mixer 구조가 통째로 불필요
-4. **발소리 배선** — 재료 286개는 이미 있다
+4. **발소리 확대** — 이번엔 Unarmed 계열 83개만. **Combat DB 3개 / Aim DB 3개는 클립이 달라 따로 돌려야 한다**(각 40~50초). 점프·착지(`MSS_SB_FoleySound_Jump` / `_Land`)와 급정지(`_Scuff`)도 미배선
 5. **`FComboNode.DamageMultiplier` + `InputWindow` 26칸** — 폴리싱으로 미룸(승환 결정). 설계 4단계는 핸드오프에
 6. `AutoAimRange 500` / `ShotRange 500` 튜닝 — 원점이 몸으로 와서 앞쪽 도달이 줄었다. 체감으로 조정
