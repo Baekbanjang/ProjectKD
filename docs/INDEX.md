@@ -12,7 +12,7 @@
 
 > ★ **[2026-07-30 핸드오프 — 2세션 병행 체제](handoffs/2026-07-30-parallel-sessions.md)** — **현재 진행상황·다음 할 일·보류 목록·레인 구분.** 세션 시작 시 여기부터.
 
-최신 dev-log: [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
+최신 dev-log: [2026-08-14 공중 콤보 캔슬 윈도우 정렬](dev-logs/2026-08-14-air-combo-cancel-window.md) · [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
 - **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
@@ -107,6 +107,7 @@
 | 2026-08-10 | [gun-projectile](dev-logs/2026-08-10-gun-projectile.md) | ★총 3단계 — 발사체 결함 2건(무성 통과·자기 총알 퍼펙트회피) + 스폰 경로를 `KDAbilityStatics` 하나로. `Muzzle Socket` 무성 실패, CDO가 비어도 미설정이 아닌 사례 |
 | 2026-08-11 | [weapon-sound-trail](dev-logs/2026-08-11-weapon-sound-trail.md) | ★검 사운드 49칸 배선(타격음은 Cue로 일원화 — 빗나가면 소리 X) + 트레일 27개가 안 보이던 원인(`Distortion_Only`=굴절 전용) + `ANS_WeaponTrail` 파라미터 TMap화. `Trail Width` 공백 하나에 조용히 실패 |
 | 2026-08-12 | [input-component-and-muzzle-socket](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) | ★`AKDPlayerCharacter` 700→426줄(입력 컴포넌트 분리) + GA의 구체 Pawn 캐스팅 4곳 제거(접근자 통일) + 총구를 무기 메시 소켓으로 이전. 결함 2건(어빌리티 태그 충돌로 콘 히트스캔 공짜 발동 / `ANS_EnemyAttackWindow` 태그 미초기화로 퍼펙트 회피 no-op) |
+| 2026-08-14 | [air-combo-cancel-window](dev-logs/2026-08-14-air-combo-cancel-window.md) | ★공중 콤보 캔슬 윈도우를 안무 기준 프레임으로 (포즈 매칭 + `_All` 교차검증 = 차이 0) + `Air_02`·`_04` 검 재확인. `Air_01`은 캔슬창이 아예 없었다(07-30 문서가 계획만 적힌 건) / fps를 `(nf-1)/L`로 재면 틀린다 → `get_time_at_frame` / `GameplayTag`는 파이썬 repr이 항상 비어 보인다(`tag_name`까지 꺼낼 것) |
 | 2026-08-13 | [auto-aim-and-gun-sound](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) | ★락온 없이도 자동 조준(규칙을 거리→각도 최소로, SB 실측 ±90°/500cm) + 총격 판정 원점을 총구→캡슐 + **사운드 전면 배선**(총성 21발·발소리 488개·점프착지·공중 총격). 뼈 좌표로 접지 프레임 자동 검출 / 본 속도비로 총·검 판별(Air_01 = 4.75) / 문서가 틀렸던 것 3건 정정 / SoundCue Mixer 파이썬 생성이 재생 순간 에디터를 죽인 사고 / Concurrency 의 Prevent New 가 발소리를 죽인다 |
 
 ## handoffs/ — 인수인계
