@@ -17,7 +17,7 @@ UExecutionComponent::UExecutionComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// 처형 트리거 기본값 = 강공. BP에서 추가/변경 (적별 처형 조건 데이터 주도, OCP).
-	ExecutionTriggerTags.AddTag(GameplayTags::Ability_Mugong_Execution);
+	ExecutionTriggerTags.AddTag(GameplayTags::Ability_Player_Execution);
 }
 
 void UExecutionComponent::BeginPlay()

@@ -10,7 +10,7 @@
 
 UGA_CounterThrust::UGA_CounterThrust()
 {
-	AbilityTags.AddTag(GameplayTags::Ability_Mugong_CounterThrust);
+	AbilityTags.AddTag(GameplayTags::Ability_Player_CounterThrust);
 }
 
 void UGA_CounterThrust::OnActivated()

@@ -99,10 +99,10 @@ void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
 		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_MovementCanCancel))
 		{
 			FGameplayTagContainer CancelTags;
-			CancelTags.AddTag(GameplayTags::Ability_Mugong_Light);
-			CancelTags.AddTag(GameplayTags::Ability_Mugong_Heavy);
-			CancelTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
-			CancelTags.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
+			CancelTags.AddTag(GameplayTags::Ability_Player_Light);
+			CancelTags.AddTag(GameplayTags::Ability_Player_Heavy);
+			CancelTags.AddTag(GameplayTags::Ability_Player_Dodge);
+			CancelTags.AddTag(GameplayTags::Ability_Player_SprintAttack);
 			ASC->CancelAbilities(&CancelTags);
 		}
 	}

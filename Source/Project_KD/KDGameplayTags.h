@@ -6,17 +6,17 @@
 namespace GameplayTags
 {
 	// Abilities
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Light)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Heavy)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Dodge)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Parry)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_SprintAttack)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_CounterThrust)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_AirCombo)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Execution)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Aim)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_Shoot)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Mugong_ShotBlast)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Light)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Heavy)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Dodge)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Parry)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_SprintAttack)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_CounterThrust)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_AirCombo)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Execution)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Aim)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Shoot)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_ShotBlast)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Movement_Turn)
 
@@ -123,7 +123,6 @@ namespace GameplayTags
 	// SetByCaller magnitude tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SetByCaller_AttackPower)
 	
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SetByCaller_Dosul)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SetByCaller_Stamina)
 
 	// GameplayCues
@@ -163,5 +162,4 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Parry)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Combo_Light)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Combo_Heavy)
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Input_Action_Aim)
 }

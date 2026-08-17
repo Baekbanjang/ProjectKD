@@ -7,5 +7,5 @@
 
 UGA_SprintAttack::UGA_SprintAttack()
 {
-	AbilityTags.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
+	AbilityTags.AddTag(GameplayTags::Ability_Player_SprintAttack);
 }

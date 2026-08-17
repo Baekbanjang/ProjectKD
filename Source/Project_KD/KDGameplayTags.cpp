@@ -2,17 +2,17 @@
 
 namespace GameplayTags
 {
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Light, "Ability.Mugong.Light")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Heavy, "Ability.Mugong.Heavy")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Dodge, "Ability.Mugong.Dodge")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Parry, "Ability.Mugong.Parry")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_SprintAttack, "Ability.Mugong.SprintAttack")
-    UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_CounterThrust, "Ability.Mugong.CounterThrust")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_AirCombo, "Ability.Mugong.AirCombo")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Execution, "Ability.Mugong.Execution")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Aim, "Ability.Mugong.Aim")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_Shoot, "Ability.Mugong.Shoot")
-	UE_DEFINE_GAMEPLAY_TAG(Ability_Mugong_ShotBlast, "Ability.Mugong.ShotBlast")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Light, "Ability.Player.Light")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Heavy, "Ability.Player.Heavy")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Dodge, "Ability.Player.Dodge")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Parry, "Ability.Player.Parry")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_SprintAttack, "Ability.Player.SprintAttack")
+    UE_DEFINE_GAMEPLAY_TAG(Ability_Player_CounterThrust, "Ability.Player.CounterThrust")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_AirCombo, "Ability.Player.AirCombo")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Execution, "Ability.Player.Execution")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Aim, "Ability.Player.Aim")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Shoot, "Ability.Player.Shoot")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_ShotBlast, "Ability.Player.ShotBlast")
 	
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Movement_Turn, "Ability.Movement.Turn")
 	
@@ -94,7 +94,6 @@ namespace GameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(SetByCaller_AttackPower, "SetByCaller.AttackPower")
 	
-	UE_DEFINE_GAMEPLAY_TAG(SetByCaller_Dosul, "SetByCaller.Dosul")
 	UE_DEFINE_GAMEPLAY_TAG(SetByCaller_Stamina, "SetByCaller.Stamina")
 
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_HitImpact_Light, "GameplayCue.Combat.HitImpact.Light")
@@ -124,6 +123,5 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Parry, "Input.Action.Parry")
 	UE_DEFINE_GAMEPLAY_TAG(Input_Combo_Light, "Input.Combo.Light")
 	UE_DEFINE_GAMEPLAY_TAG(Input_Combo_Heavy, "Input.Combo.Heavy")
-	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Aim, "Input.Action.Aim")
 }
  

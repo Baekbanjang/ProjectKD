@@ -23,10 +23,10 @@ namespace
 		static const FGameplayTagContainer Tags = []
 		{
 			FGameplayTagContainer C;
-			C.AddTag(GameplayTags::Ability_Mugong_Light);
-			C.AddTag(GameplayTags::Ability_Mugong_Heavy);
-			C.AddTag(GameplayTags::Ability_Mugong_SprintAttack);
-			C.AddTag(GameplayTags::Ability_Mugong_CounterThrust);
+			C.AddTag(GameplayTags::Ability_Player_Light);
+			C.AddTag(GameplayTags::Ability_Player_Heavy);
+			C.AddTag(GameplayTags::Ability_Player_SprintAttack);
+			C.AddTag(GameplayTags::Ability_Player_CounterThrust);
 			return C;
 		}();
 		return Tags;
@@ -113,7 +113,7 @@ void UKDPlayerAbilityInputComponent::ConsumeBufferedInput(UAbilitySystemComponen
 			}
 
 			FGameplayTagContainer DodgeTags;
-			DodgeTags.AddTag(GameplayTags::Ability_Mugong_Dodge);
+			DodgeTags.AddTag(GameplayTags::Ability_Player_Dodge);
 
 			// 버퍼 경유로 켜져도 콤보 위치는 동일하게 이동
 			if (ASC->TryActivateAbilitiesByTag(DodgeTags) && ComboComp)
@@ -135,13 +135,13 @@ void UKDPlayerAbilityInputComponent::ConsumeBufferedInput(UAbilitySystemComponen
 		{
 			// 공중 — 버퍼된 Light 를 AirCombo 로 교체해 발동
 			TryConsumeAndActivate(ASC, bCanCancel,
-				GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_AirCombo);
+				GameplayTags::Input_Action_Light, GameplayTags::Ability_Player_AirCombo);
 		}
 		else
 		{
 			// 지상 — 콤보 노드 이동은 GA 담당
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Mugong_Light);
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Mugong_Heavy);
+			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Player_Light);
+			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Player_Heavy);
 		}
 	}
 }
@@ -155,14 +155,14 @@ void UKDPlayerAbilityInputComponent::TryLightAttack() const
 	// 조준 중이면 근접 대신 사격
 	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
 	{
-		ActivateByTag(ASC, GameplayTags::Ability_Mugong_Shoot);
+		ActivateByTag(ASC, GameplayTags::Ability_Player_Shoot);
 		return;   // 발사 실패해도 근접 공격 X
 	}
 
 	// 퍼펙트 닷지 직후 = 찌르기
 	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady))
 	{
-		if (ActivateByTag(ASC, GameplayTags::Ability_Mugong_CounterThrust)) return;
+		if (ActivateByTag(ASC, GameplayTags::Ability_Player_CounterThrust)) return;
 	}
 
 	const ACharacter* Owner = Cast<ACharacter>(GetOwner());
@@ -172,7 +172,7 @@ void UKDPlayerAbilityInputComponent::TryLightAttack() const
 	if (Move && Move->IsFalling())
 	{
 		// 캔슬 윈도우 밖이면 버퍼링
-		if (!ActivateByTag(ASC, GameplayTags::Ability_Mugong_AirCombo) && InputBuffer)
+		if (!ActivateByTag(ASC, GameplayTags::Ability_Player_AirCombo) && InputBuffer)
 		{
 			InputBuffer->Push(GameplayTags::Input_Action_Light);
 		}
@@ -182,7 +182,7 @@ void UKDPlayerAbilityInputComponent::TryLightAttack() const
 	// 달리기 공격
 	if (SprintComp && SprintComp->IsSprinting())
 	{
-		if (ActivateByTag(ASC, GameplayTags::Ability_Mugong_SprintAttack)) return;
+		if (ActivateByTag(ASC, GameplayTags::Ability_Player_SprintAttack)) return;
 	}
 
 	// 회피 중이어도 캔슬 윈도우면 회피부터 끊고 공격 — 회피 쪽 처리와 대칭
@@ -190,11 +190,11 @@ void UKDPlayerAbilityInputComponent::TryLightAttack() const
 	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
 	if (bDodging && bCanCancel)
 	{
-		CancelByTag(ASC, GameplayTags::Ability_Mugong_Dodge);
+		CancelByTag(ASC, GameplayTags::Ability_Player_Dodge);
 	}
 
 	// 활성화가 막혔을 때만 버퍼에 저장 — 콤보 진행 중이거나 캔슬 윈도우 밖 회피 중
-	if (!ActivateByTag(ASC, GameplayTags::Ability_Mugong_Light) && InputBuffer)
+	if (!ActivateByTag(ASC, GameplayTags::Ability_Player_Light) && InputBuffer)
 	{
 		InputBuffer->Push(GameplayTags::Input_Action_Light);
 	}
@@ -210,10 +210,10 @@ void UKDPlayerAbilityInputComponent::TryHeavyAttack() const
 	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
 	if (bDodging && bCanCancel)
 	{
-		CancelByTag(ASC, GameplayTags::Ability_Mugong_Dodge);
+		CancelByTag(ASC, GameplayTags::Ability_Player_Dodge);
 	}
 
-	if (!ActivateByTag(ASC, GameplayTags::Ability_Mugong_Heavy) && InputBuffer)
+	if (!ActivateByTag(ASC, GameplayTags::Ability_Player_Heavy) && InputBuffer)
 	{
 		InputBuffer->Push(GameplayTags::Input_Action_Heavy);
 	}
@@ -224,7 +224,7 @@ void UKDPlayerAbilityInputComponent::TryParry() const
 	// 기능 : 가드 시작
 	if (UAbilitySystemComponent* ASC = GetASC())
 	{
-		ActivateByTag(ASC, GameplayTags::Ability_Mugong_Parry);
+		ActivateByTag(ASC, GameplayTags::Ability_Player_Parry);
 	}
 }
 
@@ -233,7 +233,7 @@ void UKDPlayerAbilityInputComponent::TryParryStop() const
 	// 기능 : 가드 해제
 	if (UAbilitySystemComponent* ASC = GetASC())
 	{
-		CancelByTag(ASC, GameplayTags::Ability_Mugong_Parry);
+		CancelByTag(ASC, GameplayTags::Ability_Player_Parry);
 	}
 }
 
@@ -257,7 +257,7 @@ void UKDPlayerAbilityInputComponent::TryDodge() const
 	}
 
 	// 활성화 실패 시 버퍼로 — Attacking 태그 해제 또는 캔슬 윈도우 개방 시 Tick 이 재시도
-	if (ActivateByTag(ASC, GameplayTags::Ability_Mugong_Dodge))
+	if (ActivateByTag(ASC, GameplayTags::Ability_Player_Dodge))
 	{
 		// 회피도 콤보 노드 — 퍼펙트는 별도 노드
 		if (ComboComp)
@@ -292,7 +292,7 @@ void UKDPlayerAbilityInputComponent::TryExecute() const
 	// 처형 판정은 대상의 ExecutionComponent 담당
 	FGameplayEventData Data;
 	Data.Instigator = Owner;
-	Data.InstigatorTags.AddTag(GameplayTags::Ability_Mugong_Execution);
+	Data.InstigatorTags.AddTag(GameplayTags::Ability_Player_Execution);
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Target, GameplayTags::Event_Combat_Hit, Data);
 }
 
@@ -301,7 +301,7 @@ void UKDPlayerAbilityInputComponent::TryAimStart() const
 	// 기능 : 조준 시작
 	if (UAbilitySystemComponent* ASC = GetASC())
 	{
-		ActivateByTag(ASC, GameplayTags::Ability_Mugong_Aim);
+		ActivateByTag(ASC, GameplayTags::Ability_Player_Aim);
 	}
 }
 
@@ -310,7 +310,7 @@ void UKDPlayerAbilityInputComponent::TryAimStop() const
 	// 기능 : 조준 해제
 	if (UAbilitySystemComponent* ASC = GetASC())
 	{
-		CancelByTag(ASC, GameplayTags::Ability_Mugong_Aim);
+		CancelByTag(ASC, GameplayTags::Ability_Player_Aim);
 	}
 }
 
@@ -325,8 +325,8 @@ void UKDPlayerAbilityInputComponent::TryConsumeAndActivate(UAbilitySystemCompone
 	if (bCanCancel)
 	{
 		FGameplayTagContainer CancelTags = GetCancelableAttackTags();
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_Dodge);     // 회피 후딜에서 공격으로 연결
-		CancelTags.AddTag(GameplayTags::Ability_Mugong_AirCombo);  // 공중 콤보 사이 교체
+		CancelTags.AddTag(GameplayTags::Ability_Player_Dodge);     // 회피 후딜에서 공격으로 연결
+		CancelTags.AddTag(GameplayTags::Ability_Player_AirCombo);  // 공중 콤보 사이 교체
 		ASC->CancelAbilities(&CancelTags);
 	}
 

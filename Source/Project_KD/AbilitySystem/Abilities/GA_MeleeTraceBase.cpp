@@ -42,10 +42,10 @@ void UGA_MeleeTraceBase::ActivateAbility(
 
 	const float EffRate = GetEffectiveMontagePlayRate();
 
-	// Asset tags carry the attack identity (Ability.Mugong.*) that enemy poise/execution gate on.
+	// Asset tags carry the attack identity (Ability.Player.*) that enemy poise/execution gate on.
 	// Empty = silent no-op downstream, so surface the missing setup once here.
 	ensureMsgf(!GetAssetTags().IsEmpty(),
-		TEXT("[KD] %s has empty AssetTags enemy poise/execution won't trigger. Set Ability.Mugong.* on the GA."),
+		TEXT("[KD] %s has empty AssetTags enemy poise/execution won't trigger. Set Ability.Player.* on the GA."),
 		*GetName());
 
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(

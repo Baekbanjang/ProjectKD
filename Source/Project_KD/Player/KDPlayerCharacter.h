@@ -35,11 +35,11 @@ public:
 
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode = 0) override;
 
-	// Wire to input in BP. Activates any granted ability tagged Ability.Mugong.Light.
+	// Wire to input in BP. Activates any granted ability tagged Ability.Player.Light.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryLightAttack() const;
 
-	// Wire to input in BP. Activates any granted ability tagged Ability.Mugong.Dodge.
+	// Wire to input in BP. Activates any granted ability tagged Ability.Player.Dodge.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryDodge() const;
 
