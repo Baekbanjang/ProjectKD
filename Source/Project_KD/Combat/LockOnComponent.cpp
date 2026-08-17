@@ -240,6 +240,9 @@ void ULockOnComponent::EngageLockOn(AActor* NewTarget)
 		ReticleWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, RelativeZ ));  // 머리 위 오프셋
 		ReticleWidgetComponent->SetVisibility(true);
 	}
+
+	// 타켓 변경 통보
+	OnLockOnTargetChanged.Broadcast(NewTarget);
 }
 
 void ULockOnComponent::DisengageLockOn()
@@ -269,6 +272,9 @@ void ULockOnComponent::DisengageLockOn()
 			GetOwner()->GetRootComponent(),
 			FAttachmentTransformRules::SnapToTargetIncludingScale);
 	}
+
+	// 타겟 해제
+	OnLockOnTargetChanged.Broadcast(nullptr);
 
 	bIsLockedOn = false;
 	LockedTarget = nullptr;
