@@ -75,7 +75,7 @@
 **AbilitySystem/Attributes/**
 - `UAS_CharacterBase` — Health/MaxHealth/Poise/MaxPoise, `PreAttributeChange` 클램프.
 - `UAS_Combat` — AttackPower/Defense + **메타어트리뷰트 `IncomingDamage`(모든 데미지의 단일 게이트)**. `PostGameplayEffectExecute`가 전방판정(±90°)→Perfect Parry/일반 Parry/적방어패링/일반피격 전부 분기. ★**ExecCalc 미사용** — SetByCaller 방식(아래 2-5 주의).
-- `UAS_Player` — Stamina/MaxStamina/Dosul/MaxDosul (플레이어 전용).
+- `UAS_Player` — Stamina/MaxStamina/Dosul/MaxDosul (플레이어 전용). ⚠️**넷 다 실동작 X**(2026-08-17 실측) — Stamina는 소모 GE를 적용하는 GA가 0곳, Dosul은 클램프 코드만 있는 길동 잔재. 스태미나 폐기 결정(2026-07-28) = 이동 자원 폐기 / **스킬 코스트 역할로 Stamina 유지**, Dosul 삭제 예정.
 - `KDAttributeAccessors.h` — `ATTRIBUTE_ACCESSORS` 매크로 단일 정의처.
 
 **AbilitySystem/Abilities/ — GA 상속 트리**
@@ -103,7 +103,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 **AbilitySystem/GameplayCues/** — `AGCN_EnemyTelegraph`(부모태그 1개로 Parryable/Unblockable/Lethal 라우팅, 맵 기반 무증설) · `AGCN_ExecutionCamera` · `UGCN_HitImpact_Light`.
 
 **AbilitySystem/Combo/** — `UComboTreeDataAsset`(`FComboBranch` 배열, `EComboContext` Ground/Air 분리).
-**AbilitySystem/Library/** — `UKDAbilityStatics::TryConsumeStamina`.
+**AbilitySystem/Library/** — `UKDAbilityStatics`: `GetMuzzleTransform`(무기 메시 소켓 → 캐릭터 메시 → 액터 순) / `SpawnDamageProjectile`. ※`TryConsumeStamina`는 **없다**(2026-08-17 실측 — 이 줄이 오래 stale이었음).
 **AbilitySystem/Effects/** — `GE_Damage_Physical`(Instant, IncomingDamage에 SetByCaller 가산+Invulnerable/Dead 리젝컴포넌트)→`GE_Damage_Unblockable`(자식, 패링스킵). `GE_ParryWindow`/`GE_PerfectParryWindow`/`GE_DodgeInvincible`/`GE_Stagger`/`GE_StaminaCost`.
 
 **Enemy/ + Enemy/AI/**
@@ -125,10 +125,12 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 - **트레이스/데미지**: `GA_MeleeTraceBase` 몽타주+`Event.Montage.TraceBegin/End`→`AT_MeleeTrace`. `ANS_MeleeTrace` per-window 오버라이드로 무기/맨손 동일태스크. 히트시 팀태그 아군방지→`DamageEffectClass`에 `SetByCaller(AttackPower)`→`AS_Combat::PostGEExec`(유일 데미지게이트)→`Event.Combat.Hit` 브로드캐스트로 피격측 각자 반응.
 
 ### 2-3. GameplayTags 요약 (`KDGameplayTags.h/.cpp`)
-- **Ability**: `Mugong.{Light,Heavy,Dodge,Parry,SprintAttack,CounterThrust,AirCombo,Execution}`, `Movement.Turn`, `Enemy.{Grunt,Elite,Boss}.Attack.*`, `Combat.Unblockable`
-- **State.Combat**: InCombat/Attacking/Dodging/Invulnerable/CanCancel/MovementCanCancel/Parrying/PerfectParryReady/EnemyAttackHitWindow/CounterReady/AirComboLock/Staggered/SuperArmor/PoiseRegenPaused. 그 외 `State.{Stamina.RegenBlocked, Character.LockOn, Movement.Turning/InAir, Dead, Camera.Cinematic}`
+- **Ability**: `Player.{Light,Heavy,Dodge,Parry,SprintAttack,CounterThrust,AirCombo,Execution,Aim,Shoot,ShotBlast}`, `Movement.Turn`, `Enemy.{Grunt,Elite,Boss}.Attack.*`, `Combat.Unblockable`
+  - ★ 2026-08-17 **`Ability.Mugong.*` → `Ability.Player.*` 개명**(길동 컨셉 폐기). 에셋 15곳은 `Config/DefaultGameplayTags.ini`의 `+GameplayTagRedirects` 11줄이 로드 시 이어준다. **그 줄들을 지우면 재저장 안 된 에셋의 태그가 에러 없이 빈다.**
+- **State.Combat**: InCombat/InAction/Attacking/Dodging/Invulnerable/CanCancel/MovementCanCancel/Parrying/PerfectParryReady/EnemyAttackHitWindow/CounterReady/AirComboLock/Aiming/Shooting/Staggered/SuperArmor/PoiseRegenPaused(미구현). 그 외 `State.{Stamina.RegenBlocked, Character.LockOn, Movement.Turning/InAir, Dead, Camera.Cinematic}`
 - **Event**: `Montage.{TraceBegin,TraceEnd}`, `Rush.Warp`, `Combat.{Hit,HitReact,WeaponToggle,ExecutionStarted,PerfectParryTriggered,ParrySuccess}`
-- **SetByCaller**: AttackPower/Dosul/Stamina · **Team**: Enemy · **Input**: `Action.*`/`Combo.*` · **GameplayCue**: `Combat.HitImpact.Light`, `Enemy.Telegraph.{Parryable,Unblockable,Lethal}`, `Combat.*`, `Camera.*`
+- **SetByCaller**: AttackPower/Stamina · **Team**: Enemy · **Input**: `Action.{Light,Heavy,Dodge,Parry}`/`Combo.{Light,Heavy}` · **GameplayCue**: `Combat.HitImpact.Light`, `Enemy.Telegraph.{Parryable,Unblockable,Lethal}`, `Combat.*`, `Camera.*`
+- **태그 총 95개** (2026-08-17 감사). 삭제분 = `SetByCaller.Dosul`(Stamina가 역할 대체) / `Input.Action.Aim`(홀드라 선입력 개념 X). 미사용이나 존치 = `State.Combat.PoiseRegenPaused`(GE_PoiseRegen 미구현) · `Input.Action.Parry`(패링 선입력 대비) · `Ability.Enemy.Boss.Attack.Basic`(보스 예약) · `Cooldown.Enemy.Grunt.Heavy`(형제 6개는 에셋에서 쓰이는데 이것만 0 — 적 작업 때 확인)
 
 ### 2-4. 아키텍처 규칙 준수 현황
 - **ASC 초기화**(§2-8): Player=`PossessedBy`에서 `InitAbilityActorInfo(PS, this)`, Enemy=`InitAbilityActorInfo(this, this)`. `OnRep_PlayerState` 미구현(싱글 전제, 의도적).
@@ -165,7 +167,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 | **로코모션** | ⚠️부분 | 코드(`UKDPlayerAnimInstance`) 유효, BS 자산은 길동 스켈레톤→Manny 전환시 재작업 |
 | **도술** | ❌stale | 길동 전용, Doul 자원. Gun&Sword엔 Skill1~5/Ultimate 슬롯이 유사역할 후보 |
 | **공중QTE** | ❌stale | 길동 "동에번쩍". Gun&Sword는 공중전 축소 재설계중, 팩 Air Combo로 대체예정 |
-| **UI/HUD** | ❌stale | 길동 3바(HP/Stamina/Doul). Doul 없어져 재정의 필요, GunSword HUD 문서 미작성 |
+| **UI/HUD** | 🟡설계완료·미구현 | 길동 3바(HP/Stamina/Doul) 폐기. **SB HUD 구조 전수 조사 완료**(2026-08-17) = 볼트 `notes/Reference/StellarBlade_UI_HUD_구조.md`. 방침 = `WBP_MainHUD` 1개만 뷰포트 + 캔버스 2장, 값은 GAS 델리게이트 push(`WaitForAttributeChanged`). 현재 위젯 2개뿐(`WBP_Crosshair` 화면고정 / `WBP_LockOnReticle` 월드). **1차 = 적 상태 바(Poise+HP)** — Poise만 실동작이라 |
 | **적·보스** | ❌stale | 길동 도적/각시탈. 색상신호·GAS모듈공유 문법만 참고. GunSword 적 기획 미작성(스코프만 결정) |
 | **분위기** | ❌stale | 길동 사극톤. GunSword 톤 문서 없음(SB 참조가 유일) |
 
