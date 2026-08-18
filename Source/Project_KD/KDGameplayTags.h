@@ -80,6 +80,8 @@ namespace GameplayTags
 
 	// 스태미나 소모 직후 회복 차단. StaminaComponent가 루즈 태그로 부여, GE_StaminaRegen이 OngoingTagRequirements로 inhibit.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Stamina_RegenBlocked)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Gun_Reloading)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Gun_RegenBlocked)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Character_LockOn)
 

@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
+#include "AbilitySystem/Effects/GE_AmmoCost.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
@@ -18,6 +19,8 @@ UGA_Shoot::UGA_Shoot()
 {
 	bRetriggerInstancedAbility = false; 
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	CostGameplayEffectClass = UGE_AmmoCost::StaticClass();
+	ActivationBlockedTags.AddTag(GameplayTags::State_Gun_Reloading);
 }
 
 void UGA_Shoot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -28,6 +31,11 @@ void UGA_Shoot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
+	}
+
+	if (RegenBlockEffectClass)
+	{
+		BP_ApplyGameplayEffectToOwner(RegenBlockEffectClass);
 	}
 
 	if (!ShootMontage)

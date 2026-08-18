@@ -58,6 +58,9 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_SuperArmor, "State.Combat.SuperArmor")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_PoiseRegenPaused, "State.Combat.PoiseRegenPaused")
 	UE_DEFINE_GAMEPLAY_TAG(State_Stamina_RegenBlocked, "State.Stamina.RegenBlocked")
+	UE_DEFINE_GAMEPLAY_TAG(State_Gun_Reloading, "State.Gun.Reloading")
+	UE_DEFINE_GAMEPLAY_TAG(State_Gun_RegenBlocked, "State.Gun.RegenBlocked")
+	
 	UE_DEFINE_GAMEPLAY_TAG(State_Character_LockOn, "State.Character.LockOn")
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Movement_Turning, "State.Movement.Turning")

@@ -28,10 +28,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage", meta = (ClampMin = "0.1", ClampMax = "3.0"))
 	float MontagePlayRate = 1.0f;
 
+	// 탄약 리젠 GE
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
+	TSubclassOf<UGameplayEffect> RegenBlockEffectClass;
+	
 	// 스폰할 총알 BP
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
 	TSubclassOf<AKDProjectile> ProjectileClass;
-
+	
 	// 총알이 운반할 데미지 GE
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;

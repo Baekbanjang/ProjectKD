@@ -2,7 +2,7 @@
 
 
 #include "AbilitySystem/Attributes/AS_Player.h"
-
+#include "KDGameplayTags.h"
 #include "GameplayEffectExtension.h"
 
 UAS_Player::UAS_Player()
@@ -10,8 +10,8 @@ UAS_Player::UAS_Player()
 	InitStamina(100.0f);
 	InitMaxStamina(100.0f);
 	
-	InitDosul(0.0f);
-	InitMaxDosul(100.0f);
+	InitAmmo(30.0f);
+	InitMaxAmmo(30.0f);
 }
 
 void UAS_Player::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -22,9 +22,9 @@ void UAS_Player::PreAttributeChange(const FGameplayAttribute& Attribute, float& 
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());
 	}
-	if (Attribute == GetDosulAttribute())
+	if (Attribute == GetAmmoAttribute())
 	{
-		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxDosul());
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxAmmo());
 	}
 }
 
@@ -36,9 +36,23 @@ void UAS_Player::PostGameplayEffectExecute(const struct FGameplayEffectModCallba
 	{
 		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
 	}
-	else if (Data.EvaluatedData.Attribute == GetDosulAttribute())
+	else if (Data.EvaluatedData.Attribute == GetAmmoAttribute())
 	{
-		SetDosul(FMath::Clamp(GetDosul(), 0.0f, GetMaxDosul()));
+		SetAmmo(FMath::Clamp(GetAmmo(), 0.0f, GetMaxAmmo()));
+		
+		if (UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent())
+		{
+			// 재장전
+			if (GetAmmo() <= 0.0f)
+			{
+				ASC->SetLooseGameplayTagCount(GameplayTags::State_Gun_Reloading, 1);
+			}
+			// 충전 시 해제
+			else if (GetAmmo() >= GetMaxAmmo())
+			{
+				ASC->SetLooseGameplayTagCount(GameplayTags::State_Gun_Reloading, 0);
+			}
+		}
 	}
 }
 
