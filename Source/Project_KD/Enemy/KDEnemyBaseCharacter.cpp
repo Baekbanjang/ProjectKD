@@ -89,6 +89,9 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetPoiseAttribute(),     EnemyDefinition->MaxPoise);
 		AbilitySystemComponent->SetNumericAttributeBase(UAS_Combat::GetAttackPowerAttribute(),      EnemyDefinition->AttackPower);
 		AbilitySystemComponent->SetNumericAttributeBase(UAS_Combat::GetDefenseAttribute(),          EnemyDefinition->Defense);
+		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetMaxShieldAttribute(), EnemyDefinition->MaxShield);
+		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetShieldAttribute(),    EnemyDefinition->MaxShield);
+
 
 		// 싱글 전제 — 멀티 전환 시 HasAuthority 게이트 필요
 		for (const TSubclassOf<UGameplayAbility>& AbilityClass : EnemyDefinition->StartupAbilities)

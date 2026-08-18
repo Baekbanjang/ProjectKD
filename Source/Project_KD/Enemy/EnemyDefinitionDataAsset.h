@@ -54,6 +54,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stats", meta = (ClampMin = "0.0"))
 	float Defense = 0.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float MaxShield = 0.f;
+
 	// --- AI 거리 (캐릭터 게터 경유로 BTService_FindPlayer / kiting 노드가 읽음) ---
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI", meta = (ClampMin = "0.0"))
 	float SightRadius = 1500.f;

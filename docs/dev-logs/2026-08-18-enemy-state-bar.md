@@ -160,6 +160,26 @@ Event On Targeted    = BlueprintNativeEvent 구현
 
 → 노드를 지우거나, 노드 위 우클릭 → **부모 함수 호출 추가**(`Parent: On Targeted`).
 
+#### ★ 이건 BP 마다 따로 확인해야 한다 (2026-08-18 추가)
+
+`BP_Bandit` 을 고친 뒤에도 궁수 두 종은 계속 안 떴다. 전수 조회 결과.
+
+```
+BP_Bandit / BP_Bandit_Parry / BP_Axe_Elite   OnTargeted 노드 없음   -> 정상
+BP_Bandit_Arrow / BP_Bandit_Arrow2           빈 OnTargeted 노드     -> 안 뜸
+```
+
+`WidgetComponent` 설정은 **다섯 BP 가 전부 동일**했다(`WidgetClass` · `Screen` · `DrawAtDesiredSize` · `RelativeLocation 110`). 컴포넌트만 비교해선 절대 안 나온다. **그래프에 노드가 있느냐를 봐야 한다.**
+
+### 새 적 BP 체크리스트
+
+```
+Event On Targeted 노드가 있으면 지운다     없으면 상태 바가 조용히 안 뜬다
+EnemyDefinition 지정
+StateBarWidget 의 Widget Class = WBP_EnemyStateBar
+MaxShield 필요하면 DA 에 값
+```
+
 ### `Width Override` 가 부모 슬롯에 끌려 늘어난다
 
 `SizeBox_Poise` 폭을 30 으로 잡았는데 도트가 20개 나왔다. `VerticalBox` 슬롯의 **`Horizontal Alignment` 기본값이 `Fill`** 이라 SizeBox 가 부모 폭(200)까지 늘어난 것.

@@ -219,12 +219,51 @@ Fill Color and Opacity
 
 ---
 
-## 12. 남은 것
+## 12. 적 실드까지 같이 넣었다
 
 ```
-적 실드            DA_EnemyDef_* 에 MaxShield 값 + 적 상태 바에 SH 줄 추가
-0 전용 리액션      SB 의 ReactionWhenShieldZero. 지금은 실드 0이어도 아무 일 없음
+EnemyDefinitionDataAsset.h    float MaxShield = 0.f
+KDEnemyBaseCharacter.cpp      MaxShield / Shield 두 줄, Defense 아래
+DA_Arrow 0 / DA_Sword 0 / DA_Parry 30 / DA_Axe_Elite 60
+WBP_EnemyStateBar             SizeBox_Shield 200 x 10, HP 와 Poise 사이
+                              MaxShield 0 이면 Collapsed 로 줄 자체를 없앰
+```
+
+**전부 주면 안 된다.** 실드가 있는 적과 없는 적이 갈려야 "이놈은 단단하다"가 읽힌다.
+
+적 실드는 **재생 안 한다.** `EnemyDefinition` 에 `StartupEffects` 배열이 없어 `GE_ShieldRegen` 을 받을 통로가 없다.
+
+`Collapsed` 여야 자리까지 사라진다. `Hidden` 이면 빈 줄이 남아 검사·궁수 바가 위아래로 벌어진다.
+
+### 여기서도 값이 100배로 들어갔다
+
+`Fill Color and Opacity` 에 `(3.0, 75.0, 65.0)` 이 들어가 HDR 로 타서 하얗게 번졌다. **소수점이 빠진 것.** 색은 0~1 범위다.
+
+---
+
+## 13. ★ 오늘 두 번 오진했다 — 기록
+
+```
+"콤보 데미지 계수가 전부 0이라 HP 바가 안 움직인다"
+   틀림. 데미지는 처음부터 정상. 계수라는 개념 자체가 없었다
+   실제 = 모든 타격이 AttackPower(20) 고정. "0" 이 아니라 "전부 똑같다"
+
+"GA_LightCombo 의 DamageEffectClass 가 비어 있다"
+   틀림. 그건 런타임 작업용 변수라 CDO 가 비는 게 정상
+   GA_PlayerAttackBase.cpp:21 이 매 활성화마다 DefaultDamageEffectClass 로 덮는다
+   실제 값은 DefaultDamageEffectClass 에 처음부터 들어 있었다
+```
+
+**CDO 값만 보고 "안 물려 있다"고 단정한 게 원인이다.** 런타임에 대입되는 변수는 CDO 가 비어 있는 게 정상 상태다. 그 변수를 누가 채우는지 `.cpp` 를 먼저 봐야 한다.
+
+---
+
+## 14. 남은 것
+
+```
+타격별 계수        FComboNode 에 DamageMultiplier(float) 추가 -> 노드 26칸 채우기
+                  SB 실측 계수표가 볼트에 있다. 전투 밸런싱 작업으로 별도 진행
+실드 0 리액션      SB 의 ReactionWhenShieldZero. 지금은 실드 0이어도 아무 일 없음
 전투 중 회복       SB 는 ShieldRegenPerSecondWhenBattle 를 따로 둔다. 우리는 전투 중 0
-콤보 데미지 계수 0  내 공격으로는 여전히 아무 바도 안 움직인다
 튜닝              ShieldDamageReduction 0.4 / MaxShield 50 / 회복 0.3 전부 체감 미검증
 ```
