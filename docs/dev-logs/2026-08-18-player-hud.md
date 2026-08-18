@@ -254,9 +254,10 @@ BP  CDO   ActivationBlockedTags = (비어 있음)
 ## 9. 남은 것
 
 ```
-스태미나 표시 X    실제로 소모되는데(회피·강공·풀스프린트) 화면에 없다. 3줄로 늘릴 때 같이
-Shield (SH)       좌하단 3층 중 맨 아래. 전투 시스템 작업이라 나중
+스태미나 표시 X    -> 완료. [2026-08-18-shield-and-vitals](2026-08-18-shield-and-vitals.md)
+Shield (SH)       -> 완료. 같은 문서
+탄약 상시 표시     -> 크로스헤어 아래로 이전. 같은 문서
 콤보 데미지 계수 0  HP 바가 내 공격에 안 움직이는 진짜 이유
 튜닝              MaxAmmo 30 / Regen Magnitude 1.0 / RegenBlock Duration 2.0 은 전부 체감 미검증
-잔가지            WBP_PlayerInfo 루트 이름 오타(VeticalBox) / 빈 Event Tick 노드 / Percent 0
+잔가지            WBP_PlayerInfo 루트 이름 오타(VeticalBox) / 빈 Event Tick 노드
 ```

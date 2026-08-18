@@ -6,37 +6,39 @@
 
 UAS_Combat::UAS_Combat()
 {
+	// 기능 : 전투 어트리뷰트 초기값
 	InitAttackPower(20.0f);
 	InitDefense(0.0f);
 }
 
 void UAS_Combat::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
+	// 기능 : Defense 하한 0
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	// 음수 방지
 	if (Attribute == GetDefenseAttribute()) { NewValue = FMath::Max(NewValue, 0.0f); }
 }
 
 void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
+	// 기능 : 들어온 데미지를 패링 | Defense | Shield | Health 순으로 분배
 	Super::PostGameplayEffectExecute(Data);
 
 	if (Data.EvaluatedData.Attribute != GetIncomingDamageAttribute()) { return; }
 
-	// 게이트웨이 비움 — 메타 어트리뷰트는 1회용 버킷(영속 X).
+	// 버킷 비움 — 메타 어트리뷰트는 1회용
 	const float LocalDamage = GetIncomingDamage();
 	SetIncomingDamage(0.0f);
 	if (LocalDamage <= 0.0f) { return; }
 
-	// Health는 AS_CharacterBase 소유 — 공유 ASC로 적용.
+	// Health 소유자 = AS_CharacterBase — 공유 ASC 경유
 	UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent();
 	if (!ASC) { return; }
 
-	// 전방 판정: 공격자가 정면 반구(±90°) 안일 때만 방어/패링 성립.
-	// EffectCauser = 공격 아바타 사용(GetInstigator()는 PlayerState 원점이라 각도 부정확).
+	// 공격자가 정면 반구(좌우 90도) 안인지 — 기준 = EffectCauser
+	// GetInstigator 는 원점이 PlayerState 라 각도 부정확
 	bool bFrontalAttack = false;
-	float HitAngle = 0.f; // 정면 기준 좌우 부호각(+우 / -좌)
+	float HitAngle = 0.f; // 정면 기준 부호각 — 우 = + | 좌 = -
 	if (const AActor* Defender = ASC->GetAvatarActor())
 	{
 		if (const AActor* Attacker = Data.EffectSpec.GetContext().GetEffectCauser())
@@ -48,12 +50,12 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 		}
 	}
 
-	// 언블록(노랑 전조) — Ability.Combat.Unblockable asset tag를 단 공격은 아래 패링 분기 전부 스킵(회피만 가능).
+	// 언블록 유무 — Ability.Combat.Unblockable 이면 아래 패링 분기 전부 스킵
 	FGameplayTagContainer SpecAssetTags;
 	Data.EffectSpec.GetAllAssetTags(SpecAssetTags);
 	const bool bUnblockable = SpecAssetTags.HasTag(GameplayTags::Ability_Combat_Unblockable);
 
-	// Perfect Parry — 데미지 0 + GameplayEvent 발행 (시각/슬로우모션은 listener BP가 처리).
+	// 퍼펙트 패링 — 데미지 0 + 이벤트 발행. 시각 | 슬로우모션 = 리스너 BP
 	if (!bUnblockable && bFrontalAttack && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_PerfectParryReady))
 	{
 		FGameplayEventData EventData;
@@ -65,12 +67,12 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 		return;
 	}
 
-	// 적 방어형 패링 — 정면 가드 시 데미지 완전 차단(0 = 무효화). 슬로모 경로를 안 타 플레이어는 무경직(비대칭).
+	// 적 방어형 패링 — 정면 가드 시 데미지 0. 슬로우모션 경로 X
 	if (!bUnblockable && bFrontalAttack
 		&& ASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
 		&& ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying))
 	{
-		// 막아낸 순간 클래시 이벤트. ContextHandle의 HitResult로 리스너(GA_EnemyParry)가 GC 위치를 잡음.
+		// 클래시 이벤트 — ContextHandle 의 HitResult = GA_EnemyParry 의 GC 위치
 		FGameplayEventData ParryData;
 		ParryData.EventTag = GameplayTags::Event_Combat_ParrySuccess;
 		ParryData.Instigator = Data.EffectSpec.GetContext().GetEffectCauser();
@@ -80,18 +82,33 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 		return;
 	}
 
-	// 일반 Parry — 50% 감소.
+	// 일반 패링 — 50% 감소
 	const bool bBlockedHit = !bUnblockable && bFrontalAttack && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying);
 	float FinalDamage = bBlockedHit ? LocalDamage * 0.5f : LocalDamage;
 
-	// Defense 경감 + 치명 선판정 — 히트리액션보다 먼저. 치명타에 움찔 이벤트가 나가면 같은 프레임 사망 연출에
-	// 끊겨 몽타주 순서가 꼬임.
+	// Defense 경감 — 하한 0
 	const float Mitigated = FMath::Max(FinalDamage - GetDefense(), 0.0f);
-	const float NewHealth = ASC->GetNumericAttribute(UAS_CharacterBase::GetHealthAttribute()) - Mitigated;
-	const bool bLethal = Mitigated > 0.0f && NewHealth <= 0.0f;
 
-	// 히트리액션 신호 — 리스너 BP가 EventMagnitude로 방어/무방비 몽타주 선택. 치명타는 스킵(사망 연출 소유).
-	// 처형 GE(self-apply)는 EffectCauser=자기 자신 → 전방판정 false → 패링 분기 자연 스킵.
+	// 실드 경감 — 피해의 이 비율만큼 실드가 대신 받음
+	constexpr float ShieldDamageReduction = 0.4f;
+
+	// 체력으로 갈 몫 — 실드가 받은 만큼 줄어듦
+	float ToHealth = Mitigated;
+	const float Shield = ASC->GetNumericAttribute(UAS_CharacterBase::GetShieldAttribute());
+	if (Shield > 0.0f && Mitigated > 0.0f)
+	{
+		// 실드가 받는 양 = 피해 x 0.4 | 남은 실드 중 작은 쪽
+		const float Absorbed = FMath::Min(Shield, Mitigated * ShieldDamageReduction);
+		ASC->SetNumericAttributeBase(UAS_CharacterBase::GetShieldAttribute(), Shield - Absorbed);
+		ToHealth = Mitigated - Absorbed;
+	}
+
+	// 치명 선판정 — 히트리액션보다 먼저
+	const float NewHealth = ASC->GetNumericAttribute(UAS_CharacterBase::GetHealthAttribute()) - ToHealth;
+	const bool bLethal = ToHealth > 0.0f && NewHealth <= 0.0f;
+
+	// 히트리액션 신호 — 치명타는 스킵
+	// 처형 GE = EffectCauser 자기 자신 — 전방판정 false 로 패링 분기 스킵
 	if (!bLethal)
 	{
 		FGameplayEventData HitReactData;
@@ -99,15 +116,14 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 		HitReactData.Instigator = Data.EffectSpec.GetContext().GetEffectCauser();
 		HitReactData.ContextHandle = Data.EffectSpec.GetContext();
 		HitReactData.Target = ASC->GetAvatarActor();
-		HitReactData.EventMagnitude = bBlockedHit ? 1.0f : 0.0f; // 1=방어 중 맞음, 0=그냥 맞음
+		HitReactData.EventMagnitude = bBlockedHit ? 1.0f : 0.0f; // 1 = 방어 중 피격 | 0 = 무방비 피격
 		ASC->HandleGameplayEvent(HitReactData.EventTag, &HitReactData);
 	}
 
-	if (Mitigated <= 0.0f) { return; } // 경감 후 0 이하면 적용 불필요
+	if (ToHealth <= 0.0f) { return; } // 실드가 전부 받았거나 경감 후 0
 
-	// Health 차감 — 이 Set은 Health 델리게이트를 동기 발화한다. 0 도달 시 HandleDeath가
-	// 이 호출 스택 안에서 완료됨 → 아래에 사후 로직 추가 금지.
-	// SetNumericAttributeBase는 PreAttributeChange 클램프를 건너뛰므로 여기서 0 하한.
+	// Health 차감 — 0 도달 시 HandleDeath 가 이 스택 안에서 완료. 이 아래 사후 로직 X
+	// SetNumericAttributeBase = PreAttributeChange 클램프 스킵 — 여기서 하한 0
 	ASC->SetNumericAttributeBase(UAS_CharacterBase::GetHealthAttribute(), FMath::Max(NewHealth, 0.0f));
 }
  

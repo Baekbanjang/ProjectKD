@@ -8,6 +8,7 @@
 #include "AbilitySystem/Attributes/KDAttributeAccessors.h"
 #include "AS_CharacterBase.generated.h"
 
+// 캐릭터 공용 어트리뷰트 — 플레이어 | 적 공유
 UCLASS()
 class PROJECT_KD_API UAS_CharacterBase : public UAttributeSet
 {
@@ -25,7 +26,7 @@ public:
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UAS_CharacterBase, MaxHealth)
 
-	// 균형 게이지 — 적/보스 Stagger 시스템 공통. 0 도달 시 자세 붕괴.
+	// 균형 게이지 — 0 = 자세 붕괴. MaxPoise = 상태 바 칸 수
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	FGameplayAttributeData Poise;
 	ATTRIBUTE_ACCESSORS(UAS_CharacterBase, Poise)
@@ -33,4 +34,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	FGameplayAttributeData MaxPoise;
 	ATTRIBUTE_ACCESSORS(UAS_CharacterBase, MaxPoise)
+
+	// 피해 경감 자원 — 0 = 경감 X
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	FGameplayAttributeData Shield;
+	ATTRIBUTE_ACCESSORS(UAS_CharacterBase, Shield)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
+	FGameplayAttributeData MaxShield;
+	ATTRIBUTE_ACCESSORS(UAS_CharacterBase, MaxShield)
 };
