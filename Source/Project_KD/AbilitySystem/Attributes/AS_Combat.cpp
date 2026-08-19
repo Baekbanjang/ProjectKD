@@ -1,6 +1,7 @@
 #include "AbilitySystem/Attributes/AS_Combat.h"
 
 #include "AbilitySystem/Attributes/AS_CharacterBase.h"
+#include "Engine/Engine.h"
 #include "GameplayEffectExtension.h"
 #include "KDGameplayTags.h"
 
@@ -121,6 +122,15 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 	}
 
 	if (ToHealth <= 0.0f) { return; } // 실드가 전부 받았거나 경감 후 0
+
+	// 개발용 데미지 표시 — 값 = 실드·방어 경감 후 체력에 들어간 최종량. 출시 전 삭제
+#if !UE_BUILD_SHIPPING
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow,
+			FString::Printf(TEXT("%s  -%.0f"), *GetNameSafe(ASC->GetAvatarActor()), ToHealth));
+	}
+#endif
 
 	// Health 차감 — 0 도달 시 HandleDeath 가 이 스택 안에서 완료. 이 아래 사후 로직 X
 	// SetNumericAttributeBase = PreAttributeChange 클램프 스킵 — 여기서 하한 0
