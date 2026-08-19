@@ -182,6 +182,7 @@ void UWeaponComponent::BeginPlay()
 	}
 
 	WeaponMesh->ComponentTags.Add(WeaponComponentTag);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponMesh->RegisterComponent();
 	if (bUseSheathing)
 	{
