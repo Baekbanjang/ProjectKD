@@ -27,4 +27,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shot",
 		meta = (ClampMin = "0.0", ClampMax = "180.0", DisplayName = "각도 예외 (0 = GA 값)"))
 	float ShotHalfAngleOverride = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Shot",
+		meta = (ClampMin = "0.0", ClampMax = "5.0", DisplayName = "데미지 배수 (0 = GA 값)"))
+	float ShotDamageMultiplierOverride = 0.f;
 };

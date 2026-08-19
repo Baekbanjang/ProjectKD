@@ -37,9 +37,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "1.0", ClampMax = "89.0"))
 	float ShotHalfAngle = 20.f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float DefaultShotDamageMultiplier = 0.8f;
+	
+	float ShotDamageMultiplier = 0.8f;
+
 	// 자동 조준 범위 각도 — 180 = 정면 좌우 90도
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "30.0", ClampMax = "360.0"))
 	float AutoAimConeAngle = 180.f;
+	
+	// 몸 정면 기준 조준 한계각
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "0.0", ClampMax = "180.0"))
+	float BodyAimLimitAngle = 60.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;

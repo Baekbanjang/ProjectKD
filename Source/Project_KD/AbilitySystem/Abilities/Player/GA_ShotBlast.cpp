@@ -59,12 +59,28 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	else if (const AActor* Target = FindAutoAimTarget(ShotRange, AutoAimConeAngle))
 	{
 		const FVector ToTarget = (Target->GetActorLocation() - ConeOrigin).GetSafeNormal();
-		if (!ToTarget.IsNearlyZero()) ShotDir = ToTarget;
+		if (!ToTarget.IsNearlyZero())
+		{
+			// 몸 정면 기준 조준각 — 한계 초과분 클램프
+			const float BodyYaw = Avatar->GetActorRotation().Yaw;
+			const float DeltaYaw = FMath::FindDeltaAngleDegrees(BodyYaw, ToTarget.Rotation().Yaw);
+			const float ClampedYaw = FMath::Clamp(DeltaYaw, -BodyAimLimitAngle, BodyAimLimitAngle);
+
+			// 피치는 유지 - 요만 변경
+			FRotator AimRot = ToTarget.Rotation();
+			AimRot.Yaw = BodyYaw + ClampedYaw;
+			ShotDir = AimRot.Vector();
+		}
 	}
 	
 	// 각도 = 노티파이 우선, 0이면 GA 값
 	const float HalfAngle = (Notify && Notify->ShotHalfAngleOverride > 0.f)
 		? Notify->ShotHalfAngleOverride : ShotHalfAngle;
+
+	// 배수 = 노티파이 우선, 0이면 GA 값
+	ShotDamageMultiplier = (Notify && Notify->ShotDamageMultiplierOverride > 0.f)
+		? Notify->ShotDamageMultiplierOverride : DefaultShotDamageMultiplier;
+	
 	TArray<FHitResult> Hits;
 	GatherTargets(ConeOrigin, ShotDir, HalfAngle, Hits);
 	
@@ -181,7 +197,7 @@ bool UGA_ShotBlast::ApplyHit(const FHitResult& Hit)
 	}
 	
 	// 데미지 Spec
-	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute());
+	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * ShotDamageMultiplier;
 	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
 	Context.AddSourceObject(GetAvatarActorFromActorInfo());
 	Context.AddHitResult(Hit);
