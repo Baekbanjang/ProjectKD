@@ -58,8 +58,12 @@ struct FComboNode
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float InputWindow = 0.f;
+
+	// 데미지 배수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float DamageMultiplier = 0.f;
 };
 
 // 콤보 시작 — 상황 + 입력 -> 첫 노드

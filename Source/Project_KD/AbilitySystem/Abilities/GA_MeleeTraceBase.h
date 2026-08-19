@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
+	// 해당 공격의 데미지 배수 - 콤보 노드 없을 시
+	float DamageMultiplier = 1.f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	FName WeaponMeshComponentTag = TEXT("Sword");
 	

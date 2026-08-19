@@ -25,6 +25,8 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 		: nullptr;
 	// 매 시작에 디폴트 복원 — 직전 노드 값 잔류 차단
 	DamageEffectClass = DefaultAirDamageEffectClass;
+	DamageMultiplier = DefaultAirDamageMultiplier;
+	
 	if (Node)
 	{
 		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr; // 노드의 몽타주 GA 변수에 대입
@@ -37,6 +39,12 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 		{
 			DamageEffectClass = Node->DamageEffectClass;
 		}
+
+		if (Node->DamageMultiplier > 0.f)
+		{
+			DamageMultiplier = Node->DamageMultiplier;
+		}
+		
 		// 다음 없는 노드 = 막타(피니셔)
 		bIsFinisher = (Node->NextLinks.Num() == 0);
 	}

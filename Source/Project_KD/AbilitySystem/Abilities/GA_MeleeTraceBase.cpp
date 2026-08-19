@@ -207,7 +207,7 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 		return;
 	}
 
-	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute());
+	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * DamageMultiplier;
 	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
 	Context.AddSourceObject(GetAvatarActorFromActorInfo());
 	Context.AddHitResult(Hit);

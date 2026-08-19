@@ -36,4 +36,7 @@ protected:
 	// 노드가 GE를 안 주면 이 값 — InstancedPerActor라 직전 값이 남음, 매 시작 복원
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DefaultDamageEffectClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float DefaultDamageMultiplier = 1.f;
 };
