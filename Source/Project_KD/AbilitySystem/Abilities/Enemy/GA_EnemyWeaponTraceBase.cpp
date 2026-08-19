@@ -12,6 +12,7 @@ UGA_EnemyWeaponTraceBase::UGA_EnemyWeaponTraceBase()
 {
 	// GA-레벨 once-per-actor를 끔: 다단 공격에서 스윙마다 패링 게이트 도달 보장. tick-spam은 per-window 태스크가 막음.
 	bOncePerActor = false;
+	WeaponMeshComponentTag = TEXT("Weapon");
 }
 
 void UGA_EnemyWeaponTraceBase::OnActivated()
