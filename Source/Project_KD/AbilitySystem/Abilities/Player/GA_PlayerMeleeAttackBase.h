@@ -37,6 +37,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "30.0", ClampMax = "360.0"))
 	float AutoAimConeAngle = 180.f;
 
+	// 몽타주의 Motion Warping 노티 접근점 이름
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Approach")
+	FName ApproachWarpName;
+	
+	// 타겟 앞에서 멈출 거리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Approach", meta = (ClampMin = "0.0"))
+	float ApproachStopDistance = 200.f;
+	
+	// 접근 가능 최대 거리 — 초과 시 제자리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Approach", meta = (ClampMin = "0.0"))
+	float MaxApproachRange = 700.f;
+
 	// 타격 시 플레이어 전용 HitConfirm 큐 실행
 	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) override;
 

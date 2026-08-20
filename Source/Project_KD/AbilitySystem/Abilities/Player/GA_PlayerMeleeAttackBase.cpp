@@ -5,8 +5,10 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Engine/Engine.h"
 #include "GameFramework/Character.h"
 #include "KDGameplayTags.h"
+#include "MotionWarpingComponent.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 #include "Combat/Data/HitConfirmProfile.h"
 
@@ -52,6 +54,13 @@ void UGA_PlayerMeleeAttackBase::OnActivated()
 {
 	ACharacter* Attacker = Cast<ACharacter>(GetAvatarActorFromActorInfo());
 	if (!Attacker) return;
+
+	// 워프 컴포넌트 = ApproachWarpName 있을 때만
+	UMotionWarpingComponent* Warp = ApproachWarpName.IsNone()
+		? nullptr : Attacker->FindComponentByClass<UMotionWarpingComponent>();
+
+	// 지난 공격 좌표 제거 — 타겟 없는 경로에서 옛 좌표로 끌려감 방지
+	if (Warp) Warp->RemoveWarpTarget(ApproachWarpName);
 	
 	AActor* Target = FindAutoAimTarget(AutoAimRange, AutoAimConeAngle);
 	if (!Target) return;
@@ -62,6 +71,33 @@ void UGA_PlayerMeleeAttackBase::OnActivated()
 
 	// 뒤쪽 135도 초과는 제외
 	const float DeltaYaw = FMath::FindDeltaAngleDegrees(Attacker->GetActorRotation().Yaw, ToTarget.Rotation().Yaw);
-	if (FMath::Abs(DeltaYaw) <= 135.f)
-		Attacker->SetActorRotation(FRotator(0.f, ToTarget.Rotation().Yaw, 0.f));
+	Attacker->SetActorRotation(FRotator(0.f, ToTarget.Rotation().Yaw, 0.f));
+
+	if (!Warp) return;
+	USceneComponent* TargetRoot = Target->GetRootComponent();
+
+	if (!TargetRoot) return;
+	const float Dist = FVector::Dist2D(Target->GetActorLocation(), Attacker->GetActorLocation());
+
+#if !UE_BUILD_SHIPPING
+	// 개발용 접근 판정 표시 — 거리 + 어느 게이트에 걸렸는지
+	if (GEngine)
+	{
+		const TCHAR* Why = (Dist > MaxApproachRange) ? TEXT("멂")
+			: (Dist <= ApproachStopDistance ? TEXT("붙음") : TEXT("워프"));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan,
+			FString::Printf(TEXT("Approach %s   dist %.0f   (stop %.0f / max %.0f)"),
+				Why, Dist, ApproachStopDistance, MaxApproachRange));
+	}
+#endif
+
+	// 사거리 밖 = 제자리 / 코앞 = 몽타주 원래 이동량 유지
+	if (Dist > MaxApproachRange || Dist <= ApproachStopDistance) return;
+	// 타겟 추적 등록 
+	// 오프셋 X = 적에서 나 쪽으로 ApproachStopDistance 만큼
+	Warp->AddOrUpdateWarpTargetFromComponent(
+		ApproachWarpName, TargetRoot, NAME_None, true,
+		EWarpTargetLocationOffsetDirection::VectorFromTargetToOwner,
+		FVector(ApproachStopDistance, 0.f, 0.f), FRotator::ZeroRotator
+	);
 }
