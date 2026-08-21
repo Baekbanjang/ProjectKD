@@ -51,7 +51,11 @@ protected:
 	// 조준 트레이스 사거리
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shoot", meta = (ClampMin = "1000.0", ClampMax = "50000.0"))
 	float AimTraceRange = 10000.f;
-	
+
+	// 조준점 디버그 그리기 유무
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Debug")
+	bool bDrawAimDebug = false;
+
 private:
 	UFUNCTION()
 	void OnMontageFinished();

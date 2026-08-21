@@ -55,11 +55,17 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Projectile")
 	bool bPerfectDodgeable = true;
 
+	// 넉백 배수 
+	UPROPERTY(EditAnywhere, Category = "Projectile", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float KnockbackMultiplier = 1.f;
+
 private:
 	// 적용할 데미지
 	FGameplayEffectSpecHandle DamageSpec;
+	
 	// 발사자 ASC
 	TWeakObjectPtr<UAbilitySystemComponent> InstigatorASC;
+	
 	// 발사 GA 태그
 	FGameplayTagContainer InstigatorTags;
 };

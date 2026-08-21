@@ -86,6 +86,7 @@ void AKDProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 	HitEvent.Target = OtherActor;
 	HitEvent.InstigatorTags = InstigatorTags;
 	HitEvent.ContextHandle = DamageSpec.IsValid() ? DamageSpec.Data->GetContext() : FGameplayEffectContextHandle();
+	HitEvent.EventMagnitude = KnockbackMultiplier;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OtherActor, GameplayTags::Event_Combat_Hit, HitEvent);
 
 	Destroy();

@@ -12,6 +12,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "AbilitySystem/Effects/GE_AmmoCost.h"
+#include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 
@@ -106,12 +107,33 @@ void UGA_Shoot::OnShootEvent(FGameplayEventData Payload)
 	TraceParams.AddIgnoredActor(Avatar);   // 카메라와 총구 사이에 플레이어 아바타 존재
 	
 	const FVector TraceEnd = ViewLoc + ViewRot.Vector() * AimTraceRange;
-	FHitResult Hit;
-	const bool bHit = World->LineTraceSingleByChannel(Hit, ViewLoc, TraceEnd, ECC_Visibility, TraceParams);
-	const FVector AimPoint = bHit ? Hit.ImpactPoint : TraceEnd;
+
+	// 월드 조준점 = 벽 | 바닥
+	FHitResult WorldHit;
+	const bool bWorldHit = World->LineTraceSingleByChannel(WorldHit, ViewLoc, TraceEnd, ECC_Visibility, TraceParams);
+	FVector AimPoint = bWorldHit ? WorldHit.ImpactPoint : TraceEnd;
+
+	// 폰 조준점 — Pawn 프로파일은 Visibility 무시라 별도 조회
+	// 끝점 = 월드 조준점 — 벽 뒤 폰 탈락
+	FHitResult PawnHit;
+	const FCollisionObjectQueryParams PawnObjects(ECC_Pawn);
+	if (World->LineTraceSingleByObjectType(PawnHit, ViewLoc, AimPoint, PawnObjects, TraceParams))
+	{
+		AimPoint = PawnHit.ImpactPoint;
+	}
 	
 	// 총구에서 조준점으로
 	const FRotator SpawnRot = (AimPoint - MuzzleLoc).Rotation();
+
+#if !UE_BUILD_SHIPPING
+	// 개발용 조준 확인 — 초록 구가 크로스헤어 한가운데면 정상
+	if (bDrawAimDebug)
+	{
+		DrawDebugSphere(World, AimPoint, 12.f, 12, FColor::Green, false, 2.f);
+		DrawDebugLine(World, MuzzleLoc, AimPoint, FColor::Yellow, false, 2.f, 0, 1.f);
+		DrawDebugLine(World, ViewLoc, TraceEnd, FColor::Cyan, false, 2.f, 0, 0.5f);
+	}
+#endif
 	
 	// 데미지 Spec
 	UKDAbilityStatics::SpawnDamageProjectile(
