@@ -11,6 +11,7 @@
 #include "Combat/ExecutionProfile.h"
 #include "Enemy/EnemyDefinitionDataAsset.h"
 #include "Enemy/AI/EncounterSubsystem.h"
+#include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "KDGameplayTags.h"
 #include "Enemy/KDEnemyAIController.h"
@@ -465,8 +466,9 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 			AICon->StopMovement();
 		}
 
-		// 넉백 세기 = EnemyDefinition
-		const float KnockbackStrength = EnemyDefinition ? EnemyDefinition->KnockbackStrength : 0.f;
+		// 넉백 세기 = 적 DA 기준값 x 공격 배수
+		const float KnockbackMult = (Payload->EventMagnitude > 0.f) ? Payload->EventMagnitude : 1.f;
+		const float KnockbackStrength = (EnemyDefinition ? EnemyDefinition->KnockbackStrength : 0.f) * KnockbackMult;
 		FVector Dir = FVector::ZeroVector;
 		if (KnockbackStrength > 0.f && IsValid(Payload->Instigator))
 		{
@@ -483,6 +485,32 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 		if (!Dir.IsNearlyZero())
 		{
 			LaunchCharacter(Dir * KnockbackStrength, true, false);
+
+#if !UE_BUILD_SHIPPING
+			// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.5초 뒤 실제 이동 거리
+			{
+				FString SrcTag = Payload->InstigatorTags.IsEmpty()
+					? TEXT("-") : Payload->InstigatorTags.First().ToString();
+				int32 DotIdx = INDEX_NONE;
+				if (SrcTag.FindLastChar(TEXT('.'), DotIdx)) { SrcTag = SrcTag.RightChop(DotIdx + 1); }
+
+				const FVector KnockStart = GetActorLocation();
+				const float DbgMult = KnockbackMult;
+				const float DbgSpeed = KnockbackStrength;
+				FTimerHandle DbgKnockTimer;
+				GetWorldTimerManager().SetTimer(DbgKnockTimer, FTimerDelegate::CreateWeakLambda(this,
+					[this, SrcTag, DbgMult, DbgSpeed, KnockStart]()
+					{
+						const float Moved = FVector::Dist2D(GetActorLocation(), KnockStart);
+						if (GEngine)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+								FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm"),
+									*SrcTag, DbgMult, DbgSpeed, Moved));
+						}
+					}), 0.5f, false);
+			}
+#endif
 		}
 		else if (UCharacterMovementComponent* Move = GetCharacterMovement())
 		{

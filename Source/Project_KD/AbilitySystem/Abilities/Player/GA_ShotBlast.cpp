@@ -80,6 +80,10 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	// 배수 = 노티파이 우선, 0이면 GA 값
 	ShotDamageMultiplier = (Notify && Notify->ShotDamageMultiplierOverride > 0.f)
 		? Notify->ShotDamageMultiplierOverride : DefaultShotDamageMultiplier;
+
+	ShotKnockbackMultiplier = (Notify && Notify->ShotKnockbackMultiplierOverride > 0.f)
+		? Notify->ShotKnockbackMultiplierOverride : DefaultShotKnockbackMultiplier;
+
 	
 	TArray<FHitResult> Hits;
 	GatherTargets(ConeOrigin, ShotDir, HalfAngle, Hits);
@@ -215,6 +219,8 @@ bool UGA_ShotBlast::ApplyHit(const FHitResult& Hit)
 	HitEvent.Target = HitActor;
 	HitEvent.InstigatorTags = GetAssetTags();
 	HitEvent.ContextHandle = Context;
+	HitEvent.EventMagnitude = ShotKnockbackMultiplier;
+	
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, GameplayTags::Event_Combat_Hit, HitEvent);
 	// i-frame 닷지/사망한 대상엔 타격감 큐 생략
 	if (TargetASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Invulnerable)

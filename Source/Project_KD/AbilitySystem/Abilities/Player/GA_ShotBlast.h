@@ -37,10 +37,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "1.0", ClampMax = "89.0"))
 	float ShotHalfAngle = 20.f;
 
+	// 데미지 배수
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float DefaultShotDamageMultiplier = 0.8f;
 	
 	float ShotDamageMultiplier = 0.8f;
+
+	// 넉백 배수
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float DefaultShotKnockbackMultiplier = 1.5f;
+	
+	float ShotKnockbackMultiplier = 1.5f;
 
 	// 자동 조준 범위 각도 — 180 = 정면 좌우 90도
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "30.0", ClampMax = "360.0"))

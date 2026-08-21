@@ -16,7 +16,8 @@
 
 UGA_MeleeTraceBase::UGA_MeleeTraceBase()
 {
-	// Default Sweep covers the whole blade so point-blank hits land (TipLine whiffs inside the tip arc).
+	// 기능 : 판정 기본값
+	// 기본 판정 = Sweep. 날 전체 / TipLine 은 팁 선분만
 	TraceMode = ETraceMode::Sweep;
 }
 
@@ -26,6 +27,7 @@ void UGA_MeleeTraceBase::ActivateAbility(
 	const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
+	// 기능 : 몽타주 재생 + 판정 노티 대기 등록
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -42,8 +44,7 @@ void UGA_MeleeTraceBase::ActivateAbility(
 
 	const float EffRate = GetEffectiveMontagePlayRate();
 
-	// Asset tags carry the attack identity (Ability.Player.*) that enemy poise/execution gate on.
-	// Empty = silent no-op downstream, so surface the missing setup once here.
+	// AssetTags = 공격 신원(Ability.Player.*). 적 포이즈·처형이 이걸로 분기
 	ensureMsgf(!GetAssetTags().IsEmpty(),
 		TEXT("[KD] %s has empty AssetTags enemy poise/execution won't trigger. Set Ability.Player.* on the GA."),
 		*GetName());
@@ -79,7 +80,9 @@ void UGA_MeleeTraceBase::ActivateAbility(
 
 void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 {
-	// Race guard: cancel chain may EndAbility before this notify fires
+	// 기능 : 판정 시작 — 트레이스 메쉬·소켓 확정 후 AT_MeleeTrace 생성
+
+	// 캔슬 체인이 먼저 EndAbility 한 경우 제외
 	if (!IsActive()) return;
 
 	AActor* Avatar = GetAvatarActorFromActorInfo();
@@ -151,7 +154,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 		return;
 	}
 	
-	// Defensive: end any prior trace from a previous notify pair within the same activation.
+	// 같은 활성화 안 이전 판정 잔여 정리
 	if (ActiveTraceTask)
 	{
 		ActiveTraceTask->EndTask();
@@ -171,6 +174,7 @@ void UGA_MeleeTraceBase::OnTraceBeginEvent(FGameplayEventData Payload)
 
 void UGA_MeleeTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
 {
+	// 기능 : 판정 종료 — 트레이스 태스크 정리
 	ActiveWindow = nullptr;
 	if (ActiveTraceTask)
 	{
@@ -181,6 +185,7 @@ void UGA_MeleeTraceBase::OnTraceEndEvent(FGameplayEventData Payload)
 
 void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 {
+	// 기능 : 명중 처리 — 데미지 GE 적용 + 히트 이벤트 발신
 	AActor* HitActor = Hit.GetActor();
 	if (!IsValid(HitActor)) return;
 
@@ -194,7 +199,7 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 	if (!AttackerASC || !TargetASC) return;
 
-	// Faction gate: an enemy weapon never hits another enemy (player ASC carries no Team.Enemy, so it passes).
+	// 팀 게이트 — 적 무기가 적을 때리는 경우 제외. 플레이어 ASC 는 Team.Enemy 없음
 	if (AttackerASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
 		&& TargetASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy))
 	{
@@ -215,34 +220,37 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 	FGameplayEffectSpecHandle SpecHandle = AttackerASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
 	if (SpecHandle.IsValid())
 	{
-		// Positive = damage into the IncomingDamage gateway (AS_Combat consumes it).
+		// 양수 = IncomingDamage 게이트로 들어갈 데미지
 		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
 			SpecHandle, GameplayTags::SetByCaller_AttackPower, AttackPower);
 		AttackerASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data, TargetASC);
 	}
 
-	// Generic hit event carrying this ability's identity tags — decoupled, the victim decides the reaction.
-	// ContextHandle carries the impact for directional knockback / hit-react.
+	// 히트 알림 — 반응은 맞은 쪽이 선택
+	// ContextHandle = 방향 넉백·피격 리액션용 충돌 정보
 	FGameplayEventData HitEvent;
 	HitEvent.Instigator = GetAvatarActorFromActorInfo();
 	HitEvent.Target = HitActor;
 	HitEvent.InstigatorTags = GetAssetTags();
 	HitEvent.ContextHandle = Context;
+	HitEvent.EventMagnitude = KnockbackMultiplier;
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, GameplayTags::Event_Combat_Hit, HitEvent);
 
-	// Post-damage hook (player places HitConfirm cue, enemy ignores).
+	// 데미지 후처리 훅 — 플레이어만 HitConfirm 큐
 	OnTargetHit(HitActor, TargetASC, Hit);
 }
 
 void UGA_MeleeTraceBase::OnMontageCompleted()
 {
+	// 기능 : 몽타주 정상 종료
 	//UE_LOG(LogTemp, Log, TEXT("[KD-Montage] %s: Completed"), *GetName());
 	EndAbility(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), GetCurrentActivationInfo(), false, false);
 }
 
 void UGA_MeleeTraceBase::OnMontageInterrupted()
 {
+	// 기능 : 몽타주 중단 — 현재 재생 몽타주 로그 후 종료
 	FString NowPlaying = TEXT("<none>");
 	if (const FGameplayAbilityActorInfo* Info = GetCurrentActorInfo())
 	{
@@ -261,11 +269,12 @@ void UGA_MeleeTraceBase::OnMontageInterrupted()
 
 void UGA_MeleeTraceBase::OnActivated()
 {
-	// No-op base. Overridden by subclasses (e.g. player auto lock-on in GA_PlayerAttackBase).
+	// 기능 : 자식용 훅. 베이스는 비어 있음
 }
 
 void UGA_MeleeTraceBase::OnCleanup(bool bWasCancelled)
 {
+	// 기능 : 종료 정리 — 트레이스 태스크 · 히트 목록 해제
 	if (ActiveTraceTask)
 	{
 		ActiveTraceTask->EndTask();

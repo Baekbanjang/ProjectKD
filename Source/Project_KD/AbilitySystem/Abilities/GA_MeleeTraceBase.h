@@ -10,8 +10,9 @@ class UAnimMontage;
 class UAT_MeleeTrace;
 class UGameplayEffect;
 
-// Melee weapon-trace base (player LightAttack, enemy attacks). Plays a montage, runs AT_MeleeTrace on
-// TraceBegin/End notifies, applies DamageEffectClass to hit ASCs. Hooks: OnActivated / OnTargetHit / OnCleanup.
+// 근접 무기 판정 베이스 — 플레이어 공격 / 적 공격
+// 몽타주 재생 -> TraceBegin·TraceEnd 노티 -> AT_MeleeTrace -> DamageEffectClass 적용
+// 훅 = OnActivated / OnTargetHit / OnCleanup
 UCLASS(Abstract)
 class PROJECT_KD_API UGA_MeleeTraceBase : public UGA_ActionBase
 {
@@ -21,7 +22,7 @@ public:
 	UGA_MeleeTraceBase();
 
 protected:
-	// Engine (ASC) calls this via the base pointer — keep base's protected visibility.
+	// ASC 가 베이스 포인터로 호출 — protected 유지
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
@@ -37,8 +38,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
-	// 해당 공격의 데미지 배수 - 콤보 노드 없을 시
+	// 콤보 노드 없을시
+	// 해당 공격의 데미지, 넉백 배수
 	float DamageMultiplier = 1.f;
+	float KnockbackMultiplier = 1.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	FName WeaponMeshComponentTag = TEXT("Sword");
@@ -66,14 +69,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Debug")
 	bool bDrawDebug = false;
 
-	// Hook after montage/trace setup (e.g. combo window).
+	// 몽타주·판정 배선 후 훅
 	virtual void OnActivated();
 	virtual float GetEffectiveMontagePlayRate() const { return MontagePlayRate;}
 
-	// Per-unique-hit-actor hook (post-damage). Hit carries impact for contact-point cues.
+	// 액터당 1회 명중 훅 — Hit = 접점 큐용 충돌 정보
 	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) {}
 
-	// Override must call Super (chains trace cleanup).
+	// 오버라이드 시 Super 호출 필수 — 트레이스 정리가 여기에 연결됨
 	virtual void OnCleanup(bool bWasCancelled) override;
 
 	const UANS_MeleeTrace* GetActiveWindow() const { return ActiveWindow.Get(); }

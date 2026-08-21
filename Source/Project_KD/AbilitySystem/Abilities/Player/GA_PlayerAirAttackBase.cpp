@@ -26,6 +26,7 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	// 매 시작에 디폴트 복원 — 직전 노드 값 잔류 차단
 	DamageEffectClass = DefaultAirDamageEffectClass;
 	DamageMultiplier = DefaultAirDamageMultiplier;
+	KnockbackMultiplier = DefaultAirKnockbackMultiplier;
 	
 	if (Node)
 	{
@@ -43,6 +44,10 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 		if (Node->DamageMultiplier > 0.f)
 		{
 			DamageMultiplier = Node->DamageMultiplier;
+		}
+		if (Node->KnockbackMultiplier > 0.f)
+		{
+			KnockbackMultiplier = Node->KnockbackMultiplier;
 		}
 		
 		// 다음 없는 노드 = 막타(피니셔)

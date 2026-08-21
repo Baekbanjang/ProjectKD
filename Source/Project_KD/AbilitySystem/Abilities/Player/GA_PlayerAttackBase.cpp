@@ -20,6 +20,7 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	// 매 시작에 디폴트 복원 — 직전 값이 다음 활성화까지 남는 것 막음
 	DamageEffectClass = DefaultDamageEffectClass;
 	DamageMultiplier = DefaultDamageMultiplier;
+	KnockbackMultiplier = DefaultKnockbackMultiplier;
 
 	if (Node)
 	{
@@ -37,6 +38,10 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 		if (Node->DamageMultiplier > 0.f)
 		{
 			DamageMultiplier = Node->DamageMultiplier;
+		}
+		if (Node->KnockbackMultiplier > 0.f)
+		{
+			KnockbackMultiplier = Node->KnockbackMultiplier;
 		}
 	}
 	else

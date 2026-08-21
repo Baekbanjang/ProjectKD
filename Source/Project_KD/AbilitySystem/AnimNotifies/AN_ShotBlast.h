@@ -31,4 +31,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shot",
 		meta = (ClampMin = "0.0", ClampMax = "5.0", DisplayName = "데미지 배수 (0 = GA 값)"))
 	float ShotDamageMultiplierOverride = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Shot",
+	meta = (ClampMin = "0.0", ClampMax = "5.0", DisplayName = "넉백 배수 (0 = GA 값)"))
+	float ShotKnockbackMultiplierOverride = 0.f;
 };
