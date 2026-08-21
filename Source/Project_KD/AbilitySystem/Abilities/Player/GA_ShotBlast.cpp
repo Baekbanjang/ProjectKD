@@ -41,13 +41,23 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		return;
 	}
 
-	// 총구 트랜스폼 — 무기 메시 소켓
-	const FTransform MuzzleXf = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag);
-	const FVector ConeOrigin = Avatar->GetActorLocation();
-	
-	// 노티 설정 — 히트스톱 끄기 | 총구 방향
+	// 노티 설정 — 히트스톱 끄기 | 총구 방향 | 총구 원점
 	const UAN_ShotBlast* Notify = TriggerEventData
 		? Cast<UAN_ShotBlast>(TriggerEventData->OptionalObject) : nullptr;
+
+	// 총구 트랜스폼 — 무기 메시 소켓
+	const FTransform MuzzleXf = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag);
+
+	// 원점 = 캡슐 중심 기본 / 총구 = 공중 자세 타
+	const FVector ConeOrigin = (Notify && Notify->bUseMuzzleOrigin)
+		? MuzzleXf.GetLocation() : Avatar->GetActorLocation();
+
+	// 조준 각도 = 노티파이 우선, 0이면 GA 값
+	const float AimConeAngle = (Notify && Notify->AutoAimConeAngleOverride > 0.f)
+		? Notify->AutoAimConeAngleOverride : AutoAimConeAngle;
+
+	const float BodyAimLimit = (Notify && Notify->BodyAimLimitAngleOverride > 0.f)
+		? Notify->BodyAimLimitAngleOverride : BodyAimLimitAngle;
 
 	// 발사 방향 = 총구 | 락온 타겟 | 폴백 = 액터 전방
 	FVector ShotDir = Avatar->GetActorForwardVector();
@@ -56,7 +66,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		// 회전 연사 — 소켓 X축 = 총열
 		ShotDir = MuzzleXf.GetUnitAxis(EAxis::X);
 	}
-	else if (const AActor* Target = FindAutoAimTarget(ShotRange, AutoAimConeAngle))
+	else if (const AActor* Target = FindAutoAimTarget(ShotRange, AimConeAngle))
 	{
 		const FVector ToTarget = (Target->GetActorLocation() - ConeOrigin).GetSafeNormal();
 		if (!ToTarget.IsNearlyZero())
@@ -64,7 +74,7 @@ void UGA_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 			// 몸 정면 기준 조준각 — 한계 초과분 클램프
 			const float BodyYaw = Avatar->GetActorRotation().Yaw;
 			const float DeltaYaw = FMath::FindDeltaAngleDegrees(BodyYaw, ToTarget.Rotation().Yaw);
-			const float ClampedYaw = FMath::Clamp(DeltaYaw, -BodyAimLimitAngle, BodyAimLimitAngle);
+			const float ClampedYaw = FMath::Clamp(DeltaYaw, -BodyAimLimit, BodyAimLimit);
 
 			// 피치는 유지 - 요만 변경
 			FRotator AimRot = ToTarget.Rotation();

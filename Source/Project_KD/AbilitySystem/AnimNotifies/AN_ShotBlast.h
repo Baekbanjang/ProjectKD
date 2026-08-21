@@ -23,6 +23,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shot", meta = (DisplayName = "총구 방향으로 발사"))
 	bool bUseMuzzleDirection = false;
 
+	// 콘 원점 = 총구 유무 — 공중 자세 타는 캡슐(지면)과 몸이 어긋남
+	UPROPERTY(EditAnywhere, Category = "Shot", meta = (DisplayName = "총구에서 발사"))
+	bool bUseMuzzleOrigin = false;
+
 	// 발사 각도
 	UPROPERTY(EditAnywhere, Category = "Shot",
 		meta = (ClampMin = "0.0", ClampMax = "180.0", DisplayName = "각도 예외 (0 = GA 값)"))
@@ -35,4 +39,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Shot",
 	meta = (ClampMin = "0.0", ClampMax = "5.0", DisplayName = "넉백 배수 (0 = GA 값)"))
 	float ShotKnockbackMultiplierOverride = 0.f;
+
+	// 자동 조준 탐색 각도
+	UPROPERTY(EditAnywhere, Category = "Shot",
+		meta = (ClampMin = "0.0", ClampMax = "360.0", DisplayName = "조준 탐색 각도 (0 = GA 값)"))
+	float AutoAimConeAngleOverride = 0.f;
+
+	// 몸 정면 기준 조준 한계각
+	UPROPERTY(EditAnywhere, Category = "Shot",
+		meta = (ClampMin = "0.0", ClampMax = "180.0", DisplayName = "몸 조준 한계각 (0 = GA 값)"))
+	float BodyAimLimitAngleOverride = 0.f;
 };
