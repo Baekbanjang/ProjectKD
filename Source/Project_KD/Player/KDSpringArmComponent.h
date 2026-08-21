@@ -49,6 +49,22 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Dolly", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float AimExitRecenterAlpha = 0.5f;
 	
+	// 카메라 상승 시작 골반 높이
+	UPROPERTY(EditAnywhere, Category = "Dolly|Elevate", meta = (ClampMin = "0.0"))
+	float PelvisFollowThreshold = 180.f;
+
+	// 시작 높이 초과분을 따라가는 비율
+	UPROPERTY(EditAnywhere, Category = "Dolly|Elevate", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float PelvisFollowRatio = 1.f;
+
+	// 카메라 상승 블렌드 속도
+	UPROPERTY(EditAnywhere, Category = "Dolly|Elevate", meta = (ClampMin = "1.0", ClampMax = "20.0"))
+	float ElevateBlendSpeed = 8.f;
+
+	// 골반 소켓
+	UPROPERTY(EditAnywhere, Category = "Dolly|Elevate")
+	FName PelvisSocketName = TEXT("pelvis");
+	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 	virtual FTransform GetSocketTransform(FName InSocketName, ERelativeTransformSpace TransformSpace = RTS_World) const override;
@@ -70,4 +86,7 @@ private:
 	bool bAimActive = false;	// 조준 여부
 	
 	TWeakObjectPtr<UAbilitySystemComponent> CachedASC;
+
+	void UpdateElevateOffset(float DeltaTime);   // 골반 높이 -> ElevateOffset
+	float ElevateOffset = 0.f;   // 카메라 상승량 — 카메라 위치 | LookAt 둘 다 가산
 };

@@ -7,6 +7,8 @@
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 #include "Components/SplineComponent.h"
+#include "GameFramework/Character.h"
+#include "Components/SkeletalMeshComponent.h"
 
 UKDSpringArmComponent::UKDSpringArmComponent()
 {
@@ -19,6 +21,7 @@ void UKDSpringArmComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	UpdateAimAlpha(DeltaTime);
 	RecenterPitchOnAimExit(DeltaTime);
+	UpdateElevateOffset(DeltaTime);   // 골반 높이 -> 카메라 상승량
 	ApplyRailPosition();   // 레일에서 프레임마다 위치 확보
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);   // 랙 | 충돌 | 소켓 갱신
 	UpdateLookRotation(); // 회전 업데이트
@@ -118,7 +121,7 @@ void UKDSpringArmComponent::ApplyRailPosition()
 	}
 
 	TargetArmLength = -Point.X;                          // 카메라 걸이
-	SocketOffset = FVector(0.f, Point.Y, Point.Z);   // 카메라 오프셋
+	SocketOffset = FVector(0.f, Point.Y, Point.Z + ElevateOffset);   // 카메라 오프셋
 }
 
 void UKDSpringArmComponent::UpdateLookRotation()
@@ -134,7 +137,7 @@ void UKDSpringArmComponent::UpdateLookRotation()
 	const FVector IdealCam(-TargetArmLength, SocketOffset.Y, SocketOffset.Z);
 	
 	// 조준점도 같은 어깨 오프셋(SocketOffset.Y)만큼 옆으로 - 좌우 성분 상쇄로 요 계산 소멸
-	const FVector Aim(0.f, SocketOffset.Y, LookAtHeightOffset); //카메라가 겨누는 표적 = 캐릭터 몸통.
+	const FVector Aim(0.f, SocketOffset.Y, LookAtHeightOffset + ElevateOffset); //카메라가 겨누는 표적 = 캐릭터 몸통.
 	const FVector Dir = Aim - IdealCam;   // Y 성분 0 - 순수 상하 기울기
 	
 	// 요는 마우스에서 직접 - 랙을 거치지 않아 흔들리지 않음
@@ -163,4 +166,22 @@ void UKDSpringArmComponent::RecenterPitchOnAimExit(float DeltaTime)
 	
 	Rot.Pitch = FMath::FInterpTo(FRotator::NormalizeAxis(Rot.Pitch), TargetPitch, DeltaTime, AimBlendSpeed);
 	OwnerController->SetControlRotation(Rot);
+}
+
+void UKDSpringArmComponent::UpdateElevateOffset(float DeltaTime)
+{
+	// 기능 : 골반이 시작 높이를 넘으면 초과분만큼 카메라를 올림
+	// 대상 = 캡슐은 땅에 있고 몸만 뜨는 클립
+	float Target = 0.f;
+	if (const ACharacter* OwnerChar = Cast<ACharacter>(GetOwner()))
+	{
+		if (const USkeletalMeshComponent* MeshComp = OwnerChar->GetMesh())
+		{
+			// 골반 높이 = 메시 컴포넌트 기준 — 액터 기준은 메시 오프셋만큼 어긋남
+			const float PelvisZ = MeshComp->GetSocketTransform(
+				PelvisSocketName, RTS_Component).GetLocation().Z;
+			Target = FMath::Max(0.f, PelvisZ - PelvisFollowThreshold) * PelvisFollowRatio;
+		}
+	}
+	ElevateOffset = FMath::FInterpTo(ElevateOffset, Target, DeltaTime, ElevateBlendSpeed);
 }
