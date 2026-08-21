@@ -399,6 +399,21 @@ void AKDEnemyBaseCharacter::ResumeBrainFromStagger()
 	}
 }
 
+void AKDEnemyBaseCharacter::ResumeBrainFromKnockback()
+{
+	// 기능 : 넉백 구간 종료 brain 재개
+	// 사망·경직이 먼저 잡았으면 그쪽 정지 유지 — ResumeLogic 은 이유별 카운트 X
+	if (bIsDead || (StaggerComp && StaggerComp->IsStaggered())) { return; }
+
+	if (AAIController* AICon = GetController<AAIController>())
+	{
+		if (UBrainComponent* Brain = AICon->GetBrainComponent())
+		{
+			Brain->ResumeLogic(TEXT("Knockback"));
+		}
+	}
+}
+
 void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 {
 	// Dead·빈 페이로드 가드
@@ -460,10 +475,18 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 	// 히트 넉백 — 경직 진입 시 스킵
 	if (!(StaggerComp && StaggerComp->IsStaggered()))
 	{
-		// 경로추종 정지 — 다음 틱 MoveTo 가 넉백을 되미는 것 방지
+		// 경로추종 정지 — StopMovement 는 현재 요청만 취소, BT 가 다음 틱에 재요청
+		// 넉백 구간만 brain 정지 — 재개 = ResumeBrainFromKnockback
 		if (AAIController* AICon = GetController<AAIController>())
 		{
 			AICon->StopMovement();
+
+			if (UBrainComponent* Brain = AICon->GetBrainComponent())
+			{
+				Brain->PauseLogic(TEXT("Knockback"));
+				GetWorldTimerManager().SetTimer(KnockbackBrainTimer, this,
+					&AKDEnemyBaseCharacter::ResumeBrainFromKnockback, KnockbackBrainPause, false);
+			}
 		}
 
 		// 넉백 세기 = 적 DA 기준값 x 공격 배수
@@ -487,7 +510,7 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 			LaunchCharacter(Dir * KnockbackStrength, true, false);
 
 #if !UE_BUILD_SHIPPING
-			// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.5초 뒤 실제 이동 거리
+			// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.1초 뒤 이동 거리 + 남은 속도
 			{
 				FString SrcTag = Payload->InstigatorTags.IsEmpty()
 					? TEXT("-") : Payload->InstigatorTags.First().ToString();
@@ -502,13 +525,14 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 					[this, SrcTag, DbgMult, DbgSpeed, KnockStart]()
 					{
 						const float Moved = FVector::Dist2D(GetActorLocation(), KnockStart);
+						const float NowSpeed = GetVelocity().Size2D();
 						if (GEngine)
 						{
 							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-								FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm"),
-									*SrcTag, DbgMult, DbgSpeed, Moved));
+								FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm   (남은속도 %.0f)"),
+									*SrcTag, DbgMult, DbgSpeed, Moved, NowSpeed));
 						}
-					}), 0.5f, false);
+					}), 0.1f, false);
 			}
 #endif
 		}

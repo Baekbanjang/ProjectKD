@@ -146,6 +146,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> StateBarWidget;
 
+	// 넉백 중 brain 정지 시간 — 경로추종이 밀림을 되미는 구간
+	UPROPERTY(EditDefaultsOnly, Category = "Enemy|Combat", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float KnockbackBrainPause = 0.15f;
+
 	// 락온 조준점 소켓
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn")
 	FName LockOnSocketName = TEXT("spine_03");
@@ -189,6 +193,12 @@ private:
 
 	// brain resume 공통 헬퍼
 	void ResumeBrainFromStagger();
+
+	// 넉백 구간 종료 brain 재개
+	void ResumeBrainFromKnockback();
+
+	// 넉백 brain 재개 타이머
+	FTimerHandle KnockbackBrainTimer;
 
 	// 공격 토큰 반납
 	void ReturnAttackToken();
