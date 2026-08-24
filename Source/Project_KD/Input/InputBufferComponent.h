@@ -22,7 +22,8 @@ class PROJECT_KD_API UInputBufferComponent : public UActorComponent
 public:
 	UInputBufferComponent();
 
-	UPROPERTY(EditAnywhere, Category="Input Buffer", meta=(ClampMin="0.05", ClampMax="0.5"))
+	// 입력 보관 기한 — 상한 0.8 = SB 입력 접수창 0.7~0.8
+	UPROPERTY(EditAnywhere, Category="Input Buffer", meta=(ClampMin="0.05", ClampMax="0.8"))
 	float BufferTimeWindow = 0.2f;
 
 	UPROPERTY(EditAnywhere, Category="Input Buffer", meta=(ClampMin="1", ClampMax="10"))
