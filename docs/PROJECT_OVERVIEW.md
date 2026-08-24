@@ -174,7 +174,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 | **분위기** | ❌stale | 길동 사극톤. GunSword 톤 문서 없음(SB 참조가 유일) |
 
 ### 3-3. 문서/볼트 지도
-- **docs/design/**: 🗑️ **2026-08-24 폴더째 삭제.** 5문서 전부 2026-05에서 멈춘 채 **거짓을 말하고 있었다**(없는 클래스 인용 / 쓰이는 채널을 "미사용"이라 서술 / 끝난 구현을 "대기"라 표기 / 데미지 파이프라인에 Shield 층 누락). 상세 = `docs/INDEX.md §design 삭제 기록`
+- **docs/design/**: 🟠 **참고용 보존 (2026-05 정지, 현행 아님).** 5문서 전부 그 뒤로 갱신이 없고 **지금은 거짓인 문장이 섞여 있다**(없는 클래스 인용 / 쓰이는 채널을 "미사용"이라 서술 / 끝난 구현을 "대기"라 표기 / 데미지 파이프라인에 Shield 층 누락). **읽을 것은 "왜 그렇게 골랐나"뿐이고 파일:줄 인용은 믿지 말 것.** 거짓 목록 = `docs/INDEX.md §design`
 - **docs/specs/**: `README` — 🗄️`deep-interview-abp-weapon` → `archive/kildong/`
 - ✅ **설계 문서의 단일 진실 = 볼트 `notes/코드구조/`** (10문서). 락온·카메라·콜리전·데미지·로코모션 5주제 전부 이쪽이 담당한다.
   삭제 전 건진 함정 2건은 볼트 트러블슈팅으로 옮겼다 — `GAS-BlueprintNativeEvent_BP디폴트가_C++를_이긴다` · `콜리전-Overlap이_같은액터를_컴포넌트수만큼_중복반환`
