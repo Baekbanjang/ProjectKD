@@ -1,28 +1,59 @@
-# 현재 상태 — 2026-08-22
+# 현재 상태 — 2026-08-24
 
 > **세션 시작 시 여기부터.** 진행상황·다음 할 일·보류 목록·설계 미결.
-> ⛔ 2세션 병행(A/B 레인)은 **2026-07-31 종료**. §0 참조 — 그 규칙을 따르지 말 것.
+> ⛔ 파일명의 **A/B 레인(기획A / 코드B)은 2026-07-31 종료**. 그 규칙을 따르지 말 것.
+> ✅ 2026-08-24부터 **다른 체제로 2세션을 돌린다** — `코드·에셋 = KD` / `문서·지식 = 볼트`. 규칙은 `CLAUDE.md §0 1-1` 과 세션 브릿지에.
 > ⚠️ **아래로 갈수록 옛날 절이다.** 맨 위 절이 현재 상태이고, 그 아래 절들의 "다음 할 일"은 이미 끝난 것들이다.
 
 ---
 
-## ★★ 2026-08-22 — 포폴 촬영 완료 + 디버그 콘솔화. **다음 세션은 여기부터**
+## ★★ 2026-08-24 — 문서 정리 + 세션 브릿지 운영 개시. **다음 세션은 여기부터**
 
 dev-log = `docs/dev-logs/2026-08-22-debug-console-player-init.md` (직전 = `2026-08-21-aim-knockback-camera.md`)
 
-### 🔴 먼저 = 미커밋 정리
+### ✅ `Project_KD` 는 깨끗하다 (2026-08-24 기준)
+
+소스·docs·`CLAUDE.md` 전부 커밋·푸시 완료. 작업 트리 변경 0 / 미푸시 0.
 
 ```
-소스 5   AS_Combat.cpp · GA_Dodge.cpp · GA_PlayerMeleeAttackBase.cpp
-         KDEnemyBaseCharacter.cpp      (콘솔 변수 4개)
-         InputBufferComponent.h        (ClampMax 0.5 -> 0.8)
-docs 4   INDEX.md · PROJECT_OVERVIEW.md · dev-log 2개(08-21 / 08-22, 둘 다 untracked)
-Content 11  촬영용 임시값 원복분 — DA_Sword_Bandit(Poise 3) · GA_Parry(퍼펙트 창 0.2)
-            + 적 BP 6개 · GA_LightCombo/HeavyCombo 디버그 표시 · LV0_Test
-            ⚠️ Robot3/ 는 임시라 미추적 유지
+9da756c  [doc] 두 세션 역할 구분 + 세션 브릿지 등록
+09c40f7  [docs] 길동 시대 문서 정리                    ← 볼트 세션
+e71cd87  [docs] 08-21 / 08-22 dev-log + 현재 상태     ← 볼트 세션
+5c32389  [Input] 입력 버퍼 보관 기한 상한 0.8
+a975cb2  [refactor] 개발용 온스크린 표시를 콘솔 변수로
 ```
 
-커밋 제안 — `[refactor] 개발용 온스크린 표시를 콘솔 변수로` / `[Input] 입력 버퍼 상한 0.8` / `[doc] 08-21·08-22 dev-log` / Content `[BP] 촬영용 임시값 원복`
+### 🟡 남은 것 = `Content` 12개
+
+**"전부 촬영용 원복분"이 아니다.** 3덩어리로 갈린다 — git 크기 이력 대조로 확정(MCP 불필요).
+
+```
+① 촬영 임시값 원복 (4파일)   커밋해도 안전
+   DA_Sword_Bandit   촬영전과 바이트까지 동일 = Poise 1 -> 3
+   GA_Parry          78433 -> 78492 -> 78433 = 퍼펙트 창 0.5 -> 0.2
+   GA_Light/HeavyCombo  디버그 표시 원복
+
+② 촬영과 무관한 오래된 미커밋 (6파일)   촬영 커밋 6개가 건드리지도 않았다
+   BP_Dummy         -688   마지막 커밋 180ab96 (08-19)   실제 내용 변경
+   BP_Bandit_Parry  -450   마지막 커밋 662390c (MCP 도입 전)  실제 내용 변경
+   BP_Bandit -7 / BP_Axe_Elite +8 / Arrow ±0 / Arrow2 ±0   노이즈 수준
+
+③ LV0_Test.umap  -4699   조명·노출 원복분으로 보이나 값 확인은 에디터 필요
+④ Robot3/        미추적 유지
+```
+
+⚠️ **②의 `BP_Dummy` · `BP_Bandit_Parry` 는 내용이 실제로 빠졌고 무엇이 빠졌는지 모른다.** 커밋 전 에디터 확인 권장.
+→ **권장 = ①만 먼저 커밋.** 한 커밋에 섞으면 나중에 되돌릴 때 못 가른다.
+
+### 🔴 그 밖에 대기 중인 것 2건
+
+```
+KDPlayerState.h:33   주석 Dosul -> Ammo    가이드 준비됨, 승환 입력 대기(§0)
+디버그 원복 누락 4건   GA_AirLightAttack · GA_CounterThrust · GA_ShotBlast · GA_SprintAttack
+                     촬영용으로 끈 6개 중 2개만 돌아왔다. 판정 궤적이 안 보이는 상태
+```
+
+**단일 진실 = 세션 브릿지** `C:\Users\asdasd\Desktop\Obsidian_organize\ProjectKD\notes\_세션브릿지.md`
 
 ### 🔴 그다음 = 확인 1건
 
