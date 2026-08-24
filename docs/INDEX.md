@@ -90,60 +90,72 @@ player-locomotion  → 볼트 02_플레이어            (08-24 먼저 삭제됨
 
 🗄️ `deep-interview-abp-weapon.md` — **2026-08-24 `archive/kildong/`으로 이동.** 길동 스켈레톤 + 창(Spear) 전제라 폐기. 단 **`WeaponComponent` + `weapon_r` 소켓 결정은 현행 코드에 살아 있다**(`Combat/WeaponComponent.h:45`, `Combat/Data/WeaponDataAsset.h:46`) → 설계 근거로 보존.
 
-## dev-logs/ — 개발 로그 (시간순)
+## dev-logs/ - 개발 로그 (최신 순)
 
-| 날짜       | 문서                                                                              | 기능                                                                                   |
-| ---------- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| 2026-05-22 | [attribute-restructure](dev-logs/2026-05-22-attribute-restructure.md)             | AttributeSet 재구성                                                                    |
-| 2026-05-22 | [combo-scope-change](dev-logs/2026-05-22-combo-scope-change.md)                   | 콤보 스코프 6→9분기 변경                                                               |
-| 2026-05-22 | [gas-iframe-parry-research](dev-logs/2026-05-22-gas-iframe-parry-research.md)     | GAS i-frame/패링 자료조사                                                              |
-| 2026-05-23 | [combo-system-day1](dev-logs/2026-05-23-combo-system-day1.md)                     | 콤보 Day1 — 구조 + ComboComponent                                                      |
-| 2026-05-24 | [combo-system-day2](dev-logs/2026-05-24-combo-system-day2.md)                     | 콤보 Day2 — GA_Light/Heavy                                                             |
-| 2026-05-25 | [combo-system-day3](dev-logs/2026-05-25-combo-system-day3.md)                     | 콤보 Day3 — 분기 완성 + PIE 검증                                                       |
-| 2026-05-26 | [perfect-parry-cue-migration](dev-logs/2026-05-26-perfect-parry-cue-migration.md) | 퍼펙트 패링 GameplayCue 이관                                                           |
-| 2026-05-27 | [movement-cancel-notify](dev-logs/2026-05-27-movement-cancel-notify.md)           | 이동 캔슬 노티파이                                                                     |
-| 2026-05-28 | [camera-sb-curve-system](dev-logs/2026-05-28-camera-sb-curve-system.md)           | SB식 커브 카메라                                                                       |
-| 2026-05-30 | [player-locomotion](dev-logs/2026-05-30-player-locomotion.md)                     | 플레이어 로코모션 (BlendSpace)                                                         |
-| 2026-06-02 | [double-jump](dev-logs/2026-06-02-double-jump.md)                                 | 더블 점프                                                                              |
-| 2026-06-02 | [jump-landing-pivot-turn](dev-logs/2026-06-02-jump-landing-pivot-turn.md)         | 점프 착지/피벗 턴                                                                      |
-| 2026-06-02 | [run-to-stop](dev-logs/2026-06-02-run-to-stop.md)                                 | 런투스톱                                                                               |
-| 2026-06-03 | [dodge-seam-rootmotion-mode](dev-logs/2026-06-03-dodge-seam-rootmotion-mode.md)   | 닷지 이음새/루트모션 모드                                                              |
-| 2026-06-04 | [perfect-parry-juice](dev-logs/2026-06-04-perfect-parry-juice.md)                 | 퍼펙트 패링 juice 5겹                                                                  |
-| 2026-06-08 | [lockon-fixes](dev-logs/2026-06-08-lockon-fixes.md)                               | 락온 버그 수정                                                                         |
-| 2026-06-11 | [air-combo](dev-logs/2026-06-11-air-combo.md)                                     | 공중 콤보                                                                              |
-| 2026-06-11 | [counter-camera-juice](dev-logs/2026-06-11-counter-camera-juice.md)               | 카운터 카메라 juice                                                                    |
-| 2026-06-12 | [combat-tag-polish](dev-logs/2026-06-12-combat-tag-polish.md)                     | 전투 태그 폴리싱                                                                       |
-| 2026-06-12 | [player-refactor](dev-logs/2026-06-12-player-refactor.md)                         | 플레이어 리팩토링 패스                                                                 |
-| 2026-06-13 | [execution](dev-logs/2026-06-13-execution.md)                                     | 처형 시스템                                                                            |
-| 2026-07-09 | [motion-matching-research](dev-logs/2026-07-09-motion-matching-research.md)       | 모션매칭 자료조사 (개념+에셋 구조+URL 모음)                                            |
-| 2026-07-17 | [melee-trace-refactor](dev-logs/2026-07-17-melee-trace-refactor.md) | 트레이스 무기중립화 (WeaponTrace→MeleeTrace + ETraceMeshSource + 창단위 히트리셋) |
-| 2026-07-22 | [gunsword-holster-socket](dev-logs/2026-07-22-gunsword-holster-socket.md) | 검+총 홀스터 소켓 셋업 + DA 교차오염 정정 (Holder 본 붕괴 우회, 발검/납검·PIE는 다음) |
-| 2026-07-23 | [gunsword-equip-montage-loco-gating](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) | 발검/납검 속도대별 상체 몽타주 + 로코모션 Stop 입력 게이팅 |
-| 2026-07-27 | [gunsword-combo-cancel-timing](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) | ★콤보 캔슬 타이밍 실측 (포즈 매칭으로 안무가 의도 역추출) + 루트모션 이동량 |
-| 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
-| 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
-| 2026-07-30 | [gildong-montage-migration](dev-logs/2026-07-30-gildong-montage-migration.md) | ★길동 몽타주 전면 탈출 (단발·방어·회피·피격·공중) + GA 계층 리팩토링 + SB 공중 콤보 실측 |
-| 2026-07-30 | [inaction-tag-system](dev-logs/2026-07-30-inaction-tag-system.md) | ★InAction 우산 태그 (가드·회피도 전투 진입+무기 부착) + 회피 캔슬 목록 통합 + ABP 슬롯 재배치 |
-| 2026-08-03 | [camera-rail-look-rotation](dev-logs/2026-08-03-camera-rail-look-rotation.md) | ★카메라 레일 2단계 완료 — 조준을 랙 전 이상 위치로 (버그 3개가 한 뿌리) + 마우스 감도 노출. PIE 6항목 통과 |
-| 2026-08-04 | [hitstop-component](dev-logs/2026-08-04-hitstop-component.md) | ★히트스톱을 액터 소유 컴포넌트로 — 정지가 노티를 끊어 데미지·판정이 중복되던 버그. CustomTimeDilation=0만 유효 |
-| 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
-| 2026-08-08 | [aim-offset](dev-logs/2026-08-08-aim-offset.md) | ★조준 상체 오프셋 — 레일 진행도를 -1~+1로 정규화(SB 실측), Mesh Space 판단 근거, 감도 배율이 필요했던 이유(134도 대 42도) |
-| 2026-08-08 | [gun-fire-crosshair](dev-logs/2026-08-08-gun-fire-crosshair.md) | ★총 2단계 — 사격 GA(상속 대신 태그 조건표), 해제 몽타주는 태스크로 못 켠다, 첫 화면 HUD, `Set Visibility(self)`가 Tick을 죽인 함정, SB 발사 확산 커브 실측 |
-| 2026-08-10 | [gun-projectile](dev-logs/2026-08-10-gun-projectile.md) | ★총 3단계 — 발사체 결함 2건(무성 통과·자기 총알 퍼펙트회피) + 스폰 경로를 `KDAbilityStatics` 하나로. `Muzzle Socket` 무성 실패, CDO가 비어도 미설정이 아닌 사례 |
-| 2026-08-11 | [weapon-sound-trail](dev-logs/2026-08-11-weapon-sound-trail.md) | ★검 사운드 49칸 배선(타격음은 Cue로 일원화 — 빗나가면 소리 X) + 트레일 27개가 안 보이던 원인(`Distortion_Only`=굴절 전용) + `ANS_WeaponTrail` 파라미터 TMap화. `Trail Width` 공백 하나에 조용히 실패 |
-| 2026-08-12 | [input-component-and-muzzle-socket](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) | ★`AKDPlayerCharacter` 700→426줄(입력 컴포넌트 분리) + GA의 구체 Pawn 캐스팅 4곳 제거(접근자 통일) + 총구를 무기 메시 소켓으로 이전. 결함 2건(어빌리티 태그 충돌로 콘 히트스캔 공짜 발동 / `ANS_EnemyAttackWindow` 태그 미초기화로 퍼펙트 회피 no-op) |
-| 2026-08-14 | [air-combo-cancel-window](dev-logs/2026-08-14-air-combo-cancel-window.md) | ★공중 콤보 캔슬 윈도우를 안무 기준 프레임으로 (포즈 매칭 + `_All` 교차검증 = 차이 0) + `Air_02`·`_04` 검 재확인. `Air_01`은 캔슬창이 아예 없었다(07-30 문서가 계획만 적힌 건) / fps를 `(nf-1)/L`로 재면 틀린다 → `get_time_at_frame` / `GameplayTag`는 파이썬 repr이 항상 비어 보인다(`tag_name`까지 꺼낼 것) |
-| 2026-08-17 | [hud-enemy-state-bar-spec](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) | ★적 상태 바 HUD 설계(SB `WB_MainHUD_EnemyStateBar` 원본 복원 — 계층·치수·색) + 총구 이펙트 배선 25발. **GC 로는 총 메시 소켓 못 가리킴**(엔진 337행) → `ANS_WeaponTrail` 경로. Niagara 파라미터를 uasset `grep -a` 로 캐는 법. UI 소재 결론 = 텍스처 0장으로 시작 |
-| 2026-08-18 | [enemy-state-bar](dev-logs/2026-08-18-enemy-state-bar.md) | ★적 상태 바 구현 — **우리 첫 월드 스페이스 UI**. SB 스샷 보고 설계를 2번 뒤집음(상단 고정 → 머리 위 / HP 채움 빨강 → 흰색, 상단 중앙은 보스 전용) + Poise 를 카운트로(MaxPoise=칸 수, 코드 0줄) + 값 전달 = `WaitForAttributeChanged`(SB의 Master 폴링보다 한 단계 위). 함정 4개 — **BP 함수엔 Async 노드 못 놓음**(그래서 노드가 안 보였다) / **빈 `Event On Targeted` 가 C++ `_Implementation` 을 대체**해 바가 안 뜸 / 리페어런트 이름 충돌 / `Width Override` 가 부모 슬롯 `Fill` 에 끌려 늘어남 |
-| 2026-08-16 | [melee-radius-and-character-fit](dev-logs/2026-08-16-melee-radius-and-character-fit.md) | ★근접 판정 반경 3→20 (28개 창 전수 측정 = 모션별 차등 근거 없음) + 발차기 축 0 결함 + **SB 본편 Eve 콜리전 원본 확보**(덤프에 없던 게 아니라 추출 누락) + 플레이어 메시가 지면에 3cm 파묻혀 있던 것 |
-| 2026-08-18 | [shield-and-vitals](dev-logs/2026-08-18-shield-and-vitals.md) | ★실드 어트리뷰트(감소형, 상수 1개) + 좌하단 HP/ST/SH 3줄 + 탄약을 크로스헤어 아래로. 재생은 `State.Combat.InCombat` 을 Ignore 로 써서 **새 태그 0개**. 함정 4개 — **`ProgressBar` 는 색 노브가 2개고 곱해진다**(기본 파랑이 모든 색을 덮음, 적 포이즈도 노랑이 아니었다) / **`Height Override` 도 슬롯 `Fill` 에 끌려 늘어난다**(도트 두 번째 줄이 잘림) / UE5.3+ **GE 태그 조건은 `GEComponents` 안**(구버전 속성만 보면 오판) / `Wait` 의 `OldValue` 가 `MaxValue` 에 붙어 **첫 타격만 맞고 이후 바가 덜 준다** |
-| 2026-08-18 | [player-hud](dev-logs/2026-08-18-player-hud.md) | ★플레이어 HUD 1단계 — 좌하단 HP 도트 바 + 탄약. `Dosul` 폐기하고 `Ammo/MaxAmmo` 로(참조 0개 확인) + 소모는 Cost GE 고정 `-1`(**SetByCaller 면 0발에도 발사된다** — `CheckCost` 가 값을 못 구함) + `WBP_MainHUD` 컨테이너에 크로스헤어 이사. 함정 = **`Wait for Attribute Changed` 의 `Changed` 를 실행 흐름으로 쓰면** 뒤 구독이 아예 생성 안 되고 갱신도 안 돈다(에러·로그 X). 재장전은 애니가 0개(993개 전수)라 **상태 태그로만** 구현 — 0발 차단 + 사격 후 2초 회복정지. UE5.3+ **GE 태그 조건은 컴포넌트에 있다**(안 붙이면 칸 자체가 없음) / **BP 가 C++ 의 `FGameplayTagContainer` 기본값을 안 물려받는다** |
+총 **50개**. 설명은 원문 그대로 둔다 - 여기서 훑어보고 필요한 것만 여는 용도라 요약을 줄이면 그 값이 사라진다.
+
+### 최근 15개
+
+| 날짜 | 문서 | 내용 |
+| --- | --- | --- |
+| 2026-08-22 | [debug-console-player-init](dev-logs/2026-08-22-debug-console-player-init.md) | ★켜고 끄는 자리가 코드에 박혀 있던 것 4건. ① 온스크린 디버그 4종(**데미지·회피·접근·넉백**)이 `if (GEngine)` 만으로 항상 켜져 있었다 → **콘솔 변수 `KD.ShowDamage`/`ShowDodge`/`ShowApproach`/`ShowKnock`** (`ECVF_Cheat`). 체크박스로 안 뺀 이유 = 데미지·넉백은 GA 가 아니라 **어트리뷰트셋·Pawn 에서 찍는다**. ⚠️무기 궤적·조준선은 여전히 BP 체크박스. ② 플레이어 어트리뷰트 초기값이 **C++ 생성자에만** 있어 탄약 하나 바꾸는 데 재컴파일 → `GE_InitPlayerStats` 신설, `BP_PlayerState.StartupEffects` 에 등록(적용 루프는 `KDPlayerState.cpp:40` 기존 것). 적은 이미 DA 로 데이터화돼 있었는데 플레이어만 코드였다. ③ 마무리 5타로 끝내면 **적 등 뒤에 착지** — 워프 노티 `RotationType = Facing` 인데 `05_04` 는 적을 지나쳐 달리는 클립이라 반대로 돈다 → 마무리 5타 `warp_rotation` 해제(회전은 `OnActivated` 의 `SetActorRotation` 담당). ⚠️**`AM_SB_Parry_Counter_Attack_L` 하나만 `DEFAULT` 로 남음**(19개 중 유일, 미확인). ④ `BufferTimeWindow` 상한 0.5→0.8(기본값 0.2 유지). **촬영용 임시값 원복 목록 있음** — 밴딧 Poise 1→3 / 퍼펙트 패링 창 0.5→0.2. ⚠️노출을 `AEM_MANUAL` 로 바꾸면 화면이 검어진다(실사 주광 기준 계산) |
+| 2026-08-21 | [aim-knockback-camera](dev-logs/2026-08-21-aim-knockback-camera.md) | ★무음 결함 3건 — 전부 **캡슐 기준으로 계산하는데 캡슐이 진실이 아닌** 문제. ① 조준 트레이스가 `ECC_Visibility` 하나뿐인데 **`Pawn`·`CharacterMesh` 프로파일이 그 채널을 무시**해서 조준점이 적 뒤 벽에 찍혔다(먼 벽은 맞고 가까운 적만 빗나감 = 시차) → Pawn 오브젝트 트레이스를 벽까지만 덧댐. ② 넉백 배수를 바꿔도 거리가 그대로 — **AI 경로추종이 `LaunchCharacter` 속도를 매 틱 덮어씀**(`StopMovement` 는 현재 요청만 취소). 넉백 구간만 `PauseLogic`, ⚠️`ResumeLogic` 은 이유별로 안 세므로 경직·사망 가드 필수. ③ 공중 콤보에서 캐릭터가 화면 위로 벗어남 — **루트 Z 가 0**(점프가 골반에만 그려짐). 캡슐을 띄우면 높이가 두 번 더해지므로 **스프링암이 골반 높이를 직접 읽어** 카메라 위치와 LookAt 을 같이 올림(둘 다 올려야 각도 유지). 문턱 180 = **클립 993개 실측**(해당 8개 / 공중 회피 최고 169 사이가 빔). ⚠️좌표계 = `RTS_Component`(액터 기준은 메시 오프셋 88 만큼 어긋남) / **파이썬은 bool 의 `b` 접두사를 뗀다**(`use_muzzle_origin`) / PIE 중 `load_asset` 은 조용히 `None` |
+| 2026-08-20 | [approach-warp](dev-logs/2026-08-20-approach-warp.md) | ★콤보 진입기 접근 워프 — 반경 안 적에게 붙어서 콤보 시작. **모션 워핑은 위치를 만들지 않고 원래 루트모션을 늘린다**(워프창 이동량 20클립 실측) / 무음 결함 = **등록한 워프 좌표가 조기 리턴에 살아남아** 시체·옛 자리로 끌려감(`RemoveWarpTarget` 이 `if (!Target) return` 아래 있었다) / 위치 스냅샷 → `bFollowComponent` 추적으로 전환(멈출 거리는 `VectorFromTargetToOwner` 오프셋) — **그러면 회전 기준이 적 컴포넌트로 바뀌므로 노티를 `Facing` 으로 같이 바꿔야 한다** / **각도 필터가 둘인데 기준이 다르다**(콘=카메라 / 135도 게이트=몸) → 콘만 360으로 열어도 안 먹어서 게이트를 삭제 / **배율 상한을 수치로 잡으려던 게 틀렸다**(6배에서도 체감 멀쩡, 기준은 PIE) / `AutoAimRange` 가 `MaxApproachRange` 의 상한 / `export_text` 의 `LinkValue` 는 두 번 나온다(앞=끝, 뒤=시작) |
 | 2026-08-19 | [combo-damage-scaling](dev-logs/2026-08-19-combo-damage-scaling.md) | ★타별 데미지 계수(`FComboNode.DamageMultiplier`, 곱하는 자리는 `GA_MeleeTraceBase.cpp:210` 하나) + 총격 조준 클램프 + 타격감 더미. **1타를 0.7로 낮추는 게 핵심**(마무리만 올리면 대비가 안 생김) / 공중은 별도 경로라 같은 쌍을 두 번 / **라이브 코딩 직후 파이썬으로 `USTRUCT` 배열을 쓰면 전 필드가 에러 없이 밀린다**(`DA_ComboTree` 22노드 파괴 → git 복구) / `EditDefaultsOnly` 는 파이썬 쓰기 차단 / **더미는 `AIControllerClass` 를 비우면 `PossessedBy` 가 안 불려 초기화가 통째로 안 된다** — `BehaviorTreeAsset` 만 비울 것 |
 | 2026-08-19 | [enemy-melee-trace-tag](dev-logs/2026-08-19-enemy-melee-trace-tag.md) | ★적 근접 판정 부활 + 퍼펙트 패링 반복 발동 — **무음 결함 2건.** ① 무기 메시를 **컴포넌트 태그로** 찾는데 적은 `Weapon` / GA 는 `Sword` 였다(플레이어는 무기 2개라 `Sword`/`Gun` 으로 갈라야 해서 기본값이 그것). 태스크가 생성조차 안 돼 **디버그 궤적도 같이 죽었다** — 궤적이 "없는" 것은 반경 고장이 아니다. 적 베이스 생성자 1줄로 BP 7개 해결(CDO 재조회로 확인). 무음 게이트 3곳(`UE_LOG` 주석)이 진짜 비용. ② **`End Ability` 없는 BP GA 는 두 번째 활성화가 조용히 거부된다**(`InstancedPerActor`) — 퍼펙트 패링이 첫 한 번만 포이즈를 깎았다, 연출이 여러 겹이라 증상이 가려짐. 조회법 3개 = `GameplayTagLibrary.get_tag_name` / SCS 태그는 `<BP>.<클래스>:<이름>_GEN_VARIABLE` 직접 로드 / PIE 어트리뷰트는 `get_all_attributes`+`get_gameplay_attribute_value` |
-| 2026-08-20 | [approach-warp](dev-logs/2026-08-20-approach-warp.md) | ★콤보 진입기 접근 워프 — 반경 안 적에게 붙어서 콤보 시작. **모션 워핑은 위치를 만들지 않고 원래 루트모션을 늘린다**(워프창 이동량 20클립 실측) / 무음 결함 = **등록한 워프 좌표가 조기 리턴에 살아남아** 시체·옛 자리로 끌려감(`RemoveWarpTarget` 이 `if (!Target) return` 아래 있었다) / 위치 스냅샷 → `bFollowComponent` 추적으로 전환(멈출 거리는 `VectorFromTargetToOwner` 오프셋) — **그러면 회전 기준이 적 컴포넌트로 바뀌므로 노티를 `Facing` 으로 같이 바꿔야 한다** / **각도 필터가 둘인데 기준이 다르다**(콘=카메라 / 135도 게이트=몸) → 콘만 360으로 열어도 안 먹어서 게이트를 삭제 / **배율 상한을 수치로 잡으려던 게 틀렸다**(6배에서도 체감 멀쩡, 기준은 PIE) / `AutoAimRange` 가 `MaxApproachRange` 의 상한 / `export_text` 의 `LinkValue` 는 두 번 나온다(앞=끝, 뒤=시작) |
-| 2026-08-21 | [aim-knockback-camera](dev-logs/2026-08-21-aim-knockback-camera.md) | ★무음 결함 3건 — 전부 **캡슐 기준으로 계산하는데 캡슐이 진실이 아닌** 문제. ① 조준 트레이스가 `ECC_Visibility` 하나뿐인데 **`Pawn`·`CharacterMesh` 프로파일이 그 채널을 무시**해서 조준점이 적 뒤 벽에 찍혔다(먼 벽은 맞고 가까운 적만 빗나감 = 시차) → Pawn 오브젝트 트레이스를 벽까지만 덧댐. ② 넉백 배수를 바꿔도 거리가 그대로 — **AI 경로추종이 `LaunchCharacter` 속도를 매 틱 덮어씀**(`StopMovement` 는 현재 요청만 취소). 넉백 구간만 `PauseLogic`, ⚠️`ResumeLogic` 은 이유별로 안 세므로 경직·사망 가드 필수. ③ 공중 콤보에서 캐릭터가 화면 위로 벗어남 — **루트 Z 가 0**(점프가 골반에만 그려짐). 캡슐을 띄우면 높이가 두 번 더해지므로 **스프링암이 골반 높이를 직접 읽어** 카메라 위치와 LookAt 을 같이 올림(둘 다 올려야 각도 유지). 문턱 180 = **클립 993개 실측**(해당 8개 / 공중 회피 최고 169 사이가 빔). ⚠️좌표계 = `RTS_Component`(액터 기준은 메시 오프셋 88 만큼 어긋남) / **파이썬은 bool 의 `b` 접두사를 뗀다**(`use_muzzle_origin`) / PIE 중 `load_asset` 은 조용히 `None` |
-| 2026-08-22 | [debug-console-player-init](dev-logs/2026-08-22-debug-console-player-init.md) | ★켜고 끄는 자리가 코드에 박혀 있던 것 4건. ① 온스크린 디버그 4종(**데미지·회피·접근·넉백**)이 `if (GEngine)` 만으로 항상 켜져 있었다 → **콘솔 변수 `KD.ShowDamage`/`ShowDodge`/`ShowApproach`/`ShowKnock`** (`ECVF_Cheat`). 체크박스로 안 뺀 이유 = 데미지·넉백은 GA 가 아니라 **어트리뷰트셋·Pawn 에서 찍는다**. ⚠️무기 궤적·조준선은 여전히 BP 체크박스. ② 플레이어 어트리뷰트 초기값이 **C++ 생성자에만** 있어 탄약 하나 바꾸는 데 재컴파일 → `GE_InitPlayerStats` 신설, `BP_PlayerState.StartupEffects` 에 등록(적용 루프는 `KDPlayerState.cpp:40` 기존 것). 적은 이미 DA 로 데이터화돼 있었는데 플레이어만 코드였다. ③ 마무리 5타로 끝내면 **적 등 뒤에 착지** — 워프 노티 `RotationType = Facing` 인데 `05_04` 는 적을 지나쳐 달리는 클립이라 반대로 돈다 → 마무리 5타 `warp_rotation` 해제(회전은 `OnActivated` 의 `SetActorRotation` 담당). ⚠️**`AM_SB_Parry_Counter_Attack_L` 하나만 `DEFAULT` 로 남음**(19개 중 유일, 미확인). ④ `BufferTimeWindow` 상한 0.5→0.8(기본값 0.2 유지). **촬영용 임시값 원복 목록 있음** — 밴딧 Poise 1→3 / 퍼펙트 패링 창 0.5→0.2. ⚠️노출을 `AEM_MANUAL` 로 바꾸면 화면이 검어진다(실사 주광 기준 계산) |
+| 2026-08-18 | [enemy-state-bar](dev-logs/2026-08-18-enemy-state-bar.md) | ★적 상태 바 구현 — **우리 첫 월드 스페이스 UI**. SB 스샷 보고 설계를 2번 뒤집음(상단 고정 → 머리 위 / HP 채움 빨강 → 흰색, 상단 중앙은 보스 전용) + Poise 를 카운트로(MaxPoise=칸 수, 코드 0줄) + 값 전달 = `WaitForAttributeChanged`(SB의 Master 폴링보다 한 단계 위). 함정 4개 — **BP 함수엔 Async 노드 못 놓음**(그래서 노드가 안 보였다) / **빈 `Event On Targeted` 가 C++ `_Implementation` 을 대체**해 바가 안 뜸 / 리페어런트 이름 충돌 / `Width Override` 가 부모 슬롯 `Fill` 에 끌려 늘어남 |
+| 2026-08-18 | [shield-and-vitals](dev-logs/2026-08-18-shield-and-vitals.md) | ★실드 어트리뷰트(감소형, 상수 1개) + 좌하단 HP/ST/SH 3줄 + 탄약을 크로스헤어 아래로. 재생은 `State.Combat.InCombat` 을 Ignore 로 써서 **새 태그 0개**. 함정 4개 — **`ProgressBar` 는 색 노브가 2개고 곱해진다**(기본 파랑이 모든 색을 덮음, 적 포이즈도 노랑이 아니었다) / **`Height Override` 도 슬롯 `Fill` 에 끌려 늘어난다**(도트 두 번째 줄이 잘림) / UE5.3+ **GE 태그 조건은 `GEComponents` 안**(구버전 속성만 보면 오판) / `Wait` 의 `OldValue` 가 `MaxValue` 에 붙어 **첫 타격만 맞고 이후 바가 덜 준다** |
+| 2026-08-18 | [player-hud](dev-logs/2026-08-18-player-hud.md) | ★플레이어 HUD 1단계 — 좌하단 HP 도트 바 + 탄약. `Dosul` 폐기하고 `Ammo/MaxAmmo` 로(참조 0개 확인) + 소모는 Cost GE 고정 `-1`(**SetByCaller 면 0발에도 발사된다** — `CheckCost` 가 값을 못 구함) + `WBP_MainHUD` 컨테이너에 크로스헤어 이사. 함정 = **`Wait for Attribute Changed` 의 `Changed` 를 실행 흐름으로 쓰면** 뒤 구독이 아예 생성 안 되고 갱신도 안 돈다(에러·로그 X). 재장전은 애니가 0개(993개 전수)라 **상태 태그로만** 구현 — 0발 차단 + 사격 후 2초 회복정지. UE5.3+ **GE 태그 조건은 컴포넌트에 있다**(안 붙이면 칸 자체가 없음) / **BP 가 C++ 의 `FGameplayTagContainer` 기본값을 안 물려받는다** |
+| 2026-08-17 | [hud-enemy-state-bar-spec](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) | ★적 상태 바 HUD 설계(SB `WB_MainHUD_EnemyStateBar` 원본 복원 — 계층·치수·색) + 총구 이펙트 배선 25발. **GC 로는 총 메시 소켓 못 가리킴**(엔진 337행) → `ANS_WeaponTrail` 경로. Niagara 파라미터를 uasset `grep -a` 로 캐는 법. UI 소재 결론 = 텍스처 0장으로 시작 |
+| 2026-08-16 | [melee-radius-and-character-fit](dev-logs/2026-08-16-melee-radius-and-character-fit.md) | ★근접 판정 반경 3→20 (28개 창 전수 측정 = 모션별 차등 근거 없음) + 발차기 축 0 결함 + **SB 본편 Eve 콜리전 원본 확보**(덤프에 없던 게 아니라 추출 누락) + 플레이어 메시가 지면에 3cm 파묻혀 있던 것 |
+| 2026-08-14 | [air-combo-cancel-window](dev-logs/2026-08-14-air-combo-cancel-window.md) | ★공중 콤보 캔슬 윈도우를 안무 기준 프레임으로 (포즈 매칭 + `_All` 교차검증 = 차이 0) + `Air_02`·`_04` 검 재확인. `Air_01`은 캔슬창이 아예 없었다(07-30 문서가 계획만 적힌 건) / fps를 `(nf-1)/L`로 재면 틀린다 → `get_time_at_frame` / `GameplayTag`는 파이썬 repr이 항상 비어 보인다(`tag_name`까지 꺼낼 것) |
 | 2026-08-13 | [auto-aim-and-gun-sound](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) | ★락온 없이도 자동 조준(규칙을 거리→각도 최소로, SB 실측 ±90°/500cm) + 총격 판정 원점을 총구→캡슐 + **사운드 전면 배선**(총성 21발·발소리 488개·점프착지·공중 총격). 뼈 좌표로 접지 프레임 자동 검출 / 본 속도비로 총·검 판별(Air_01 = 4.75) / 문서가 틀렸던 것 3건 정정 / SoundCue Mixer 파이썬 생성이 재생 순간 에디터를 죽인 사고 / Concurrency 의 Prevent New 가 발소리를 죽인다 |
+| 2026-08-12 | [input-component-and-muzzle-socket](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) | ★`AKDPlayerCharacter` 700→426줄(입력 컴포넌트 분리) + GA의 구체 Pawn 캐스팅 4곳 제거(접근자 통일) + 총구를 무기 메시 소켓으로 이전. 결함 2건(어빌리티 태그 충돌로 콘 히트스캔 공짜 발동 / `ANS_EnemyAttackWindow` 태그 미초기화로 퍼펙트 회피 no-op) |
+| 2026-08-11 | [weapon-sound-trail](dev-logs/2026-08-11-weapon-sound-trail.md) | ★검 사운드 49칸 배선(타격음은 Cue로 일원화 — 빗나가면 소리 X) + 트레일 27개가 안 보이던 원인(`Distortion_Only`=굴절 전용) + `ANS_WeaponTrail` 파라미터 TMap화. `Trail Width` 공백 하나에 조용히 실패 |
+| 2026-08-10 | [gun-projectile](dev-logs/2026-08-10-gun-projectile.md) | ★총 3단계 — 발사체 결함 2건(무성 통과·자기 총알 퍼펙트회피) + 스폰 경로를 `KDAbilityStatics` 하나로. `Muzzle Socket` 무성 실패, CDO가 비어도 미설정이 아닌 사례 |
+
+<details>
+<summary><b>2026-07-30 이전 35개 펼치기</b> - 길동/버터 시절 포함. 그날의 기록이라 현행과 다를 수 있다</summary>
+
+| 날짜 | 문서 | 내용 |
+| --- | --- | --- |
+| 2026-08-08 | [aim-offset](dev-logs/2026-08-08-aim-offset.md) | ★조준 상체 오프셋 — 레일 진행도를 -1~+1로 정규화(SB 실측), Mesh Space 판단 근거, 감도 배율이 필요했던 이유(134도 대 42도) |
+| 2026-08-08 | [gun-fire-crosshair](dev-logs/2026-08-08-gun-fire-crosshair.md) | ★총 2단계 — 사격 GA(상속 대신 태그 조건표), 해제 몽타주는 태스크로 못 켠다, 첫 화면 HUD, `Set Visibility(self)`가 Tick을 죽인 함정, SB 발사 확산 커브 실측 |
+| 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
+| 2026-08-04 | [hitstop-component](dev-logs/2026-08-04-hitstop-component.md) | ★히트스톱을 액터 소유 컴포넌트로 — 정지가 노티를 끊어 데미지·판정이 중복되던 버그. CustomTimeDilation=0만 유효 |
+| 2026-08-03 | [camera-rail-look-rotation](dev-logs/2026-08-03-camera-rail-look-rotation.md) | ★카메라 레일 2단계 완료 — 조준을 랙 전 이상 위치로 (버그 3개가 한 뿌리) + 마우스 감도 노출. PIE 6항목 통과 |
+| 2026-07-30 | [gildong-montage-migration](dev-logs/2026-07-30-gildong-montage-migration.md) | ★길동 몽타주 전면 탈출 (단발·방어·회피·피격·공중) + GA 계층 리팩토링 + SB 공중 콤보 실측 |
+| 2026-07-30 | [inaction-tag-system](dev-logs/2026-07-30-inaction-tag-system.md) | ★InAction 우산 태그 (가드·회피도 전투 진입+무기 부착) + 회피 캔슬 목록 통합 + ABP 슬롯 재배치 |
+| 2026-07-29 | [melee-trace-static-mesh-fix](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) | ★근접 판정 부활 (무기가 StaticMesh라 코드가 배제) + 지상 콤보 20개 노티 일괄 배치 |
+| 2026-07-28 | [gunsword-hit-sequence](dev-logs/2026-07-28-gunsword-hit-sequence.md) | ★타격 시퀀스 실측 (뼈 속도 봉우리) = ANS_MeleeTrace 배치표 + 총 전용 3타 발견 |
+| 2026-07-27 | [gunsword-combo-cancel-timing](dev-logs/2026-07-27-gunsword-combo-cancel-timing.md) | ★콤보 캔슬 타이밍 실측 (포즈 매칭으로 안무가 의도 역추출) + 루트모션 이동량 |
+| 2026-07-23 | [gunsword-equip-montage-loco-gating](dev-logs/2026-07-23-gunsword-equip-montage-loco-gating.md) | 발검/납검 속도대별 상체 몽타주 + 로코모션 Stop 입력 게이팅 |
+| 2026-07-22 | [gunsword-holster-socket](dev-logs/2026-07-22-gunsword-holster-socket.md) | 검+총 홀스터 소켓 셋업 + DA 교차오염 정정 (Holder 본 붕괴 우회, 발검/납검·PIE는 다음) |
+| 2026-07-17 | [melee-trace-refactor](dev-logs/2026-07-17-melee-trace-refactor.md) | 트레이스 무기중립화 (WeaponTrace→MeleeTrace + ETraceMeshSource + 창단위 히트리셋) |
+| 2026-07-09 | [motion-matching-research](dev-logs/2026-07-09-motion-matching-research.md) | 모션매칭 자료조사 (개념+에셋 구조+URL 모음) |
+| 2026-06-13 | [execution](dev-logs/2026-06-13-execution.md) | 처형 시스템 |
+| 2026-06-12 | [combat-tag-polish](dev-logs/2026-06-12-combat-tag-polish.md) | 전투 태그 폴리싱 |
+| 2026-06-12 | [player-refactor](dev-logs/2026-06-12-player-refactor.md) | 플레이어 리팩토링 패스 |
+| 2026-06-11 | [air-combo](dev-logs/2026-06-11-air-combo.md) | 공중 콤보 |
+| 2026-06-11 | [counter-camera-juice](dev-logs/2026-06-11-counter-camera-juice.md) | 카운터 카메라 juice |
+| 2026-06-08 | [lockon-fixes](dev-logs/2026-06-08-lockon-fixes.md) | 락온 버그 수정 |
+| 2026-06-04 | [perfect-parry-juice](dev-logs/2026-06-04-perfect-parry-juice.md) | 퍼펙트 패링 juice 5겹 |
+| 2026-06-03 | [dodge-seam-rootmotion-mode](dev-logs/2026-06-03-dodge-seam-rootmotion-mode.md) | 닷지 이음새/루트모션 모드 |
+| 2026-06-02 | [double-jump](dev-logs/2026-06-02-double-jump.md) | 더블 점프 |
+| 2026-06-02 | [jump-landing-pivot-turn](dev-logs/2026-06-02-jump-landing-pivot-turn.md) | 점프 착지/피벗 턴 |
+| 2026-06-02 | [run-to-stop](dev-logs/2026-06-02-run-to-stop.md) | 런투스톱 |
+| 2026-05-30 | [player-locomotion](dev-logs/2026-05-30-player-locomotion.md) | 플레이어 로코모션 (BlendSpace) |
+| 2026-05-28 | [camera-sb-curve-system](dev-logs/2026-05-28-camera-sb-curve-system.md) | SB식 커브 카메라 |
+| 2026-05-27 | [movement-cancel-notify](dev-logs/2026-05-27-movement-cancel-notify.md) | 이동 캔슬 노티파이 |
+| 2026-05-26 | [perfect-parry-cue-migration](dev-logs/2026-05-26-perfect-parry-cue-migration.md) | 퍼펙트 패링 GameplayCue 이관 |
+| 2026-05-25 | [combo-system-day3](dev-logs/2026-05-25-combo-system-day3.md) | 콤보 Day3 — 분기 완성 + PIE 검증 |
+| 2026-05-24 | [combo-system-day2](dev-logs/2026-05-24-combo-system-day2.md) | 콤보 Day2 — GA_Light/Heavy |
+| 2026-05-23 | [combo-system-day1](dev-logs/2026-05-23-combo-system-day1.md) | 콤보 Day1 — 구조 + ComboComponent |
+| 2026-05-22 | [attribute-restructure](dev-logs/2026-05-22-attribute-restructure.md) | AttributeSet 재구성 |
+| 2026-05-22 | [combo-scope-change](dev-logs/2026-05-22-combo-scope-change.md) | 콤보 스코프 6→9분기 변경 |
+| 2026-05-22 | [gas-iframe-parry-research](dev-logs/2026-05-22-gas-iframe-parry-research.md) | GAS i-frame/패링 자료조사 |
+
+</details>
 
 ## handoffs/ — 인수인계
 
