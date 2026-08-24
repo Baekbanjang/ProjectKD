@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "GAS")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent; 
 
-	// 플레이어 전용 어트리뷰트 (Stamina, Dosul)
+	// 플레이어 전용 어트리뷰트 (Stamina, Ammo)
 	UPROPERTY()
 	TObjectPtr<UAS_Player> PlayerAttributes;
 
