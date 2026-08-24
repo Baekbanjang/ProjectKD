@@ -12,7 +12,7 @@
 
 | 문서 | 재활용 가치 |
 |---|---|
-| `버터맵_작업기록_통합_2026-06-25.md` | ⚠️**153KB/2381줄 — 통째로 열지 말 것.** Rodin AI 3D 파이프라인·UE 임포트 세팅은 유효 |
+| ~~`버터맵_작업기록_통합_2026-06-25.md`~~ | 🗑️ **2026-08-24 삭제** (153KB/2381줄). 전문이 다른 데 보존돼 있어 중복이었다 — PART 2 노트 4종은 볼트 `언리얼/맵제작/`·`언리얼/에셋파이프라인/`(북유럽 워크플로우는 볼트가 418행으로 더 길다), PART 1 대화 기록은 메모리 `reference_butter_map_pipeline`(핵심 경로 5줄 + UE 임포트 세팅 + 14단계 워크플로우까지 더 상세) |
 | `2026-07-08-butter-mm-locomotion.md` | MM DB 다이어트·Bias·Interrupt Mode 튜닝 노브 (SB 재구축에도 같은 원리 적용됨) |
 | `2026-07-11-butter-lockon-strafe.md` | 락온 스트레이프 BS 8방향 + Idle 오염 해결법 |
 | `butter-roadmap.md` / `butter-skills.md` / `butter-anim-pipeline.md` | 버터 전용 기획 — 재활용 거의 없음 |

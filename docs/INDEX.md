@@ -12,7 +12,7 @@
 >
 > ★ **전투 수치표 = 옵시디언 볼트 `ProjectKD/notes/Project_New/GunSword_전투수치_v1.md`** (2026-07-30, **제안·미반영**) — 콤보 26노드 데미지 계수 + 히트스탑·셰이크·넉백·포이즈·적 HP 티어. SB 실측 + 팩 실측 기반. **계수를 넣을 코드 칸(`FComboNode.DamageMultiplier`)이 아직 없다 = §1 먼저 볼 것.**
 
-> ★ **[현재 상태 — 2026-08-24](handoffs/2026-07-30-parallel-sessions.md)** — **진행상황·다음 할 일·보류 목록.** 세션 시작 시 여기부터. 파일명은 옛것이고 **내용이 최신**이다(맨 위 절만 현재, 아래는 지난 기록).
+> ★ **[handoffs/CURRENT.md](handoffs/CURRENT.md)** — **현재 상태 · 다음 할 일 · 보류 목록 · 설계 미결.** 세션 시작 시 여기부터.
 
 최신 dev-log: [2026-08-22 디버그 콘솔화 + 플레이어 초기값 GE + 마무리 워프 회전](dev-logs/2026-08-22-debug-console-player-init.md) · [2026-08-21 조준 정확도 + 넉백 실효화 + 공중 클립 카메라](dev-logs/2026-08-21-aim-knockback-camera.md) · [2026-08-20 콤보 진입기 접근 워프](dev-logs/2026-08-20-approach-warp.md) · [2026-08-19 콤보 데미지 계수 + 총격 조준 제한 + 더미](dev-logs/2026-08-19-combo-damage-scaling.md) · [2026-08-19 적 근접 판정 부활 — 무기 메시 태그 불일치](dev-logs/2026-08-19-enemy-melee-trace-tag.md) · [2026-08-18 적 상태 바 HUD 구현](dev-logs/2026-08-18-enemy-state-bar.md) · [2026-08-17 적 상태 바 HUD 설계 + 총구 이펙트](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) · [2026-08-16 근접 판정 반경 + SB 캐릭터 정합](dev-logs/2026-08-16-melee-radius-and-character-fit.md) · [2026-08-14 공중 콤보 캔슬 윈도우 정렬](dev-logs/2026-08-14-air-combo-cancel-window.md) · [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
@@ -149,9 +149,10 @@ player-locomotion  → 볼트 02_플레이어            (08-24 먼저 삭제됨
 
 | 문서                                                                                                     | 설명                                                                    |
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| [2026-07-06-claudian-env-setup](handoffs/2026-07-06-claudian-env-setup.md)                               | Claudian 환경 셋업 인수인계                                             |
+| [**CURRENT**](handoffs/CURRENT.md) | ★★ **현재 상태 (233행).** 세션 시작 시 여기부터. 현행만 두고, 절이 쌓이면 월 단위로 `archive/` 로 덜어낸다 |
 | [2026-07-21-pivot-gunsword](handoffs/2026-07-21-pivot-gunsword.md)                                       | ★프로젝트 피벗 — 버터 맨손 폐기 → 9CG Gun&Sword 팩 기반 SB 스타일 액션  |
-| [2026-07-30-parallel-sessions](handoffs/2026-07-30-parallel-sessions.md)                                 | ★★**현재 핸드오프 (내용 = 2026-08-22)** — 진행상황 + 다음 할 일 + 보류 목록 + 설계 미결. ⚠️파일명의 "2세션 병행"은 **2026-07-31 종료된 규칙**, 따르지 말 것 |
+| [archive/2026-07~08-past-sessions](handoffs/archive/2026-07~08-past-sessions.md) | 🗄️ 지난 세션 기록 834행 — 2026-08-24 에 `2026-07-30-parallel-sessions.md`(1,052행)에서 분리. **여기 적힌 "다음 할 일"은 전부 끝났거나 뒤집혔다.** 설계 근거로만 읽을 것 |
+| [archive/2026-07-06-claudian-env-setup](handoffs/archive/2026-07-06-claudian-env-setup.md) | 🗄️ Claudian 환경 셋업 인수인계 |
 
 ## archive/ — ⚠️ 폐기 라인 (기본은 읽지 않음)
 
@@ -159,6 +160,6 @@ player-locomotion  → 볼트 02_플레이어            (08-24 먼저 삭제됨
 
 | 폴더 | 내용 |
 | --- | --- |
-| [butter/](archive/README.md) | 버터 라인 6개 — 2026-07-21 피벗으로 폐기. ⚠️`버터맵_작업기록_통합`은 **153KB/2381줄, 통째로 열지 말 것** |
+| [butter/](archive/README.md) | 버터 라인 5개 — 2026-07-21 피벗으로 폐기. 🗑️`버터맵_작업기록_통합`(153KB/2381줄)은 **2026-08-24 삭제** — 볼트·메모리에 전문 보존 |
 | [kildong/](archive/README.md) | 길동 중단 백로그 2개 |
 | team_setup_guide.md | 구 페어 시절 셋업 (P4 기술 stale) |

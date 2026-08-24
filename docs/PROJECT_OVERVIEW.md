@@ -178,7 +178,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 - **docs/specs/**: `README` — 🗄️`deep-interview-abp-weapon` → `archive/kildong/`
 - ✅ **설계 문서의 단일 진실 = 볼트 `notes/코드구조/`** (10문서). 락온·카메라·콜리전·데미지·로코모션 5주제 전부 이쪽이 담당한다.
   삭제 전 건진 함정 2건은 볼트 트러블슈팅으로 옮겼다 — `GAS-BlueprintNativeEvent_BP디폴트가_C++를_이긴다` · `콜리전-Overlap이_같은액터를_컴포넌트수만큼_중복반환`
-- **docs/handoffs/**: `2026-07-21-pivot-gunsword`✅(현재방향 진실), 그외 길동/버터 핸드오프
+- **docs/handoffs/**: `CURRENT.md`★★(현재 상태 · 세션 시작 시 여기부터) · `2026-07-21-pivot-gunsword`✅(현재방향 진실) · `archive/`(지난 세션 기록 834행, 2026-08-24 분리)
 - **옵시디언 볼트** (`C:\Users\asdasd\Desktop\Obsidian_organize\ProjectKD\`, GitHub private `BlackGildong`):
   - `notes/Project_New/`✅ — 신규 GunSword 기획(핵심 4문서 유효, 버터 자료 혼재)
   - `notes/Reference/StellarBlade_*`✅ — SB 이브 실측(JSON덤프/데이터시트/콤보트리 복원) = 밸런스·콤보 직행근거
