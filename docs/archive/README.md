@@ -27,7 +27,18 @@
 
 ---
 
-## 여기 없는 것 — `design/기획/`
+## 🗑️ `design/기획/` — 2026-08-24 삭제 (아카이브 아님)
 
-`design/기획/` 하위(도술·콤보·UI·밸런싱·공중QTE·분위기·전투진행·적)는 **길동 스토리 기반이지만 격리하지 않았다.** 도술(`Dosul` 어트리뷰트가 코드에 살아 있음)·콤보·UI 개념은 새 라인에서도 재사용될 수 있어서다.
-**스토리·세계관 서술은 무효, 시스템 설계는 유효**로 나눠 읽을 것.
+`design/기획/` 하위(도술·콤보·UI·밸런싱·공중QTE·분위기·전투진행·적) 19문서 + 이미지 22개는 **여기로 옮기지 않고 삭제했다.** 볼트 `ProjectKD/notes/ProjectKD/기획/`에 **더 최신 판본이 이미 있어서**다 (21쌍 diff 실측: 19쌍에서 볼트가 최신 또는 동일).
+
+⚠️ **이 문단의 종전 서술을 정정한다.** 전에는 "`Dosul` 어트리뷰트가 코드에 살아 있어 격리하지 않았다"고 적혀 있었으나, 2026-08-24 소스 실측 결과 `Dosul`은 **주석 한 줄(`Source/Project_KD/Player/KDPlayerState.h:33`)에만** 남아 있다. 실제 어트리뷰트도, GA도, Config 태그도 없다.
+
+```
+현행 AttributeSet 실측 (2026-08-24)
+  AS_CharacterBase   Health / MaxHealth / Poise / MaxPoise / Shield / MaxShield
+  AS_Combat          AttackPower / Defense / IncomingDamage
+  AS_Player          Stamina / MaxStamina / Ammo / MaxAmmo     ← Dosul 없음, Ammo = Gun&Sword
+```
+
+**스토리·세계관 서술은 무효, 시스템 설계 문법(SB 정합 콤보트리·색상 신호 규약)만 참고 가치** — 볼트 쪽에서 읽을 것.
+복구가 필요하면 `git checkout HEAD~1 -- docs/design/기획`.

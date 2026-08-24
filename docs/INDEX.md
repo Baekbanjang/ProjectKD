@@ -4,19 +4,21 @@
 
 > ★ **[PROJECT_OVERVIEW](PROJECT_OVERVIEW.md)** — 프로젝트 전체 개관(현재 방향·코드 아키텍처·에셋 맵·진행상황). **새 세션 부트 문서, 여기부터 읽을 것.**
 >
-> ★ **코드 설명서 = 옵시디언 볼트 `ProjectKD/notes/코드구조/`** (10문서, 2026-08-08 갱신) — 클래스별 용도·함수 기능·동작 흐름·핵심 코드 발췌. `00_코드구조_MOC`부터. 이 저장소엔 두지 않음(개인 노트 체계).
+> ★ **코드 설명서 = 옵시디언 볼트 `ProjectKD/notes/코드구조/`** (10문서, **2026-08-23 갱신** — 종전 "08-08" 표기는 stale이라 2026-08-24 정정) — 클래스별 용도·함수 기능·동작 흐름·핵심 코드 발췌. `00_코드구조_MOC`부터. 이 저장소엔 두지 않음(개인 노트 체계).
 >
-> ★★ **로드맵 = 옵시디언 볼트 `ProjectKD/notes/Project_New/로드맵_GunSword_v1.md`** (2026-07-31) — M1~M6 마일스톤 + 포폴 제출 지점 + 리스크. 주 15~20h 기준 24주(버퍼 포함 31주). ⚠️볼트 `로드맵_마스터.md`는 버터 시절 **폐기**, `docs/reference/3-phases.md`는 길동+페어 시절 **stale**(형식만 계승).
+> 🔴 **`docs/design/` 5문서는 2026-05에서 멈춰 있다** (2026-08-24 실측). 그 뒤 dev-log 30편 이상이 쌓였고, **실질적인 최신 설계 문서는 볼트 `notes/코드구조/`다.** 락온·카메라·콜리전·데미지·로코모션 5주제 전부 볼트 쪽이 더 최신·상세인 것을 확인했다. `docs/design/`을 현행으로 읽지 말 것 — 상세는 아래 §design 표 참조.
+>
+> ★★ **로드맵 = 옵시디언 볼트 `ProjectKD/notes/Project_New/로드맵_GunSword_v1.md`** (2026-07-31) — M1~M6 마일스톤 + 포폴 제출 지점 + 리스크. 주 15~20h 기준 24주(버퍼 포함 31주). ⚠️볼트 `로드맵_마스터.md`는 버터 시절 **폐기**, `docs/reference/3-phases.md`는 **2026-08-24 삭제**(길동+페어 시절, 볼트에 최신본).
 >
 > ★ **전투 수치표 = 옵시디언 볼트 `ProjectKD/notes/Project_New/GunSword_전투수치_v1.md`** (2026-07-30, **제안·미반영**) — 콤보 26노드 데미지 계수 + 히트스탑·셰이크·넉백·포이즈·적 HP 티어. SB 실측 + 팩 실측 기반. **계수를 넣을 코드 칸(`FComboNode.DamageMultiplier`)이 아직 없다 = §1 먼저 볼 것.**
 
-> ★ **[2026-07-30 핸드오프 — 2세션 병행 체제](handoffs/2026-07-30-parallel-sessions.md)** — **현재 진행상황·다음 할 일·보류 목록·레인 구분.** 세션 시작 시 여기부터.
+> ★ **[현재 상태 — 2026-08-22](handoffs/2026-07-30-parallel-sessions.md)** — **진행상황·다음 할 일·보류 목록.** 세션 시작 시 여기부터. 파일명은 옛것이고 **내용이 최신**이다(맨 위 절만 현재, 아래는 지난 기록).
 
-최신 dev-log: [2026-08-20 콤보 진입기 접근 워프](dev-logs/2026-08-20-approach-warp.md) · [2026-08-19 콤보 데미지 계수 + 총격 조준 제한 + 더미](dev-logs/2026-08-19-combo-damage-scaling.md) · [2026-08-19 적 근접 판정 부활 — 무기 메시 태그 불일치](dev-logs/2026-08-19-enemy-melee-trace-tag.md) · [2026-08-18 적 상태 바 HUD 구현](dev-logs/2026-08-18-enemy-state-bar.md) · [2026-08-17 적 상태 바 HUD 설계 + 총구 이펙트](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) · [2026-08-16 근접 판정 반경 + SB 캐릭터 정합](dev-logs/2026-08-16-melee-radius-and-character-fit.md) · [2026-08-14 공중 콤보 캔슬 윈도우 정렬](dev-logs/2026-08-14-air-combo-cancel-window.md) · [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
+최신 dev-log: [2026-08-22 디버그 콘솔화 + 플레이어 초기값 GE + 마무리 워프 회전](dev-logs/2026-08-22-debug-console-player-init.md) · [2026-08-21 조준 정확도 + 넉백 실효화 + 공중 클립 카메라](dev-logs/2026-08-21-aim-knockback-camera.md) · [2026-08-20 콤보 진입기 접근 워프](dev-logs/2026-08-20-approach-warp.md) · [2026-08-19 콤보 데미지 계수 + 총격 조준 제한 + 더미](dev-logs/2026-08-19-combo-damage-scaling.md) · [2026-08-19 적 근접 판정 부활 — 무기 메시 태그 불일치](dev-logs/2026-08-19-enemy-melee-trace-tag.md) · [2026-08-18 적 상태 바 HUD 구현](dev-logs/2026-08-18-enemy-state-bar.md) · [2026-08-17 적 상태 바 HUD 설계 + 총구 이펙트](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) · [2026-08-16 근접 판정 반경 + SB 캐릭터 정합](dev-logs/2026-08-16-melee-radius-and-character-fit.md) · [2026-08-14 공중 콤보 캔슬 윈도우 정렬](dev-logs/2026-08-14-air-combo-cancel-window.md) · [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
 - **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
-- **design/기획/** — 게임 기획 (도술/콤보/UI/밸런싱/QTE/분위기/전투진행/적)
-- **reference/** — 외부 자료·컨벤션·팀 셋업
+- ~~**design/기획/**~~ — 🗑️ **2026-08-24 삭제.** 길동 시대 기획. 볼트 `ProjectKD/notes/ProjectKD/기획/`에 최신본 보존 (§삭제 기록 참조)
+- **reference/** — 외부 자료·컨벤션
 - **specs/** — 마일스톤 스펙 (답안지)
 - **dev-logs/** — 기능 완료 시 개발 로그 (날짜-기능명)
 - **handoffs/** — 세션/환경 인수인계 문서
@@ -24,46 +26,52 @@
 
 ---
 
-## design/ — 시스템 설계
+## ⚠️ design/ — 시스템 설계 (전부 2026-05 stale)
 
-| 문서                                                           | 설명                                                                  |
-| -------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [README](design/README.md)                                     | design 폴더 안내                                                      |
-| [camera-curves-system](design/camera-curves-system.md)         | SB식 커브 기반 카메라 시스템 (FOV/피치/거리 커브)                     |
-| [collision-channels](design/collision-channels.md)             | 프로젝트 콜리전 채널/프로파일 정의                                    |
-| [damage-system](design/damage-system.md)                       | GAS ExecCalc 기반 데미지 계산 파이프라인                              |
-| [lockon-system](design/lockon-system.md)                       | 락온 타겟팅 시스템 설계                                               |
-| [player-locomotion-system](design/player-locomotion-system.md) | 플레이어 이동 시스템 (BlendSpace 기반, 구 킬동)                       |
+**5문서 모두 2026-05-22~30 이후 갱신되지 않았다.** 각 주제는 그 뒤로 dev-log에서 계속 바뀌었고, 현행 설명은 볼트 `notes/코드구조/`에 있다. 아래 "이후 변경"은 2026-08-24 dev-log 대조 결과다.
 
-## design/기획/ — 게임 기획
+| 문서 | 최종수정 | 이후 변경 (dev-log) | 🟢 현행은 여기 |
+| --- | --- | --- | --- |
+| [README](design/README.md) | 05-15 | — | — |
+| [camera-curves-system](design/camera-curves-system.md) | **05-28** | `08-03-camera-rail-look-rotation` · `08-05-lockon-pitch-curve` · `08-21-aim-knockback-camera` | 볼트 `02_플레이어` · `08_총_조준_스탠스` |
+| [collision-channels](design/collision-channels.md) | **05-22** | `07-17-melee-trace-refactor` · `07-29-melee-trace-static-mesh-fix` · `08-16-melee-radius` · `08-19-enemy-melee-trace-tag` | 볼트 `05_애님노티파이_큐` · `01_전투_GAS_어빌리티` |
+| [damage-system](design/damage-system.md) | **05-22** | `08-18-shield-and-vitals` · `08-19-combo-damage-scaling` | 볼트 `04_어트리뷰트_이펙트` · `01_전투_GAS_어빌리티` |
+| [lockon-system](design/lockon-system.md) | **05-28** | `06-08-lockon-fixes` · `08-05-lockon-pitch-curve` | 볼트 `03_전투_컴포넌트` · `01_전투_GAS_어빌리티` |
+| ~~player-locomotion-system.md~~ | **🗑️ 08-24 삭제** | 문서 전체가 길동 `ABP_Player` 기준. **현행은 `ABP_SB`**(`Content/SB_Style_GameProject/Animation/`, killdong 참조 0건) | 볼트 `02_플레이어` |
 
-| 폴더        | 문서                                                                                                                                                                                                                                                                                 | 설명                                             |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| —           | [README](design/기획/README.md)                                                                                                                                                                                                                                                      | 기획 폴더 구조 안내                              |
-| 1\_도술     | [1\_도술](design/기획/1_도술/1_도술.md) · [도술](design/기획/1_도술/도술.md) · [후보풀](design/기획/1_도술/1_도술_후보풀.md) · [GPT프롬프트](design/기획/1_도술/도술_GPT프롬프트.md)                                                                                                 | 도술(스킬) 기획 + 후보 풀 + 이미지 프롬프트      |
-| 2\_콤보     | [2\_콤보](design/기획/2_콤보/2_콤보.md) · [콤보](design/기획/2_콤보/콤보.md)                                                                                                                                                                                                         | 콤보 분기 기획 (Light/Heavy 시퀀스)              |
-| 3_UI        | [3_UI](design/기획/3_UI/3_UI.md) · [UI](design/기획/3_UI/UI.md) · [HUD_mockup](design/기획/3_UI/HUD_mockup.md)                                                                                                                                                                       | HUD/UI 기획 + 목업 (SB/Wukong 레퍼런스)          |
-| 4\_밸런싱   | [4\_밸런싱](design/기획/4_밸런싱/4_밸런싱.md)                                                                                                                                                                                                                                        | 수치 밸런싱 기획                                 |
-| 5\_공중QTE  | [5\_공중QTE](design/기획/5_공중QTE/5_공중QTE.md) · [공중QTE](design/기획/5_공중QTE/공중QTE.md)                                                                                                                                                                                       | 공중 QTE 시퀀스 기획 (페이탈→띄움→연타→내리꽂기) |
-| 6\_분위기   | [6\_분위기](design/기획/6_분위기/6_분위기.md) · [분위기](design/기획/6_분위기/분위기.md) · [GPT프롬프트](design/기획/6_분위기/분위기_GPT프롬프트.md) · [영상프롬프트](design/기획/6_분위기/분위기_영상프롬프트.md) · [절벽글록시퀀스](design/기획/6_분위기/분위기_절벽글록시퀀스.md) | 아트/톤 기획 + AI 프롬프트                       |
-| 7\_전투진행 | [7\_전투진행](design/기획/7_전투진행/7_전투진행.md) · [전투진행](design/기획/7_전투진행/전투진행.md)                                                                                                                                                                                 | 전투 흐름/페이싱 기획                            |
-| 8\_적       | [적-컨셉](design/기획/8_적/적-컨셉.md)                                                                                                                                                                                                                                               | 적 유닛 컨셉 (도적 4종 + 정예 + 보스)            |
+> ℹ️ 이 폴더는 전역 `settings.json`에서 **Write/Edit DENY**로 잠겨 있다. 갱신하려면 잠금을 풀거나 직접 편집해야 한다.
+> 판단: 볼트 `notes/코드구조/` 10문서(08-08~08-23)가 5주제를 전부 더 최신·상세로 커버하므로, **되살리기보다 "볼트로 이관 완료" 표시가 맞다.**
+
+## 🗑️ design/기획/ — 2026-08-24 삭제됨
+
+길동 시대(2026-05~06) 게임 기획 19개 + 이미지 22개. **볼트에 최신본이 있어 이쪽을 정리했다.**
+
+| 항목 | 내용 |
+|---|---|
+| 보존 위치 | 볼트 `ProjectKD/notes/ProjectKD/기획/` (8폴더 + `자료/` 이미지 22개 전부) |
+| 판정 근거 | 21쌍 diff 실측 — 19쌍에서 볼트가 최신이거나 동일 |
+| 증거 | KD판 `[1] 분신 [2] 축지 [3] 스턴` = 구 도술명 / 볼트판 `[1] 화부 [2] 풍보 [3] 정승` = 신 도술명. KD판 `AGdPlayerCharacter` = 사망한 `Gd` 접두 |
+| 예외 | `적-컨셉.md`만 KD판이 최신(2026-06-01 색상 규약)이라 **볼트로 이관 후** 삭제. 종전 볼트판은 `적-컨셉_구버전_2026-06-15.md`로 보존 |
+| 복구 | git 추적 중 → `git checkout HEAD~1 -- docs/design/기획` |
+
+⚠️ 종전 `archive/README.md`는 "`Dosul` 어트리뷰트가 코드에 살아 있어 격리하지 않았다"고 적혀 있었으나, **2026-08-24 실측 결과 `Dosul`은 주석 한 줄(`KDPlayerState.h:33`)에만 남아 있고 실제 어트리뷰트는 없다.** 현행 `AS_Player` = `Stamina` · `Ammo`.
 
 ## reference/ — 외부 자료·컨벤션
 
 | 문서                                                                | 설명                                       |
 | ------------------------------------------------------------------- | ------------------------------------------ |
 | [README](reference/README.md)                                       | reference 폴더 안내                        |
-| [3-phases](reference/3-phases.md)                                   | 프로젝트 3단계 로드맵                      |
 | [UE5-GAS-Naming-Convention](reference/UE5-GAS-Naming-Convention.md) | UE5+GAS 네이밍 컨벤션 (GA*/GE*/AS*/AM* 등) |
-| [references](reference/references.md)                               | 외부 참고 링크 모음                        |
+
+🗑️ `3-phases.md` · `references.md` — 2026-08-24 삭제. 길동+페어 시절 12주 일정·클래스 분담(`Gd` 접두)이라 **이 폴더의 정의(외부 자료 보관)에도 안 맞았다.** 볼트 `notes/ProjectKD/0_팀셋업/`에 최신본 있음.
 
 ## specs/ — 마일스톤 스펙
 
 | 문서                                                            | 설명                                     |
 | --------------------------------------------------------------- | ---------------------------------------- |
 | [README](specs/README.md)                                       | specs 폴더 안내                          |
-| [deep-interview-abp-weapon](specs/deep-interview-abp-weapon.md) | ABP/무기 시스템 deep interview 결정 기록 |
+
+🗄️ `deep-interview-abp-weapon.md` — **2026-08-24 `archive/kildong/`으로 이동.** 길동 스켈레톤 + 창(Spear) 전제라 폐기. 단 **`WeaponComponent` + `weapon_r` 소켓 결정은 현행 코드에 살아 있다**(`Combat/WeaponComponent.h:45`, `Combat/Data/WeaponDataAsset.h:46`) → 설계 근거로 보존.
 
 ## dev-logs/ — 개발 로그 (시간순)
 
@@ -116,6 +124,8 @@
 | 2026-08-19 | [combo-damage-scaling](dev-logs/2026-08-19-combo-damage-scaling.md) | ★타별 데미지 계수(`FComboNode.DamageMultiplier`, 곱하는 자리는 `GA_MeleeTraceBase.cpp:210` 하나) + 총격 조준 클램프 + 타격감 더미. **1타를 0.7로 낮추는 게 핵심**(마무리만 올리면 대비가 안 생김) / 공중은 별도 경로라 같은 쌍을 두 번 / **라이브 코딩 직후 파이썬으로 `USTRUCT` 배열을 쓰면 전 필드가 에러 없이 밀린다**(`DA_ComboTree` 22노드 파괴 → git 복구) / `EditDefaultsOnly` 는 파이썬 쓰기 차단 / **더미는 `AIControllerClass` 를 비우면 `PossessedBy` 가 안 불려 초기화가 통째로 안 된다** — `BehaviorTreeAsset` 만 비울 것 |
 | 2026-08-19 | [enemy-melee-trace-tag](dev-logs/2026-08-19-enemy-melee-trace-tag.md) | ★적 근접 판정 부활 + 퍼펙트 패링 반복 발동 — **무음 결함 2건.** ① 무기 메시를 **컴포넌트 태그로** 찾는데 적은 `Weapon` / GA 는 `Sword` 였다(플레이어는 무기 2개라 `Sword`/`Gun` 으로 갈라야 해서 기본값이 그것). 태스크가 생성조차 안 돼 **디버그 궤적도 같이 죽었다** — 궤적이 "없는" 것은 반경 고장이 아니다. 적 베이스 생성자 1줄로 BP 7개 해결(CDO 재조회로 확인). 무음 게이트 3곳(`UE_LOG` 주석)이 진짜 비용. ② **`End Ability` 없는 BP GA 는 두 번째 활성화가 조용히 거부된다**(`InstancedPerActor`) — 퍼펙트 패링이 첫 한 번만 포이즈를 깎았다, 연출이 여러 겹이라 증상이 가려짐. 조회법 3개 = `GameplayTagLibrary.get_tag_name` / SCS 태그는 `<BP>.<클래스>:<이름>_GEN_VARIABLE` 직접 로드 / PIE 어트리뷰트는 `get_all_attributes`+`get_gameplay_attribute_value` |
 | 2026-08-20 | [approach-warp](dev-logs/2026-08-20-approach-warp.md) | ★콤보 진입기 접근 워프 — 반경 안 적에게 붙어서 콤보 시작. **모션 워핑은 위치를 만들지 않고 원래 루트모션을 늘린다**(워프창 이동량 20클립 실측) / 무음 결함 = **등록한 워프 좌표가 조기 리턴에 살아남아** 시체·옛 자리로 끌려감(`RemoveWarpTarget` 이 `if (!Target) return` 아래 있었다) / 위치 스냅샷 → `bFollowComponent` 추적으로 전환(멈출 거리는 `VectorFromTargetToOwner` 오프셋) — **그러면 회전 기준이 적 컴포넌트로 바뀌므로 노티를 `Facing` 으로 같이 바꿔야 한다** / **각도 필터가 둘인데 기준이 다르다**(콘=카메라 / 135도 게이트=몸) → 콘만 360으로 열어도 안 먹어서 게이트를 삭제 / **배율 상한을 수치로 잡으려던 게 틀렸다**(6배에서도 체감 멀쩡, 기준은 PIE) / `AutoAimRange` 가 `MaxApproachRange` 의 상한 / `export_text` 의 `LinkValue` 는 두 번 나온다(앞=끝, 뒤=시작) |
+| 2026-08-21 | [aim-knockback-camera](dev-logs/2026-08-21-aim-knockback-camera.md) | ★무음 결함 3건 — 전부 **캡슐 기준으로 계산하는데 캡슐이 진실이 아닌** 문제. ① 조준 트레이스가 `ECC_Visibility` 하나뿐인데 **`Pawn`·`CharacterMesh` 프로파일이 그 채널을 무시**해서 조준점이 적 뒤 벽에 찍혔다(먼 벽은 맞고 가까운 적만 빗나감 = 시차) → Pawn 오브젝트 트레이스를 벽까지만 덧댐. ② 넉백 배수를 바꿔도 거리가 그대로 — **AI 경로추종이 `LaunchCharacter` 속도를 매 틱 덮어씀**(`StopMovement` 는 현재 요청만 취소). 넉백 구간만 `PauseLogic`, ⚠️`ResumeLogic` 은 이유별로 안 세므로 경직·사망 가드 필수. ③ 공중 콤보에서 캐릭터가 화면 위로 벗어남 — **루트 Z 가 0**(점프가 골반에만 그려짐). 캡슐을 띄우면 높이가 두 번 더해지므로 **스프링암이 골반 높이를 직접 읽어** 카메라 위치와 LookAt 을 같이 올림(둘 다 올려야 각도 유지). 문턱 180 = **클립 993개 실측**(해당 8개 / 공중 회피 최고 169 사이가 빔). ⚠️좌표계 = `RTS_Component`(액터 기준은 메시 오프셋 88 만큼 어긋남) / **파이썬은 bool 의 `b` 접두사를 뗀다**(`use_muzzle_origin`) / PIE 중 `load_asset` 은 조용히 `None` |
+| 2026-08-22 | [debug-console-player-init](dev-logs/2026-08-22-debug-console-player-init.md) | ★켜고 끄는 자리가 코드에 박혀 있던 것 4건. ① 온스크린 디버그 4종(**데미지·회피·접근·넉백**)이 `if (GEngine)` 만으로 항상 켜져 있었다 → **콘솔 변수 `KD.ShowDamage`/`ShowDodge`/`ShowApproach`/`ShowKnock`** (`ECVF_Cheat`). 체크박스로 안 뺀 이유 = 데미지·넉백은 GA 가 아니라 **어트리뷰트셋·Pawn 에서 찍는다**. ⚠️무기 궤적·조준선은 여전히 BP 체크박스. ② 플레이어 어트리뷰트 초기값이 **C++ 생성자에만** 있어 탄약 하나 바꾸는 데 재컴파일 → `GE_InitPlayerStats` 신설, `BP_PlayerState.StartupEffects` 에 등록(적용 루프는 `KDPlayerState.cpp:40` 기존 것). 적은 이미 DA 로 데이터화돼 있었는데 플레이어만 코드였다. ③ 마무리 5타로 끝내면 **적 등 뒤에 착지** — 워프 노티 `RotationType = Facing` 인데 `05_04` 는 적을 지나쳐 달리는 클립이라 반대로 돈다 → 마무리 5타 `warp_rotation` 해제(회전은 `OnActivated` 의 `SetActorRotation` 담당). ⚠️**`AM_SB_Parry_Counter_Attack_L` 하나만 `DEFAULT` 로 남음**(19개 중 유일, 미확인). ④ `BufferTimeWindow` 상한 0.5→0.8(기본값 0.2 유지). **촬영용 임시값 원복 목록 있음** — 밴딧 Poise 1→3 / 퍼펙트 패링 창 0.5→0.2. ⚠️노출을 `AEM_MANUAL` 로 바꾸면 화면이 검어진다(실사 주광 기준 계산) |
 | 2026-08-13 | [auto-aim-and-gun-sound](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) | ★락온 없이도 자동 조준(규칙을 거리→각도 최소로, SB 실측 ±90°/500cm) + 총격 판정 원점을 총구→캡슐 + **사운드 전면 배선**(총성 21발·발소리 488개·점프착지·공중 총격). 뼈 좌표로 접지 프레임 자동 검출 / 본 속도비로 총·검 판별(Air_01 = 4.75) / 문서가 틀렸던 것 3건 정정 / SoundCue Mixer 파이썬 생성이 재생 순간 에디터를 죽인 사고 / Concurrency 의 Prevent New 가 발소리를 죽인다 |
 
 ## handoffs/ — 인수인계
@@ -124,7 +134,7 @@
 | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | [2026-07-06-claudian-env-setup](handoffs/2026-07-06-claudian-env-setup.md)                               | Claudian 환경 셋업 인수인계                                             |
 | [2026-07-21-pivot-gunsword](handoffs/2026-07-21-pivot-gunsword.md)                                       | ★프로젝트 피벗 — 버터 맨손 폐기 → 9CG Gun&Sword 팩 기반 SB 스타일 액션  |
-| [2026-07-30-parallel-sessions](handoffs/2026-07-30-parallel-sessions.md)                                 | ★★**현재 핸드오프** — 2세션 병행(기획A/코드B) 레인 규칙 + 진행상황 + 보류 목록 + 설계 미결 |
+| [2026-07-30-parallel-sessions](handoffs/2026-07-30-parallel-sessions.md)                                 | ★★**현재 핸드오프 (내용 = 2026-08-22)** — 진행상황 + 다음 할 일 + 보류 목록 + 설계 미결. ⚠️파일명의 "2세션 병행"은 **2026-07-31 종료된 규칙**, 따르지 말 것 |
 
 ## archive/ — ⚠️ 폐기 라인 (기본은 읽지 않음)
 
