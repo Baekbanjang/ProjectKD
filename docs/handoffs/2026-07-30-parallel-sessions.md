@@ -1,11 +1,62 @@
-# 현재 상태 — 2026-08-17
+# 현재 상태 — 2026-08-22
 
 > **세션 시작 시 여기부터.** 진행상황·다음 할 일·보류 목록·설계 미결.
 > ⛔ 2세션 병행(A/B 레인)은 **2026-07-31 종료**. §0 참조 — 그 규칙을 따르지 말 것.
+> ⚠️ **아래로 갈수록 옛날 절이다.** 맨 위 절이 현재 상태이고, 그 아래 절들의 "다음 할 일"은 이미 끝난 것들이다.
 
 ---
 
-## ★★ 2026-08-17 — 총구 이펙트 + HUD 착수. **다음 세션은 여기부터**
+## ★★ 2026-08-22 — 포폴 촬영 완료 + 디버그 콘솔화. **다음 세션은 여기부터**
+
+dev-log = `docs/dev-logs/2026-08-22-debug-console-player-init.md` (직전 = `2026-08-21-aim-knockback-camera.md`)
+
+### 🔴 먼저 = 미커밋 정리
+
+```
+소스 5   AS_Combat.cpp · GA_Dodge.cpp · GA_PlayerMeleeAttackBase.cpp
+         KDEnemyBaseCharacter.cpp      (콘솔 변수 4개)
+         InputBufferComponent.h        (ClampMax 0.5 -> 0.8)
+docs 4   INDEX.md · PROJECT_OVERVIEW.md · dev-log 2개(08-21 / 08-22, 둘 다 untracked)
+Content 11  촬영용 임시값 원복분 — DA_Sword_Bandit(Poise 3) · GA_Parry(퍼펙트 창 0.2)
+            + 적 BP 6개 · GA_LightCombo/HeavyCombo 디버그 표시 · LV0_Test
+            ⚠️ Robot3/ 는 임시라 미추적 유지
+```
+
+커밋 제안 — `[refactor] 개발용 온스크린 표시를 콘솔 변수로` / `[Input] 입력 버퍼 상한 0.8` / `[doc] 08-21·08-22 dev-log` / Content `[BP] 촬영용 임시값 원복`
+
+### 🔴 그다음 = 확인 1건
+
+**`AM_SB_Parry_Counter_Attack_L` 만 워프 노티 `RotationType = DEFAULT`** (타겟명 `CounterTarget`). 워프 노티 19개 중 유일. 반격이 엉뚱한 방향으로 도는지 미확인.
+→ 함정 전문 = 볼트 `트러블슈팅/모션워핑-Facing회전이_지나쳐달리는클립을_뒤로돌림`
+
+### 이번에 한 것 4건
+
+```
+디버그 콘솔화   KD.ShowDamage / ShowDodge / ShowApproach / ShowKnock  (ECVF_Cheat)
+                ⚠️ 무기 궤적·조준선은 여전히 BP 체크박스 (bDrawDebug / bDrawAimDebug)
+플레이어 초기값  GE_InitPlayerStats 신설 -> BP_PlayerState.StartupEffects
+                적은 DA 로 이미 데이터화, 플레이어만 C++ 생성자에 있었다
+마무리 워프 회전 AM_SB_Combo_01~05_04 warp_rotation 해제 (적 등 뒤 착지 버그)
+입력 버퍼        ClampMax 0.8 — 상한만 열었고 BP 값은 0.5 그대로
+```
+
+### 문서에서 낡아 있던 것 3건 (고침)
+
+```
+PROJECT_OVERVIEW  UAS_Player 가 Dosul 을 아직 있다고 적고 있었다 (08-18 에 Ammo 로 교체됨)
+볼트 06_적_AI      넉백 코드가 StopMovement() 만 있는 옛 버전 / KnockbackStrength 400 (실제 1800)
+볼트 04_어트리뷰트  "플레이어는 생성자 값이 곧 최종값" — GE 신설로 거짓이 됨
+```
+
+**인용 전에 검증할 것.** 셋 다 코드는 진작 바뀌었는데 문서만 남아 있던 것들이다.
+
+### 포폴 촬영 — 완료
+
+영상 편집본 = `D:/Capcut/0822(1).mp4` (6분, 1994x1080 60fps). 구성·자막 확정. **산출물이지 재개점이 아니다.**
+
+---
+
+## 2026-08-17 — 총구 이펙트 + HUD 착수 (완료된 절)
 
 dev-log = `docs/dev-logs/2026-08-17-hud-enemy-state-bar-spec.md`
 
