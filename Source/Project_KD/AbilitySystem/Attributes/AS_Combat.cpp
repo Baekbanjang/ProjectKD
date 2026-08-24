@@ -3,7 +3,15 @@
 #include "AbilitySystem/Attributes/AS_CharacterBase.h"
 #include "Engine/Engine.h"
 #include "GameplayEffectExtension.h"
+#include "HAL/IConsoleManager.h"
 #include "KDGameplayTags.h"
+
+#if !UE_BUILD_SHIPPING
+// 개발용 데미지 표시 스위치 — 콘솔 KD.ShowDamage 1
+static TAutoConsoleVariable<int32> CVarShowDamage(
+	TEXT("KD.ShowDamage"), 0,
+	TEXT("피격 데미지 온스크린 표시 유무"), ECVF_Cheat);
+#endif
 
 UAS_Combat::UAS_Combat()
 {
@@ -123,9 +131,9 @@ void UAS_Combat::PostGameplayEffectExecute(const FGameplayEffectModCallbackData&
 
 	if (ToHealth <= 0.0f) { return; } // 실드가 전부 받았거나 경감 후 0
 
-	// 개발용 데미지 표시 — 값 = 실드·방어 경감 후 체력에 들어간 최종량. 출시 전 삭제
+	// 개발용 데미지 표시 — 값 = 실드·방어 경감 후 체력에 들어간 최종량
 #if !UE_BUILD_SHIPPING
-	if (GEngine)
+	if (GEngine && CVarShowDamage.GetValueOnGameThread() > 0)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.5f, FColor::Yellow,
 			FString::Printf(TEXT("%s  -%.0f"), *GetNameSafe(ASC->GetAvatarActor()), ToHealth));

@@ -26,6 +26,14 @@
 #include "TimerManager.h"
 #include "Components/WidgetComponent.h"
 #include "UI/KDEnemyStateBarWidget.h"
+#include "HAL/IConsoleManager.h"
+
+#if !UE_BUILD_SHIPPING
+// 개발용 넉백 표시 스위치 — 콘솔 KD.ShowKnock 1
+static TAutoConsoleVariable<int32> CVarShowKnock(
+	TEXT("KD.ShowKnock"), 0,
+	TEXT("넉백 배수·속도·거리 온스크린 표시 유무"), ECVF_Cheat);
+#endif
 
 AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
 {
@@ -511,6 +519,7 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 
 #if !UE_BUILD_SHIPPING
 			// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.1초 뒤 이동 거리 + 남은 속도
+			if (CVarShowKnock.GetValueOnGameThread() > 0)
 			{
 				FString SrcTag = Payload->InstigatorTags.IsEmpty()
 					? TEXT("-") : Payload->InstigatorTags.First().ToString();

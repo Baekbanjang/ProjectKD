@@ -11,6 +11,14 @@
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "HAL/IConsoleManager.h"
+
+#if !UE_BUILD_SHIPPING
+// 개발용 회피 판정 표시 스위치 — 콘솔 KD.ShowDodge 1
+static TAutoConsoleVariable<int32> CVarShowDodge(
+	TEXT("KD.ShowDodge"), 0,
+	TEXT("퍼펙트 회피 판정 온스크린 표시 유무"), ECVF_Cheat);
+#endif
 
 UGA_Dodge::UGA_Dodge()
 {
@@ -42,7 +50,7 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
     
 #if !UE_BUILD_SHIPPING
-    if (GEngine)
+    if (GEngine && CVarShowDodge.GetValueOnGameThread() > 0)
     {
         GEngine->AddOnScreenDebugMessage(-1, 2.0f,
             bPerfect ? FColor::Green : FColor::Silver,

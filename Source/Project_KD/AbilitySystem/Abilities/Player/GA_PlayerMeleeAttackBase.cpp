@@ -7,10 +7,18 @@
 #include "AbilitySystemComponent.h"
 #include "Engine/Engine.h"
 #include "GameFramework/Character.h"
+#include "HAL/IConsoleManager.h"
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 #include "Combat/Data/HitConfirmProfile.h"
+
+#if !UE_BUILD_SHIPPING
+// 개발용 접근 판정 표시 스위치 — 콘솔 KD.ShowApproach 1
+static TAutoConsoleVariable<int32> CVarShowApproach(
+	TEXT("KD.ShowApproach"), 0,
+	TEXT("접근 워프 거리 온스크린 표시 유무"), ECVF_Cheat);
+#endif
 
 
 void UGA_PlayerMeleeAttackBase::OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit)
@@ -81,7 +89,7 @@ void UGA_PlayerMeleeAttackBase::OnActivated()
 
 #if !UE_BUILD_SHIPPING
 	// 개발용 접근 판정 표시 — 거리 + 어느 게이트에 걸렸는지
-	if (GEngine)
+	if (GEngine && CVarShowApproach.GetValueOnGameThread() > 0)
 	{
 		const TCHAR* Why = (Dist > MaxApproachRange) ? TEXT("멂")
 			: (Dist <= ApproachStopDistance ? TEXT("붙음") : TEXT("워프"));
