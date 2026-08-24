@@ -33,7 +33,7 @@
 
 **stale 주의 (참조 시 폐기 컨텍스트 인지)**:
 - ~~`docs/design/기획/` 8폴더~~ → 🗑️ **2026-08-24 삭제.** 볼트 `ProjectKD/notes/ProjectKD/기획/`에 더 최신 판본이 있어 이쪽을 정리했다. 세계관·수치는 **무효**(길동 시절), 시스템 *설계 문법*(SB 정합 콤보트리, 색상 신호 규약, GAS 모듈 공유)만 참고 가치 — **볼트에서 읽을 것.**
-- `docs/design/butter-*.md` (roadmap/skills/anim-pipeline) → 버터 폐기. 단 락온 스트레이프 구현물 + 3D/셀셰이딩 파이프라인 지식노트는 보존.
+- ~~`docs/design/butter-*.md`~~ → 🗑️ 버터 폐기 시 삭제됨. 단 락온 스트레이프 구현물 + 3D/셀셰이딩 파이프라인 지식노트는 보존.
 - ~~`docs/specs/deep-interview-abp-weapon.md`~~ → 🗄️ **2026-08-24 `docs/archive/kildong/`으로 이동.** 창(Spear)+길동 스켈레톤 전제. 단 `WeaponComponent`·`weapon_r` 소켓 결정은 현행 코드에 살아 있음.
 - ~~`docs/design/player-locomotion-system.md`~~ → 🗑️ **2026-08-24 삭제.** 문서 전체가 길동 `ABP_Player` 기준이었다. **현행은 `ABP_SB`** (`Content/SB_Style_GameProject/Animation/ABP_SB.uasset` — `Gun_and_Sword` 애니팩 참조, killdong 0건). 문서에 있던 SB BlendSpace 실측(`IdleRun_BS_Peaceful2D`·`LockOn_IdleRun_BS`·`SBVelocityX`)은 볼트 `notes/Reference/StellarBlade_로코모션_BlendSpace_실측.md`로 건져 보존.
 - 볼트 `notes/ProjectKD/SESSION_STATE.md` → 파일 상단에 "2026-07-12부터 미갱신, 현행은 Project_New/_세션상태.md" 경고 있음.
@@ -160,7 +160,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 ### 3-2. 시스템별 (현재 유효 vs stale)
 | 시스템 | 상태 | 요약 |
 |---|---|---|
-| **락온** | ✅유효·구현완료 | `docs/design/lockon-system.md`. 인터페이스 기반 5게이트. 단 락온 스트레이프 애니는 버터 스켈레톤 기준→**마네킹 전환시 재작업 필요** |
+| **락온** | ✅유효·구현완료 | 인터페이스 기반 게이트 필터(`ULockOnComponent::FindBestTarget`). ⚠️설계 문서는 08-24 삭제 → 볼트 `notes/코드구조/03_전투_컴포넌트`. 단 락온 스트레이프 애니는 버터 스켈레톤 기준→**마네킹 전환시 재작업 필요** |
 | **카메라 커브** | ✅유효·구현완료 | `camera-curves-system.md`. SB식 FOV/Pitch/TurnSpeed 커브 |
 | **콜리전 채널** | ✅유효·구현완료 | `collision-channels.md`. 무기중립 |
 | **데미지** | ✅유효(설계) | `damage-system.md`. GAS SetByCaller+IncomingDamage(위 2-5) |
@@ -174,9 +174,10 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 | **분위기** | ❌stale | 길동 사극톤. GunSword 톤 문서 없음(SB 참조가 유일) |
 
 ### 3-3. 문서/볼트 지도
-- **docs/design/**: `README`, `camera-curves-system`⚠️(05-28 stale), `collision-channels`⚠️(05-22 stale), `damage-system`⚠️(05-22 stale), `lockon-system`⚠️(05-28 stale) — 🗑️`player-locomotion-system`·`butter-*`·`기획/`(8폴더) 삭제됨
+- **docs/design/**: 🗑️ **2026-08-24 폴더째 삭제.** 5문서 전부 2026-05에서 멈춘 채 **거짓을 말하고 있었다**(없는 클래스 인용 / 쓰이는 채널을 "미사용"이라 서술 / 끝난 구현을 "대기"라 표기 / 데미지 파이프라인에 Shield 층 누락). 상세 = `docs/INDEX.md §design 삭제 기록`
 - **docs/specs/**: `README` — 🗄️`deep-interview-abp-weapon` → `archive/kildong/`
-- ⚠️ **design/ 4문서는 전부 2026-05에서 멈췄다.** 틀린 내용은 없으나 이후 dev-log 30편 이상의 변경이 미반영. **현행 코드 설명은 볼트 `notes/코드구조/` 10문서**(08-08~08-23)가 담당하며, 락온·카메라·콜리전·데미지 4주제 전부 볼트가 더 최신·상세임을 2026-08-24 실측 확인.
+- ✅ **설계 문서의 단일 진실 = 볼트 `notes/코드구조/`** (10문서). 락온·카메라·콜리전·데미지·로코모션 5주제 전부 이쪽이 담당한다.
+  삭제 전 건진 함정 2건은 볼트 트러블슈팅으로 옮겼다 — `GAS-BlueprintNativeEvent_BP디폴트가_C++를_이긴다` · `콜리전-Overlap이_같은액터를_컴포넌트수만큼_중복반환`
 - **docs/handoffs/**: `2026-07-21-pivot-gunsword`✅(현재방향 진실), 그외 길동/버터 핸드오프
 - **옵시디언 볼트** (`C:\Users\asdasd\Desktop\Obsidian_organize\ProjectKD\`, GitHub private `BlackGildong`):
   - `notes/Project_New/`✅ — 신규 GunSword 기획(핵심 4문서 유효, 버터 자료 혼재)

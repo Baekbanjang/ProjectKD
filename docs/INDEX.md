@@ -6,17 +6,17 @@
 >
 > ★ **코드 설명서 = 옵시디언 볼트 `ProjectKD/notes/코드구조/`** (10문서, **2026-08-23 갱신** — 종전 "08-08" 표기는 stale이라 2026-08-24 정정) — 클래스별 용도·함수 기능·동작 흐름·핵심 코드 발췌. `00_코드구조_MOC`부터. 이 저장소엔 두지 않음(개인 노트 체계).
 >
-> 🔴 **`docs/design/` 5문서는 2026-05에서 멈춰 있다** (2026-08-24 실측). 그 뒤 dev-log 30편 이상이 쌓였고, **실질적인 최신 설계 문서는 볼트 `notes/코드구조/`다.** 락온·카메라·콜리전·데미지·로코모션 5주제 전부 볼트 쪽이 더 최신·상세인 것을 확인했다. `docs/design/`을 현행으로 읽지 말 것 — 상세는 아래 §design 표 참조.
+> 🗑️ **`docs/design/` 은 2026-08-24에 폴더째 삭제됐다.** 2026-05에서 멈춘 채 **거짓을 말하고 있었다**(없는 클래스를 인용 / 쓰이는 채널을 "미사용"이라 서술 / 끝난 구현을 "대기"라 표기). **설계 문서는 볼트 `notes/코드구조/` 가 단일 진실이다.** 상세 = 아래 §design 삭제 기록.
 >
 > ★★ **로드맵 = 옵시디언 볼트 `ProjectKD/notes/Project_New/로드맵_GunSword_v1.md`** (2026-07-31) — M1~M6 마일스톤 + 포폴 제출 지점 + 리스크. 주 15~20h 기준 24주(버퍼 포함 31주). ⚠️볼트 `로드맵_마스터.md`는 버터 시절 **폐기**, `docs/reference/3-phases.md`는 **2026-08-24 삭제**(길동+페어 시절, 볼트에 최신본).
 >
 > ★ **전투 수치표 = 옵시디언 볼트 `ProjectKD/notes/Project_New/GunSword_전투수치_v1.md`** (2026-07-30, **제안·미반영**) — 콤보 26노드 데미지 계수 + 히트스탑·셰이크·넉백·포이즈·적 HP 티어. SB 실측 + 팩 실측 기반. **계수를 넣을 코드 칸(`FComboNode.DamageMultiplier`)이 아직 없다 = §1 먼저 볼 것.**
 
-> ★ **[현재 상태 — 2026-08-22](handoffs/2026-07-30-parallel-sessions.md)** — **진행상황·다음 할 일·보류 목록.** 세션 시작 시 여기부터. 파일명은 옛것이고 **내용이 최신**이다(맨 위 절만 현재, 아래는 지난 기록).
+> ★ **[현재 상태 — 2026-08-24](handoffs/2026-07-30-parallel-sessions.md)** — **진행상황·다음 할 일·보류 목록.** 세션 시작 시 여기부터. 파일명은 옛것이고 **내용이 최신**이다(맨 위 절만 현재, 아래는 지난 기록).
 
 최신 dev-log: [2026-08-22 디버그 콘솔화 + 플레이어 초기값 GE + 마무리 워프 회전](dev-logs/2026-08-22-debug-console-player-init.md) · [2026-08-21 조준 정확도 + 넉백 실효화 + 공중 클립 카메라](dev-logs/2026-08-21-aim-knockback-camera.md) · [2026-08-20 콤보 진입기 접근 워프](dev-logs/2026-08-20-approach-warp.md) · [2026-08-19 콤보 데미지 계수 + 총격 조준 제한 + 더미](dev-logs/2026-08-19-combo-damage-scaling.md) · [2026-08-19 적 근접 판정 부활 — 무기 메시 태그 불일치](dev-logs/2026-08-19-enemy-melee-trace-tag.md) · [2026-08-18 적 상태 바 HUD 구현](dev-logs/2026-08-18-enemy-state-bar.md) · [2026-08-17 적 상태 바 HUD 설계 + 총구 이펙트](dev-logs/2026-08-17-hud-enemy-state-bar-spec.md) · [2026-08-16 근접 판정 반경 + SB 캐릭터 정합](dev-logs/2026-08-16-melee-radius-and-character-fit.md) · [2026-08-14 공중 콤보 캔슬 윈도우 정렬](dev-logs/2026-08-14-air-combo-cancel-window.md) · [2026-08-13 일반 공격 자동 조준 + 총격 사운드](dev-logs/2026-08-13-auto-aim-and-gun-sound.md) · [2026-08-12 입력 컴포넌트 분리 + GA 접근자 통일 + 총구 소켓 이전](dev-logs/2026-08-12-input-component-and-muzzle-socket.md) · [2026-08-11 검 사운드 + 웨폰 트레일](dev-logs/2026-08-11-weapon-sound-trail.md) · [2026-08-10 총 3단계 발사체 + 스폰 경로 통합](dev-logs/2026-08-10-gun-projectile.md) · [2026-08-08 총 2단계 사격 GA + 크로스헤어](dev-logs/2026-08-08-gun-fire-crosshair.md) · [2026-07-30 InAction 우산 태그 + 회피 캔슬 통합](dev-logs/2026-07-30-inaction-tag-system.md) · [2026-07-30 길동 몽타주 전면 탈출](dev-logs/2026-07-30-gildong-montage-migration.md) · [2026-07-29 근접 판정 부활 + 콤보 20개 노티](dev-logs/2026-07-29-melee-trace-static-mesh-fix.md) · [2026-07-28 타격 시퀀스 실측](dev-logs/2026-07-28-gunsword-hit-sequence.md)
 
-- **design/** — 시스템 설계 (구현된 기능의 아키텍처 문서)
+- ~~**design/**~~ — 🗑️ **2026-08-24 폴더째 삭제.** 설계 문서는 볼트 `notes/코드구조/` 가 단일 진실 (§삭제 기록 참조)
 - ~~**design/기획/**~~ — 🗑️ **2026-08-24 삭제.** 길동 시대 기획. 볼트 `ProjectKD/notes/ProjectKD/기획/`에 최신본 보존 (§삭제 기록 참조)
 - **reference/** — 외부 자료·컨벤션
 - **specs/** — 마일스톤 스펙 (답안지)
@@ -26,21 +26,36 @@
 
 ---
 
-## ⚠️ design/ — 시스템 설계 (전부 2026-05 stale)
+## 🗑️ design/ — 2026-08-24 폴더째 삭제됨
 
-**5문서 모두 2026-05-22~30 이후 갱신되지 않았다.** 각 주제는 그 뒤로 dev-log에서 계속 바뀌었고, 현행 설명은 볼트 `notes/코드구조/`에 있다. 아래 "이후 변경"은 2026-08-24 dev-log 대조 결과다.
+5문서 모두 2026-05-22~30 이후 갱신이 없었다. **문제는 낡은 게 아니라 거짓을 말하고 있던 것이다** — 코드와 대조해 확인했다.
 
-| 문서 | 최종수정 | 이후 변경 (dev-log) | 🟢 현행은 여기 |
-| --- | --- | --- | --- |
-| [README](design/README.md) | 05-15 | — | — |
-| [camera-curves-system](design/camera-curves-system.md) | **05-28** | `08-03-camera-rail-look-rotation` · `08-05-lockon-pitch-curve` · `08-21-aim-knockback-camera` | 볼트 `02_플레이어` · `08_총_조준_스탠스` |
-| [collision-channels](design/collision-channels.md) | **05-22** | `07-17-melee-trace-refactor` · `07-29-melee-trace-static-mesh-fix` · `08-16-melee-radius` · `08-19-enemy-melee-trace-tag` | 볼트 `05_애님노티파이_큐` · `01_전투_GAS_어빌리티` |
-| [damage-system](design/damage-system.md) | **05-22** | `08-18-shield-and-vitals` · `08-19-combo-damage-scaling` | 볼트 `04_어트리뷰트_이펙트` · `01_전투_GAS_어빌리티` |
-| [lockon-system](design/lockon-system.md) | **05-28** | `06-08-lockon-fixes` · `08-05-lockon-pitch-curve` | 볼트 `03_전투_컴포넌트` · `01_전투_GAS_어빌리티` |
-| ~~player-locomotion-system.md~~ | **🗑️ 08-24 삭제** | 문서 전체가 길동 `ABP_Player` 기준. **현행은 `ABP_SB`**(`Content/SB_Style_GameProject/Animation/`, killdong 참조 0건) | 볼트 `02_플레이어` |
+| 문서가 말하던 것 | 실제 |
+| --- | --- |
+| `AT_WeaponTrace.cpp:81` · `GA_WeaponTraceBase.cpp:17` 인용 | **두 클래스 다 없다.** `AT_MeleeTrace` · `GA_MeleeTraceBase` 로 개명됨 |
+| `ECC_GameTraceChannel1`(Projectile) = "예약 — 미사용" | **쓰인다.** `GA_Dodge.cpp:188` 퍼펙트 회피가 발사체를 잡는 채널 |
+| §미결/차주 = `IncomingDamage`+`PostGEExec` / 패링 윈도우 | **둘 다 구현 완료** |
+| 데미지 파이프라인 = `Defense → Health` | **Shield 층이 빠졌다**(08-18 신설). 이 그림대로 설계하면 실드를 빠뜨린다 |
 
-> ℹ️ 이 폴더는 전역 `settings.json`에서 **Write/Edit DENY**로 잠겨 있다. 갱신하려면 잠금을 풀거나 직접 편집해야 한다.
-> 판단: 볼트 `notes/코드구조/` 10문서(08-08~08-23)가 5주제를 전부 더 최신·상세로 커버하므로, **되살리기보다 "볼트로 이관 완료" 표시가 맞다.**
+**설계 문서의 단일 진실 = 볼트 `notes/코드구조/`** (10문서). 주제별 대응은 아래.
+
+```
+camera-curves      → 볼트 02_플레이어 · 08_총_조준_스탠스
+collision-channels → 볼트 05_애님노티파이_큐 · 01_전투_GAS_어빌리티
+damage-system      → 볼트 04_어트리뷰트_이펙트 · 01_전투_GAS_어빌리티
+lockon-system      → 볼트 03_전투_컴포넌트 · 01_전투_GAS_어빌리티
+player-locomotion  → 볼트 02_플레이어            (08-24 먼저 삭제됨)
+```
+
+**삭제 전 건져낸 것 2건** — 볼트에도 이 저장소에도 없던 함정이라 트러블슈팅으로 옮겼다.
+
+| 건진 것 | 이관처 |
+| --- | --- |
+| `Can Be Targeted` 디폴트 False — BP 가 C++ `_Implementation` 을 이겨 락온이 조용히 죽는다 | 볼트 `트러블슈팅/GAS-BlueprintNativeEvent_BP디폴트가_C++를_이긴다` |
+| `OverlapMultiByObjectType` 이 같은 액터를 **콜리전 컴포넌트 수만큼** 중복 반환 | 볼트 `트러블슈팅/콜리전-Overlap이_같은액터를_컴포넌트수만큼_중복반환` |
+
+> ℹ️ `Visibility` 함정과 `ExecCalc` 미채택 근거는 **이미 다른 데 있어** 안 건졌다 — 각각 볼트 `트러블슈팅/콜리전-Pawn이_Visibility를_무시한다`(08-21) 와 `CLAUDE.md §1-2`.
+> ⚠️ **아직 안 고친 지적 1건이 같이 사라졌다** — `GA_MeleeTraceBase.h:60` 이 `TipLine` 인데 `.cpp:21` 생성자가 `Sweep` 로 덮는다. 5월에 "헤더도 맞춰라"고 적혔고 3개월째 그대로다. **헤더만 읽으면 오해한다.**
 
 ## 🗑️ design/기획/ — 2026-08-24 삭제됨
 
