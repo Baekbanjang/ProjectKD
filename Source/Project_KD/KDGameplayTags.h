@@ -147,12 +147,13 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_PerfectDodge)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_HitReact)
 
-	// 처형 큐 — BP GCN이 피니셔 VFX/SFX 재생.
+	// 처형 큐 — BP GCN이 피니셔 VFX/SFX 재생. C++ 참조 X, 에셋(DA_Execution_*)이 이름으로 참조
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_Execution)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_CounterThrust)
-	
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_DashTrail)
+	// 처형 시네 카메라 큐. C++ 참조 X, 에셋(DA_PlayerExecution·GCN_ExcutionCamera)이 이름으로 참조
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_Execution)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_ShootRecoil);
 
