@@ -55,6 +55,9 @@ private:
 	// 현재 타겟 유효성 — 사망/거리 초과/시야 잃음 검사.
 	bool IsTargetStillValid() const;
 
+	// 시야 판정 — 나 -> 대상 직선을 월드 지오메트리가 막는지. 후보 검색과 락온 유지가 공용
+	bool HasLineOfSightTo(const AActor* Target) const;
+
 	TWeakObjectPtr<AActor> LockedTarget;
 	bool bIsLockedOn = false;
 

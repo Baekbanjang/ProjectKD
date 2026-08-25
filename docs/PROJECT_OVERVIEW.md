@@ -87,9 +87,9 @@ UGA_ActionBase (Abstract) — SafetyTimer + EndAbility→OnCleanup 공통화
     ├ UGA_PlayerMeleeAttackBase — 히트스탑(Montage_Pause 방식)
     │  ├ UGA_PlayerAttackBase — 콤보(ComboComponent) + HitConfirm + 락온 자동조준
     │  │  ├ UGA_LightAttack / UGA_HeavyAttack (Heavy는 스태미나 소모 추가)
-    │  ├ UGA_PlayerOneShotAttack — 단발
-    │  │  ├ UGA_SprintAttack / UGA_CounterThrust (모션워핑 대시)
-    │  └ UGA_PlayerAirAttackBase → UGA_AirLightAttack (공중콤보, 중력억제)
+    │  ├ UGA_PlayerAirAttackBase → UGA_AirLightAttack (공중콤보, 중력억제)
+    │  └ UGA_SprintAttack / UGA_CounterThrust — 단발. 태그 부여가 존재 이유
+    │     ※ 2026-08-26 UGA_PlayerOneShotAttack 층 삭제(멤버 0) — 셋이 여기로 올라옴
     └ UGA_EnemyWeaponTraceBase → UGA_EnemyRushAttack (gap-closer)
 UGA_Dodge (338줄, ★초과) — 4방향 회피, Perfect판정, Normal/Perfect i-frame GE 분기
 UGA_Parry (232줄, ★소폭초과) — 홀드가드, BlockStart→Loop→Hit→Loop 상태머신

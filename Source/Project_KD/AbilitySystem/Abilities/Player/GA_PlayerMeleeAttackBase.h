@@ -11,9 +11,9 @@ class UHitConfirmProfile;
 struct FComboNode;
 enum class EComboContext : uint8;
 // 플레이어 근접 공격 공통 베이스 — 히트스탑 + 타격감 큐 + 락온 자동조준
-// 아래 두 계열이 상속, 차이는 몽타주를 어디서 받느냐 하나뿐
-//   UGA_PlayerAttackBase    = 콤보 — DA_ComboTree 노드가 AttackMontage를 채움
-//   UGA_PlayerOneShotAttack = 단발 — 에디터에서 AttackMontage 직접 지정
+// 자식의 차이는 몽타주를 어디서 받느냐 하나뿐
+//   콤보 계열   UGA_PlayerAttackBase | UGA_PlayerAirAttackBase — 노드가 AttackMontage 를 채움
+//   단발 계열   UGA_SprintAttack | UGA_CounterThrust — 에디터에서 AttackMontage 직접 지정
 UCLASS(Abstract)
 class PROJECT_KD_API UGA_PlayerMeleeAttackBase : public UGA_MeleeTraceBase
 {

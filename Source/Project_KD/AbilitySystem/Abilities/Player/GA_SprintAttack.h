@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/Player/GA_PlayerOneShotAttack.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_SprintAttack.generated.h"
 
-/**
- * 
- */
+// 달리기 공격 — 단발. 몽타주 = 에디터의 AttackMontage
 UCLASS()
-class PROJECT_KD_API UGA_SprintAttack : public UGA_PlayerOneShotAttack
+class PROJECT_KD_API UGA_SprintAttack : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
 

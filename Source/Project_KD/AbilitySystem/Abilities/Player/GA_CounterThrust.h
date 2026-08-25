@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/Player/GA_PlayerOneShotAttack.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_CounterThrust.generated.h"
 
-/**
- * 
- */
+// 퍼펙트 회피 반격 찌르기 — 단발 + 모션워핑 대시
 UCLASS()
-class PROJECT_KD_API UGA_CounterThrust : public UGA_PlayerOneShotAttack
+class PROJECT_KD_API UGA_CounterThrust : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
 

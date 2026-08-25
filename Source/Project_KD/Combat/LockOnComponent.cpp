@@ -187,15 +187,7 @@ AActor* ULockOnComponent::FindBestTarget(float OverrideRadius, float OverrideCon
 		if (Dot < CosThreshold) continue;
 
 		// LoS — 나 -> 적 직선에 벽이 있으면 제외 (장애물 뒤 적 불가)
-		if (Config->bUseLineOfSightCheck)
-		{
-			FHitResult LosHit;
-			FCollisionQueryParams LosParams;
-			LosParams.AddIgnoredActor(Owner);
-			const bool bBlocked = GetWorld()->LineTraceSingleByChannel(
-				LosHit, OwnerLoc, Candidate->GetActorLocation(), ECC_Visibility, LosParams);
-			if (bBlocked && LosHit.GetActor() != Candidate) continue;
-		}
+		if (!HasLineOfSightTo(Candidate)) continue;
 
 		// 콘 중심선에 가장 가까운 적 우선 — 내적이 클수록 각도가 작음
 		if (Dot > BestDot)
@@ -294,23 +286,31 @@ bool ULockOnComponent::IsTargetStillValid() const
 	if (DistSq > Config->LockOnRadius * Config->LockOnRadius) return false;
 
 	// LoS 잃음 → 해제 (장애물 뒤).
-	if (Config->bUseLineOfSightCheck)
-	{
-		FHitResult Hit;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(Owner);
-
-		// 월드 지오메트리만 제외
-		FCollisionObjectQueryParams ObjParams;
-		ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		const bool bBlocked = GetWorld()->LineTraceSingleByObjectType(
-			Hit, Owner->GetActorLocation(), Target->GetActorLocation(), ObjParams, Params);
-		
-		if (bBlocked) return false;
-	}
+	if (!HasLineOfSightTo(Target)) return false;
 
 	return true;
+}
+
+bool ULockOnComponent::HasLineOfSightTo(const AActor* Target) const
+{
+	// 기능 : 나 -> 대상 직선을 월드 지오메트리가 막는지 — 후보 검색과 락온 유지 공용
+	if (!Config || !Config->bUseLineOfSightCheck) { return true; }
+
+	const AActor* Owner = GetOwner();
+	if (!Owner || !IsValid(Target)) { return false; }
+
+	// 월드 지오메트리만 조회 — ECC_Visibility 채널은 Pawn 이 무시해 적이 적을 가리지 X
+	// 채널 대신 오브젝트 타입을 쓰는 이유 = AT_MeleeTrace.cpp:89 와 동일
+	FCollisionObjectQueryParams ObjParams;
+	ObjParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Owner);
+	Params.AddIgnoredActor(Target);
+
+	return !GetWorld()->LineTraceTestByObjectType(
+		Owner->GetActorLocation(), Target->GetActorLocation(), ObjParams, Params);
 }
 
 void ULockOnComponent::RegisterAimingTagListener()

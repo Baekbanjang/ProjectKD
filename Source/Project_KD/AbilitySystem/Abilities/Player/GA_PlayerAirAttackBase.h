@@ -3,14 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Abilities/Player/GA_PlayerOneShotAttack.h"
+#include "AbilitySystem/Abilities/Player/GA_PlayerMeleeAttackBase.h"
 #include "GA_PlayerAirAttackBase.generated.h"
 
-/**
- * 
- */
+// 공중 콤보 베이스 — 노드 소비 + 체공 억제
 UCLASS()
-class PROJECT_KD_API UGA_PlayerAirAttackBase : public UGA_PlayerOneShotAttack
+class PROJECT_KD_API UGA_PlayerAirAttackBase : public UGA_PlayerMeleeAttackBase
 {
 	GENERATED_BODY()
 

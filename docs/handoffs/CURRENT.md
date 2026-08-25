@@ -39,15 +39,35 @@ brain 정지                   Pawn 유지 (StaggerComponent 선례 - brain 소�
 
 **남은 값 작업** — 더미만 `KnockbackDistance` 200. 적 5종은 체급 기준으로 나중에.
 
+### C3·C4·C5 완료 (2026-08-26)
+
+dev-log = `2026-08-26-refactor-c3-c4-c5.md`
+
+```
+C4  락온 LoS 통일        HasLineOfSightTo 헬퍼 — ObjectType 으로 통일
+                        (근거 = AT_MeleeTrace.cpp:89, ECC_Visibility 는 Pawn 이 무시)
+C5  PostGEExec 4분해     본문 56줄 + 헬퍼 4개. Health 차감은 마지막 유지
+C3  빈 상속 층 제거       UGA_PlayerOneShotAttack 삭제 (멤버 0)
+                        자식이 셋이었다 — SprintAttack / CounterThrust / AirAttackBase
+                        BP 리페어런팅 불필요 (직접 상속 BP 0개)
+```
+
+★ **부수 수확 — 달리기 공격이 죽어 있었다.** `GA_SprintAttack` BP 가 `UGA_SprintAttack`
+을 건너뛰어 `AbilityTags` 가 비어 있었고, 발동은 태그로만 한다. 리페어런팅으로 해소,
+PIE 확인 완료. **언제부터였는지는 `.uasset` 바이너리라 미상.**
+
+GA 태그 전수 감사 19개 — 위 1건 빼고 정상. `BP_DaggerShot` 만 미사용 습작(참조 0건).
+
 ### 다음 (순서)
 
 ```
-1  Poise 설계 결정        평타로도 깎을지 / 패링 전용 유지할지        <- 판단 대기
+1  Poise 2단계           타별 차등. EventMagnitude 가 넉백에 쓰여 통로가 막힘 = 코드 필요
 2  C1                    콤보 노드 3칸(InputWindow·DamageMultiplier·KnockbackMultiplier)
-                         전부 0 -> 타격마다 계수가 안 갈린다. C2 로 넉백 축이 준비됨
-3  C3~C5                 아래 이월 표
-4  볼트 브릿지 이관       상태 바 dev-log §6 함정 4개 -> 트러블슈팅 박제
+                         전부 0 -> 타격마다 계수가 안 갈린다. 승환 판단으로 보류 중
+3  볼트 브릿지 회수       2026-08-25 요청 3건 처리 여부 확인
 ```
+
+**이월 리팩토링은 C1 만 남았다.** A·B1·B2·C2·C3·C4·C5 완료.
 
 ### 값 작업 완료 (2026-08-25, Content `65fb89d`)
 
