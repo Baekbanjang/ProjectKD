@@ -11,99 +11,91 @@
 
 ---
 
-## ★★ 2026-08-24 — 문서 정리 + 세션 브릿지 운영 개시. **다음 세션은 여기부터**
+## ★★ 2026-08-24 — 문서 대정리 완료. **다음 세션은 여기부터**
 
 dev-log = `docs/dev-logs/2026-08-22-debug-console-player-init.md` (직전 = `2026-08-21-aim-knockback-camera.md`)
 
-### ✅ `Project_KD` 는 깨끗하다 (2026-08-24 기준)
+### ✅ `Project_KD` 는 깨끗하다 — 변경 0 / 미푸시 0
 
-소스·docs·`CLAUDE.md` 전부 커밋·푸시 완료. 작업 트리 변경 0 / 미푸시 0.
+오늘 커밋 11개 전부 푸시됨.
 
 ```
-9da756c  [doc] 두 세션 역할 구분 + 세션 브릿지 등록
-09c40f7  [docs] 길동 시대 문서 정리                    ← 볼트 세션
-e71cd87  [docs] 08-21 / 08-22 dev-log + 현재 상태     ← 볼트 세션
+fc4b1d3  [docs] INDEX dev-log 표를 최신순 + 최근 15개만 펼침
+ac03f99  [docs] 핸드오프를 CURRENT + archive 로 분리 + 버터맵 통합본 삭제
+5000aef  [docs] design/ 참고용 복구 - 삭제 대신 거짓 목록을 붙여둔다
+f31bf02  [docs] design/ 폴더 삭제
+c74ccf6  [doc]  KDPlayerState 주석의 Dosul 을 Ammo 로
+05b3abe  [doc]  핸드오프를 실제 상태로 + 작동 안 하는 복구 명령 표시
+9da756c  [doc]  두 세션 역할 구분 + 세션 브릿지 등록
+09c40f7  [docs] 길동 시대 문서 정리                      <- 볼트 세션
+e71cd87  [docs] 08-21 / 08-22 dev-log + 현재 상태        <- 볼트 세션
 5c32389  [Input] 입력 버퍼 보관 기한 상한 0.8
 a975cb2  [refactor] 개발용 온스크린 표시를 콘솔 변수로
+
+Content (원격 없음, 로컬 세이브포인트)
+716f0c0  [BP] 촬영용 임시값 원복
+070f3b2  [BP] 촬영용 디버그 표시 원복 - 누락 4개
 ```
 
-### 🟡 남은 것 = `Content` 12개
+### 오늘 한 것 요약
 
-**"전부 촬영용 원복분"이 아니다.** 3덩어리로 갈린다 — git 크기 이력 대조로 확정(MCP 불필요).
+**코드** — 온스크린 디버그 4종을 콘솔 변수로(`KD.ShowDamage`/`ShowDodge`/`ShowApproach`/`ShowKnock`, `ECVF_Cheat`) / 입력 버퍼 `ClampMax` 0.5 → 0.8(기본값 0.2 유지) / `KDPlayerState.h:33` 주석 `Dosul` → `Ammo`
 
-```
-① 촬영 임시값 원복 (4파일)   커밋해도 안전
-   DA_Sword_Bandit   촬영전과 바이트까지 동일 = Poise 1 -> 3
-   GA_Parry          78433 -> 78492 -> 78433 = 퍼펙트 창 0.5 -> 0.2
-   GA_Light/HeavyCombo  디버그 표시 원복
+**Content** — 촬영용 임시값 원복(밴딧 Poise 1→3, 퍼펙트 패링 창 0.5→0.2) + 디버그 표시 원복 누락 4건(`GA_AirLightAttack`·`CounterThrust`·`ShotBlast`·`SprintAttack`). **에디터 안 켜고 git 으로만** 했다
 
-② 촬영과 무관한 오래된 미커밋 (6파일)   촬영 커밋 6개가 건드리지도 않았다
-   BP_Dummy         -688   마지막 커밋 180ab96 (08-19)   실제 내용 변경
-   BP_Bandit_Parry  -450   마지막 커밋 662390c (MCP 도입 전)  실제 내용 변경
-   BP_Bandit -7 / BP_Axe_Elite +8 / Arrow ±0 / Arrow2 ±0   노이즈 수준
+**문서** — `design/` 삭제 후 참고용 복구(거짓 4건 표 부착) / 핸드오프 1,052행 → `CURRENT.md` 233 + `archive/` 834 / 버터맵 통합본 2,381행 삭제 / `INDEX` dev-log 표 최신순 + 접기. **저장소 MD 13,648 → 11,267행**
 
-③ LV0_Test.umap  -4699   조명·노출 원복분으로 보이나 값 확인은 에디터 필요
-④ Robot3/        미추적 유지
-```
+**운영** — 세션 브릿지 신설(볼트 세션과 역할·파일별 담당 확정) / Fable 5 원인 규명
 
-⚠️ **②의 `BP_Dummy` · `BP_Bandit_Parry` 는 내용이 실제로 빠졌고 무엇이 빠졌는지 모른다.** 커밋 전 에디터 확인 권장.
-→ **권장 = ①만 먼저 커밋.** 한 커밋에 섞으면 나중에 되돌릴 때 못 가른다.
+### 🟡 남은 것 = `Content` 8개 (7 M + `Robot3/`)
 
-### 🔴 그 밖에 대기 중인 것 2건
+촬영 관련은 전부 커밋됐다. 아래는 **촬영 커밋 6개가 건드리지도 않은** 잔여분이다.
 
 ```
-KDPlayerState.h:33   주석 Dosul -> Ammo    가이드 준비됨, 승환 입력 대기(§0)
-디버그 원복 누락 4건   GA_AirLightAttack · GA_CounterThrust · GA_ShotBlast · GA_SprintAttack
-                     촬영용으로 끈 6개 중 2개만 돌아왔다. 판정 궤적이 안 보이는 상태
+🟡 확인 필요   BP_Dummy         -688   마지막 커밋 180ab96 (08-19)
+🟡 확인 필요   BP_Bandit_Parry  -450   마지막 커밋 662390c (MCP 도입 전)
+⬜ 노이즈      BP_Bandit -7 / BP_Axe_Elite +8 / Arrow ±0 / Arrow2 ±0
+⬜ 맵          LV0_Test.umap    -4699  촬영 조명·노출 원복으로 추정
+⬜ 미추적      Robot3/          유지
 ```
 
-**단일 진실 = 세션 브릿지** `C:\Users\asdasd\Desktop\Obsidian_organize\ProjectKD\notes\_세션브릿지.md`
+⚠️ **앞의 둘은 크기가 줄었다 = 내용이 실제로 빠졌는데 무엇인지 모른다.** 에디터 켤 일 있을 때 같이 볼 것. 급하지 않음.
 
-### 🔴 그다음 = 확인 1건
-
-**`AM_SB_Parry_Counter_Attack_L` 만 워프 노티 `RotationType = DEFAULT`** (타겟명 `CounterTarget`). 워프 노티 19개 중 유일. 반격이 엉뚱한 방향으로 도는지 미확인.
-→ 함정 전문 = 볼트 `트러블슈팅/모션워핑-Facing회전이_지나쳐달리는클립을_뒤로돌림`
-
-### 이번에 한 것 4건
+### 🔒 승환만 가능 (잠금 영역)
 
 ```
-디버그 콘솔화   KD.ShowDamage / ShowDodge / ShowApproach / ShowKnock  (ECVF_Cheat)
-                ⚠️ 무기 궤적·조준선은 여전히 BP 체크박스 (bDrawDebug / bDrawAimDebug)
-플레이어 초기값  GE_InitPlayerStats 신설 -> BP_PlayerState.StartupEffects
-                적은 DA 로 이미 데이터화, 플레이어만 C++ 생성자에 있었다
-마무리 워프 회전 AM_SB_Combo_01~05_04 warp_rotation 해제 (적 등 뒤 착지 버그)
-입력 버퍼        ClampMax 0.8 — 상한만 열었고 BP 값은 0.5 그대로
+docs/reference/README.md:27   "시스템 설계 -> docs/design/" 이 부정확 (design 은 참고용)
+GA_MeleeTraceBase.h:60        TipLine 인데 .cpp:21 생성자가 Sweep 로 덮는다. 3개월째
+                              헤더만 읽으면 오해한다. 한 줄 수정
 ```
 
-### 문서에서 낡아 있던 것 3건 (고침)
+### 🔀 세션 브릿지 — 볼트 세션과의 유일한 통신로
 
 ```
-PROJECT_OVERVIEW  UAS_Player 가 Dosul 을 아직 있다고 적고 있었다 (08-18 에 Ammo 로 교체됨)
-볼트 06_적_AI      넉백 코드가 StopMovement() 만 있는 옛 버전 / KnockbackStrength 400 (실제 1800)
-볼트 04_어트리뷰트  "플레이어는 생성자 값이 곧 최종값" — GE 신설로 거짓이 됨
+C:/Users/asdasd/Desktop/Obsidian_organize/ProjectKD/notes/_세션브릿지.md
 ```
 
-**인용 전에 검증할 것.** 셋 다 코드는 진작 바뀌었는데 문서만 남아 있던 것들이다.
+**세션 시작 시 이 파일부터 읽는다.** 역할 구분·파일별 편집 담당·대기 항목이 거기 있다.
+판정 권한 원칙 = **자기 눈으로 원본을 볼 수 있는 쪽만 단정한다.** 코드·에셋·빌드 = KD / 문서·노트 = 볼트.
 
-### 포폴 촬영 — 완료
+### 📌 오늘 세운 방법 (재사용)
 
-영상 편집본 = `D:/Capcut/0822(1).mp4` (6분, 1994x1080 60fps). 구성·자막 확정. **산출물이지 재개점이 아니다.**
-
----
-
-
----
-
-> 🗄️ **지난 세션 기록은 [`archive/2026-07~08-past-sessions.md`](archive/2026-07~08-past-sessions.md) 로 분리했다** (2026-08-24, 826행).
-> 완료된 절이라 현재 상태와 무관하다. 설계 근거를 되짚을 때만 연다.
+- **`.uasset` 원복 판정** — 값이 같아도 재저장하면 바이트가 바뀌어 해시 비교가 무의미. **크기 이력**(`git cat-file -s`)을 본다. 같은 bool 토글은 항상 같은 바이트(-44)라 `변경전 → 변경 → 현재` 세 값이면 판정된다
+- **에디터 없이 에셋 되돌리기** — ①에디터가 꺼져 있고 ②되돌릴 커밋 이후 그 파일을 건드린 커밋이 0개면 `git checkout <커밋>^ -- <파일>`. **에디터가 켜져 있으면 금지**(메모리의 옛 버전으로 덮어씀)
+- **문서는 낡는 게 아니라 거짓이 된다** — `design/` 을 코드와 대조하니 없는 클래스를 인용하고, 쓰이는 채널을 "미사용"이라 하고, 끝난 구현을 "대기"라 하고 있었다. stale 경고만으로는 어느 줄이 거짓인지 모른다
 
 ---
 
 ## 3. 보류 목록 (우선순위 순)
 
+> 🔴 **읽기 전에** — 아래 항목 다수가 **2026-07-31 ~ 08-12 에 적힌 것**이라, 그 뒤 dev-log 20편이 쌓이는 동안 이미 해결된 게 섞여 있다.
+> **착수 전에 코드로 확인할 것.** 실제 사례 = 1번의 "`DamageMultiplier` 칸 자체가 없다"는 2026-08-24 실측 결과 **거짓**이었다
+> (`ComboTreeDataAsset.h:66` 에 있고, 곱하는 자리도 `GA_MeleeTraceBase.cpp:215` 에 배선돼 있다 — 08-19 에 들어옴).
+
+
 | # | 항목 | 내용 |
 |---|---|---|
-1 | **`DA_ComboTree` 값 채우기** ★ | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
+1 | ~~**`DA_ComboTree` 값 채우기**~~ ✅**칸은 둘 다 생겼다** (2026-08-24 실측: `InputWindow` = `ComboTreeDataAsset.h:62`, `DamageMultiplier` = `:66`, 곱셈 = `GA_MeleeTraceBase.cpp:215`). **남은 건 값 채우기뿐** — 아래 SB 실측치 참조 | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
 2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
 4 | ~~발사체 리팩토링 3건~~ **2/3 이미 닫힘** (2026-08-13 실측) | ① 델리게이트 바인딩 → `KDProjectile.cpp:53~54`에서 **`BeginPlay`로 이미 이동됨**(08-10 `b36c1c2`) ✅<br>② `GA_Dodge`가 발사자를 안 봄 → `GA_Dodge.cpp:198`에 **`&& Proj->GetInstigator() != Avatar` 이미 있음** ✅<br>③ faction 게이트 비대칭 → `KDProjectile.cpp:72~77`이 "적→적 통과"만 검사. **살아 있으나 소환수·동료가 생겨야 터진다. 급하지 않음**<br>곁가지 = `InitProjectile`에 방향을 정하는 줄이 없다(스폰 회전을 그대로 씀). 버그가 아니라 현재 설계 |
 5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
