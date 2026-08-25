@@ -176,8 +176,20 @@ private:
 	// Health 변화 콜백 — 0 이하 시 HandleDeath
 	void OnHealthChanged(const FOnAttributeChangeData& Data);
 
-	// Event.Combat.Hit 수신 — Poise 차감 + 넉백
+	// Event.Combat.Hit 수신 — 인지 | 연출 | 수치 | 이동 순 분배
 	void OnHitReceived(const FGameplayEventData* Payload);
+
+	// 피격을 AI 인지 자극으로 보고
+	void ReportHitToPerception(const FGameplayEventData* Payload);
+
+	// 피격 연출 — 뼈 흔들림 + 타격 큐
+	void PlayHitFeedback(const FGameplayEventData* Payload);
+
+	// Poise 차감 — 반환 = 이 차감으로 경직 진입 유무
+	bool ApplyPoiseDamage(const FGameplayEventData* Payload);
+
+	// 넉백 — brain 정지 + LaunchCharacter
+	void ApplyKnockback(const FGameplayEventData* Payload);
 
 	// 처형 몽타주 종료 콜백 — ExecutionComp FinishExecution 호출
 	void OnExecutionMontageEnded(UAnimMontage* Montage, bool bInterrupted);

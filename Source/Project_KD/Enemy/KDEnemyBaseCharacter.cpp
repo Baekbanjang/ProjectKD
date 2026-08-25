@@ -430,28 +430,15 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 		return;
 	}
 
-	// 피격 = 인지 자극 — 시야 밖 공격도 전투 진입·타겟 기억 갱신
-	// FGameplayEventData.Instigator = const -> cast
-	if (IsValid(Payload->Instigator))
-	{
-		UAISense_Damage::ReportDamageEvent(GetWorld(), this, const_cast<AActor*>(Payload->Instigator.Get()),
-			0.f, Payload->Instigator->GetActorLocation(), GetActorLocation());
-	}
+	ReportHitToPerception(Payload);
 
-	const bool bStaggered = StaggerComp && StaggerComp->IsStaggered();
+	const bool bStaggered = IsStaggered();
 
-	// 경직 중 칩 피격 = shake + SFX / 처형 히트 제외
+	// 경직 중 처형 히트 = 연출 X — 피니셔 연출이 따로 재생
 	const bool bExecutionHit = bStaggered && ExecutionComp && ExecutionComp->IsExecutionTrigger(Payload->InstigatorTags);
 	if (!bExecutionHit)
 	{
-		if (HitFeedback)
-		{
-			HitFeedback->TriggerBoneShake();
-		}
-		if (IsValid(AbilitySystemComponent))
-		{
-			AbilitySystemComponent->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_HitImpact_Light, Payload->ContextHandle);
-		}
+		PlayHitFeedback(Payload);
 	}
 
 	// 경직 중 = Poise 차감·넉백 X
@@ -460,96 +447,142 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 		return;
 	}
 
-	// Poise 차감 — 공격 태그별 데미지
-	// 0 도달 -> StaggerComp.BeginStagger
-	if (IsValid(AbilitySystemComponent) && EnemyDefinition && EnemyDefinition->PoiseDamageByAttack.Num() > 0)
+	// Poise 차감이 경직을 유발하면 넉백 X
+	if (ApplyPoiseDamage(Payload))
 	{
-		float PoiseDamage = 0.f;
-		for (const TPair<FGameplayTag, float>& Pair : EnemyDefinition->PoiseDamageByAttack)
+		return;
+	}
+
+	ApplyKnockback(Payload);
+}
+
+void AKDEnemyBaseCharacter::ReportHitToPerception(const FGameplayEventData* Payload)
+{
+	// 기능 : 피격을 AI 인지 자극으로 보고 — 시야 밖 공격도 전투 진입·타겟 기억 갱신
+	// FGameplayEventData.Instigator = const -> cast
+	if (!IsValid(Payload->Instigator))
+	{
+		return;
+	}
+
+	UAISense_Damage::ReportDamageEvent(GetWorld(), this, const_cast<AActor*>(Payload->Instigator.Get()),
+		0.f, Payload->Instigator->GetActorLocation(), GetActorLocation());
+}
+
+void AKDEnemyBaseCharacter::PlayHitFeedback(const FGameplayEventData* Payload)
+{
+	// 기능 : 피격 연출 — 뼈 흔들림 + 타격 큐
+	if (HitFeedback)
+	{
+		HitFeedback->TriggerBoneShake();
+	}
+
+	if (IsValid(AbilitySystemComponent))
+	{
+		AbilitySystemComponent->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_HitImpact_Light, Payload->ContextHandle);
+	}
+}
+
+bool AKDEnemyBaseCharacter::ApplyPoiseDamage(const FGameplayEventData* Payload)
+{
+	// 기능 : 공격 태그별 Poise 차감 — 반환 = 이 차감으로 경직 진입 유무
+	if (!IsValid(AbilitySystemComponent) || !EnemyDefinition || EnemyDefinition->PoiseDamageByAttack.Num() == 0)
+	{
+		return false;
+	}
+
+	// 태그가 여러 개 맞으면 합산
+	float PoiseDamage = 0.f;
+	for (const TPair<FGameplayTag, float>& Pair : EnemyDefinition->PoiseDamageByAttack)
+	{
+		if (Payload->InstigatorTags.HasTag(Pair.Key))
 		{
-			if (Payload->InstigatorTags.HasTag(Pair.Key))
-			{
-				PoiseDamage += Pair.Value;
-			}
-		}
-		if (PoiseDamage > 0.f)
-		{
-			const float Cur = AbilitySystemComponent->GetNumericAttribute(UAS_CharacterBase::GetPoiseAttribute());
-			AbilitySystemComponent->SetNumericAttributeBase(
-				UAS_CharacterBase::GetPoiseAttribute(), FMath::Max(Cur - PoiseDamage, 0.f));
+			PoiseDamage += Pair.Value;
 		}
 	}
 
-	// 히트 넉백 — 경직 진입 시 스킵
-	if (!(StaggerComp && StaggerComp->IsStaggered()))
+	if (PoiseDamage <= 0.f)
 	{
-		// 경로추종 정지 — StopMovement 는 현재 요청만 취소, BT 가 다음 틱에 재요청
-		// 넉백 구간만 brain 정지 — 재개 = ResumeBrainFromKnockback
-		if (AAIController* AICon = GetController<AAIController>())
-		{
-			AICon->StopMovement();
+		return false;
+	}
 
-			if (UBrainComponent* Brain = AICon->GetBrainComponent())
-			{
-				Brain->PauseLogic(TEXT("Knockback"));
-				GetWorldTimerManager().SetTimer(KnockbackBrainTimer, this,
-					&AKDEnemyBaseCharacter::ResumeBrainFromKnockback, KnockbackBrainPause, false);
-			}
+	// 0 도달 시 StaggerComp.OnPoiseChanged 가 이 줄 안에서 BeginStagger 호출
+	const float Cur = AbilitySystemComponent->GetNumericAttribute(UAS_CharacterBase::GetPoiseAttribute());
+	AbilitySystemComponent->SetNumericAttributeBase(
+		UAS_CharacterBase::GetPoiseAttribute(), FMath::Max(Cur - PoiseDamage, 0.f));
+
+	return IsStaggered();
+}
+
+void AKDEnemyBaseCharacter::ApplyKnockback(const FGameplayEventData* Payload)
+{
+	// 기능 : 밀림 + 밀리는 동안 brain 정지
+	// 경로추종 정지 — StopMovement 는 현재 요청만 취소, BT 가 다음 틱에 재요청
+	// 넉백 구간만 brain 정지 — 재개 = ResumeBrainFromKnockback
+	if (AAIController* AICon = GetController<AAIController>())
+	{
+		AICon->StopMovement();
+
+		if (UBrainComponent* Brain = AICon->GetBrainComponent())
+		{
+			Brain->PauseLogic(TEXT("Knockback"));
+			GetWorldTimerManager().SetTimer(KnockbackBrainTimer, this,
+				&AKDEnemyBaseCharacter::ResumeBrainFromKnockback, KnockbackBrainPause, false);
 		}
+	}
 
-		// 넉백 세기 = 적 DA 기준값 x 공격 배수
-		const float KnockbackMult = (Payload->EventMagnitude > 0.f) ? Payload->EventMagnitude : 1.f;
-		const float KnockbackStrength = (EnemyDefinition ? EnemyDefinition->KnockbackStrength : 0.f) * KnockbackMult;
-		FVector Dir = FVector::ZeroVector;
-		if (KnockbackStrength > 0.f && IsValid(Payload->Instigator))
+	// 넉백 세기 = 적 DA 기준값 x 공격 배수
+	const float KnockbackMult = (Payload->EventMagnitude > 0.f) ? Payload->EventMagnitude : 1.f;
+	const float KnockbackStrength = (EnemyDefinition ? EnemyDefinition->KnockbackStrength : 0.f) * KnockbackMult;
+	FVector Dir = FVector::ZeroVector;
+	if (KnockbackStrength > 0.f && IsValid(Payload->Instigator))
+	{
+		// 공격자 반대 방향 (수평) — ImpactNormal 은 캡슐 접선이라 미사용
+		Dir = (GetActorLocation() - Payload->Instigator->GetActorLocation()).GetSafeNormal2D();
+
+		// 폴백 = 공격자 정면 — 겹친 액터의 위치 델타 0
+		if (Dir.IsNearlyZero())
 		{
-			// 공격자 반대 방향 (수평) — ImpactNormal 은 캡슐 접선이라 미사용
-			Dir = (GetActorLocation() - Payload->Instigator->GetActorLocation()).GetSafeNormal2D();
-
-			// 폴백 = 공격자 정면 — 겹친 액터의 위치 델타 0
-			if (Dir.IsNearlyZero())
-			{
-				Dir = Payload->Instigator->GetActorForwardVector().GetSafeNormal2D();
-			}
+			Dir = Payload->Instigator->GetActorForwardVector().GetSafeNormal2D();
 		}
+	}
 
-		if (!Dir.IsNearlyZero())
-		{
-			LaunchCharacter(Dir * KnockbackStrength, true, false);
+	if (!Dir.IsNearlyZero())
+	{
+		LaunchCharacter(Dir * KnockbackStrength, true, false);
 
 #if !UE_BUILD_SHIPPING
-			// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.1초 뒤 이동 거리 + 남은 속도
-			if (CVarShowKnock.GetValueOnGameThread() > 0)
-			{
-				FString SrcTag = Payload->InstigatorTags.IsEmpty()
-					? TEXT("-") : Payload->InstigatorTags.First().ToString();
-				int32 DotIdx = INDEX_NONE;
-				if (SrcTag.FindLastChar(TEXT('.'), DotIdx)) { SrcTag = SrcTag.RightChop(DotIdx + 1); }
-
-				const FVector KnockStart = GetActorLocation();
-				const float DbgMult = KnockbackMult;
-				const float DbgSpeed = KnockbackStrength;
-				FTimerHandle DbgKnockTimer;
-				GetWorldTimerManager().SetTimer(DbgKnockTimer, FTimerDelegate::CreateWeakLambda(this,
-					[this, SrcTag, DbgMult, DbgSpeed, KnockStart]()
-					{
-						const float Moved = FVector::Dist2D(GetActorLocation(), KnockStart);
-						const float NowSpeed = GetVelocity().Size2D();
-						if (GEngine)
-						{
-							GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-								FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm   (남은속도 %.0f)"),
-									*SrcTag, DbgMult, DbgSpeed, Moved, NowSpeed));
-						}
-					}), 0.1f, false);
-			}
-#endif
-		}
-		else if (UCharacterMovementComponent* Move = GetCharacterMovement())
+		// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.1초 뒤 이동 거리 + 남은 속도
+		if (CVarShowKnock.GetValueOnGameThread() > 0)
 		{
-			// 넉백 0 또는 방향 X — 잔여 속도만 제거
-			Move->StopMovementImmediately();
+			FString SrcTag = Payload->InstigatorTags.IsEmpty()
+				? TEXT("-") : Payload->InstigatorTags.First().ToString();
+			int32 DotIdx = INDEX_NONE;
+			if (SrcTag.FindLastChar(TEXT('.'), DotIdx)) { SrcTag = SrcTag.RightChop(DotIdx + 1); }
+
+			const FVector KnockStart = GetActorLocation();
+			const float DbgMult = KnockbackMult;
+			const float DbgSpeed = KnockbackStrength;
+			FTimerHandle DbgKnockTimer;
+			GetWorldTimerManager().SetTimer(DbgKnockTimer, FTimerDelegate::CreateWeakLambda(this,
+				[this, SrcTag, DbgMult, DbgSpeed, KnockStart]()
+				{
+					const float Moved = FVector::Dist2D(GetActorLocation(), KnockStart);
+					const float NowSpeed = GetVelocity().Size2D();
+					if (GEngine)
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+							FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm   (남은속도 %.0f)"),
+								*SrcTag, DbgMult, DbgSpeed, Moved, NowSpeed));
+					}
+				}), 0.1f, false);
 		}
+#endif
+	}
+	else if (UCharacterMovementComponent* Move = GetCharacterMovement())
+	{
+		// 넉백 0 또는 방향 X — 잔여 속도만 제거
+		Move->StopMovementImmediately();
 	}
 }
 
