@@ -11,7 +11,85 @@
 
 ---
 
-## ★★ 2026-08-24 — 문서 대정리 완료. **다음 세션은 여기부터**
+## 🔴 2026-08-25 — 리팩토링 A·E·B1 완료. **다음 세션은 여기부터**
+
+dev-log = `docs/dev-logs/2026-08-25-refactor-dedup-deadcode.md` (진단 전문·SB 구조 비교 포함)
+
+### ✅ 1순위 — 해결됨 (2026-08-25 빌드·재시작 완료)
+
+**에디터 종료 → 빌드 → 재시작으로 태그 복구 반영. 피니셔 정상 출력 확인.**
+아래는 원인 기록 — 같은 실수 재발 방지용.
+
+#### 원인 — 태그 2개 복구분이 미반영이었다
+
+**A5에서 죽은 코드로 지운 태그 2개가 실은 에셋이 이름으로 쓰던 것이었다.**
+
+```
+GameplayCue.Combat.Execution   ← DA_Execution_Axe · DA_Execution_Bandit  (피니셔 VFX)
+GameplayCue.Camera.Execution   ← DA_PlayerExecution · GCN_ExcutionCamera  (처형 시네 카메라)
+```
+
+증상 = **처형 시 설정한 에셋 시점이 안 나온다** (승환 PIE 실측). C++ 참조는 0이었지만 **에셋이 문자열로 들고 있으면 네이티브 등록을 지우는 순간 태그 해석이 조용히 실패**한다.
+
+→ `KDGameplayTags.h/.cpp` 에 **복구 코드는 이미 넣어뒀다.** 빌드만 남았다.
+
+⚠️ **라이브코딩(Ctrl+Alt+F11)으로는 안 살아날 가능성이 높다.** `UE_DEFINE_GAMEPLAY_TAG` 는 모듈 로드 시 정적 초기화로 등록되는데 라이브코딩 패치는 그걸 다시 돌리지 않는다.
+
+```
+에디터 종료 → 빌드 → 에디터 재시작 → 처형 카메라 확인 + 피니셔 VFX(적 2종) 확인
+                                     ^^^^ 2026-08-25 실행 완료. 피니셔 정상
+```
+
+📌 **교훈 = 태그는 "C++ 참조 0" 만으로 죽은 코드 판정하면 안 된다.** 에셋 문자열 참조를 grep 해야 한다. 복구한 두 줄에 주석으로 박아뒀다.
+
+### 🟡 2순위 — 미조사 1건 (리팩토링 무관으로 보임)
+
+**적끼리 오사 — 데미지는 정상적으로 안 들어가는데, 적이 화살을 막을 때 본 셰이크 같은 게 발동하는 것 같다** (승환 관측).
+
+`KDProjectile::OnSphereOverlap` 은 friendly fire 면 `SendHitEvent` 전에 return 하므로 **히트 이벤트 경로는 아니다.** 후보 = `BP_Arrow` 자체 오버랩 연출(Niagara/사운드) 또는 Destroy 시 이펙트. 미확인.
+
+### PIE 검증 결과 (리팩토링 회귀)
+
+**위 처형 카메라 1건 빼고 전부 이상 없음.** 지상·공중 콤보 / 회피 합류 / 이동 캔슬 / 총격·화살 / 패링 3종 / 카운터 FOV 펀치 통과.
+
+### 🔴 미커밋 — 소스 36파일 + docs 2
+
+```
+리팩토링   A(소품5) · E(공통화2) · B1(콤보통합)   34파일
+태그 복구   KDGameplayTags.h/.cpp                  ← 빌드·확인 후 함께
+docs       dev-logs/2026-08-25-*.md · INDEX.md
+```
+
+커밋 제안 4분할
+```
+[refactor] 캔슬 판단 InputComponent 이사 + 회피 진입 DA화 + 죽은 코드 정리
+[refactor] 데미지 파이프라인·Self GE 공통화 - KDAbilityStatics / GA_ActionBase
+[refactor] 콤보 노드 소비를 GA_PlayerMeleeAttackBase 로 통합
+[fix] 처형 큐 태그 2개 복구 - 에셋이 이름으로 참조 중이었다
+[doc] 08-25 dev-log
+```
+
+### 이월 — 리팩토링 잔여 (목록·판정 근거 = dev-log)
+
+```
+B2  OnHitReceived 4분해          독립. SB ResultTable 축(인지/수치/이동/연출)
+C1  DA_ComboTree InputWindow 값   B1 끝나 선행조건 해소. SB 실측치 준비됨
+C2  넉백 RootMotionSource + KnockbackComponent 추출   B2 선행이면 수월
+C3  GA_PlayerOneShotAttack 층 제거   공중 콤보 재설계 때 (BP 리페어런팅 동반)
+C4  락온 LoS 방식 통일               락온 재작업 때
+C5  PostGEExec 헬퍼 분리            다음 데미지 로직 붙일 때
+```
+
+### 📌 룰 파일 재편 (2026-08-25)
+
+전역 `~/.claude/CLAUDE.md` 175행 → 122행 다이어트. 잘라낸 상세는 **`~/.claude/reference/CLAUDE-md-이관-2026-08-25.md`**(자동 로드 X)에 보존.
+본 프로젝트 `CLAUDE.md` 에 이사분 3건 반영 완료 — dev-log 자동 생성(§0) · 새 클래스 파일 목록 승인(§0) · MCP 대량 조회 규칙 + **Fable 세션 하청 룰**(§7).
+
+🟡 **승환 할 일** — 취업 `CLAUDE.md` **110~122행 삭제**. 그 폴더엔 §스킬 파이프라인(63~78행)이 이미 있는데 이관 블록이 덧붙어 **중복 2벌**이 됐다(그 파일 37행이 경고하는 바로 그 상황). 원본이 더 최신이라 붙인 쪽을 지우면 된다.
+
+---
+
+## ✅ 2026-08-24 — 문서 대정리 완료
 
 dev-log = `docs/dev-logs/2026-08-22-debug-console-player-init.md` (직전 = `2026-08-21-aim-knockback-camera.md`)
 
