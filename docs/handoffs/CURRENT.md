@@ -11,7 +11,39 @@
 
 ---
 
-## 🔴 2026-08-25 — 리팩토링 A·E·B1 완료. **다음 세션은 여기부터**
+## 🟢 2026-08-25 (2) — B2 완료 + 상태 바 버그 해결. **다음 세션은 여기부터**
+
+dev-log = `2026-08-25-refactor-b2-onhitreceived.md` · `2026-08-25-enemy-statebar-resubscribe.md`
+
+### 끝난 것
+
+```
+커밋·푸시 6개      리팩토링 A/E/B1 + 처형 큐 태그 주석 + CLAUDE.md 이사분 + docs
+B2                OnHitReceived 135줄 -> 4함수. 빌드·PIE 통과
+                  (경직 진입하는 타에 안 밀림 = ApplyPoiseDamage 반환값 검증)
+상태 바 버그       재락온 후 갱신 정지. Construct 에 재구독 배선. 08-18 부터 있던 버그
+보류 13번          닫힘 — PoiseDamageByAttack 키는 전 DA 가 Ability.Player.Parry 하나뿐
+```
+
+### 다음 (순서)
+
+```
+1  Poise 설계 결정        평타로도 깎을지 / 패링 전용 유지할지        <- 판단 대기
+2  C1~C5                 아래 이월 표
+3  볼트 브릿지 이관       상태 바 dev-log §6 함정 4개 -> 트러블슈팅 박제
+```
+
+### 🟡 미해결
+
+```
+오사 본 셰이크       적이 화살 막을 때 뼈 흔들림 뜨는지 미구별.
+                    PlayHitFeedback 이 C++ 유일 호출처 — 로그 한 줄로 C++/BP 갈림
+Content 잔여 7개     BP_Dummy -688 / BP_Bandit_Parry -450 내용 미상 (아래 08-24 절)
+```
+
+---
+
+## ✅ 2026-08-25 (1) — 리팩토링 A·E·B1 완료
 
 dev-log = `docs/dev-logs/2026-08-25-refactor-dedup-deadcode.md` (진단 전문·SB 구조 비교 포함)
 
@@ -52,7 +84,7 @@ GameplayCue.Camera.Execution   ← DA_PlayerExecution · GCN_ExcutionCamera  (�
 
 **위 처형 카메라 1건 빼고 전부 이상 없음.** 지상·공중 콤보 / 회피 합류 / 이동 캔슬 / 총격·화살 / 패링 3종 / 카운터 FOV 펀치 통과.
 
-### 🔴 미커밋 — 소스 36파일 + docs 2
+### ✅ 커밋 완료 (2026-08-25, `058349c` ~ `dd4a4c7` 푸시됨)
 
 ```
 리팩토링   A(소품5) · E(공통화2) · B1(콤보통합)   34파일
