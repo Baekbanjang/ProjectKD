@@ -79,9 +79,53 @@ AKDProjectile* UKDAbilityStatics::SpawnDamageProjectile(
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	AKDProjectile* Projectile = World->SpawnActor<AKDProjectile>(ProjectileClass, SpawnLoc, SpawnRot, Params);
-	
+
 	if (Projectile)
 		Projectile->InitProjectile(SpecHandle, InstigatorASC, AbilityTags);
 
 	return Projectile;
+}
+
+bool UKDAbilityStatics::IsFriendlyFire(const UAbilitySystemComponent* AttackerASC, const UAbilitySystemComponent* TargetASC)
+{
+	// 기능 : 아군 사격 판정 — 공격자·피격자 둘 다 Team.Enemy
+	return AttackerASC && TargetASC
+		&& AttackerASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
+		&& TargetASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy);
+}
+
+FGameplayEffectContextHandle UKDAbilityStatics::ApplyDamageEffect(UAbilitySystemComponent* AttackerASC,
+	UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> DamageEffectClass,
+	float FinalAttackPower, const FHitResult& Hit, AActor* SourceActor)
+{
+	// 기능 : 데미지 GE 적용 — Context 생성 + SetByCaller(AttackPower) + ApplyToTarget
+	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
+	Context.AddSourceObject(SourceActor);
+	Context.AddHitResult(Hit);
+
+	FGameplayEffectSpecHandle SpecHandle = AttackerASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
+	if (SpecHandle.IsValid())
+	{
+		// 양수 = IncomingDamage 게이트로 들어갈 데미지
+		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
+			SpecHandle, GameplayTags::SetByCaller_AttackPower, FinalAttackPower);
+		AttackerASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data, TargetASC);
+	}
+	return Context;
+}
+
+void UKDAbilityStatics::SendHitEvent(AActor* HitActor, AActor* EventInstigator,
+	const FGameplayTagContainer& InstigatorTags, const FGameplayEffectContextHandle& Context,
+	float KnockbackMultiplier)
+{
+	// 기능 : Event.Combat.Hit 발신 — 반응은 맞은 쪽이 선택
+	// ContextHandle = 방향 넉백·피격 리액션용 충돌 정보
+	FGameplayEventData HitEvent;
+	HitEvent.Instigator = EventInstigator;
+	HitEvent.Target = HitActor;
+	HitEvent.InstigatorTags = InstigatorTags;
+	HitEvent.ContextHandle = Context;
+	HitEvent.EventMagnitude = KnockbackMultiplier;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, GameplayTags::Event_Combat_Hit, HitEvent);
 }

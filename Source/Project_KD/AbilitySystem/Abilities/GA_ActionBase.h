@@ -34,6 +34,9 @@ protected:
 	void StartSafetyTimer(float MontagePlayLength, float PlayRate);
 	void ClearSafetyTimer();
 
+	// 자기 자신에게 GE 적용 — 상태 GE(무적·블록·패링)용. 실패 시 무효 핸들
+	FActiveGameplayEffectHandle ApplySelfEffect(TSubclassOf<UGameplayEffect> GEClass);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Safety", meta = (ClampMin = "1.0", ClampMax = "5.0"))
 	float MaxDurationSafetyMult = 1.5f;
 

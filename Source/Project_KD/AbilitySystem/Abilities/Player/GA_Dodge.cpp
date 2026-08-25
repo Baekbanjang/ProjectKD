@@ -60,22 +60,10 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 
     // GE 적용: Perfect는 강한 i-frame + CounterReady, Normal은 짧은 i-frame
-    auto ApplyGE = [ASC](TSubclassOf<UGameplayEffect> GEClass, FActiveGameplayEffectHandle& OutHandle)
-    {
-        if (!GEClass) return;
-        const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
-        const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GEClass, 1.0f, Ctx);
-        if (Spec.IsValid())
-        {
-            OutHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
-        }
-    };
-
     if (bPerfect)
     {
-        ApplyGE(PerfectInvincibleGE, ActiveInvincibleHandle);
-        FActiveGameplayEffectHandle DummyCounterHandle;
-        ApplyGE(CounterWindowGE, DummyCounterHandle);
+        ActiveInvincibleHandle = ApplySelfEffect(PerfectInvincibleGE);
+        ApplySelfEffect(CounterWindowGE);
 
         // 퍼펙트 성공 보상 연출(슬로우+FX)
         if (UAbilitySystemComponent* RewardASC = GetAbilitySystemComponentFromActorInfo())
@@ -85,7 +73,7 @@ void UGA_Dodge::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
     }
     else
     {
-        ApplyGE(NormalInvincibleGE, ActiveInvincibleHandle);
+        ActiveInvincibleHandle = ApplySelfEffect(NormalInvincibleGE);
     }
 
     // 방향 -> Montage 인덱스.

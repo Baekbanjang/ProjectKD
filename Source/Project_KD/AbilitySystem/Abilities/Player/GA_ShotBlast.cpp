@@ -204,34 +204,18 @@ bool UGA_ShotBlast::ApplyHit(const FHitResult& Hit)
 	if (!IsValid(HitActor) || !AttackerASC || !TargetASC) return false;
 	
 	// 아군 사격 통과
-	if (AttackerASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
-		&& TargetASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy))
+	if (UKDAbilityStatics::IsFriendlyFire(AttackerASC, TargetASC))
 	{
 		return false;
 	}
-	
+
 	// 데미지 Spec
 	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * ShotDamageMultiplier;
-	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
-	Context.AddSourceObject(GetAvatarActorFromActorInfo());
-	Context.AddHitResult(Hit);
-	FGameplayEffectSpecHandle SpecHandle = AttackerASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
-	if (SpecHandle.IsValid())
-	{
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-			SpecHandle, GameplayTags::SetByCaller_AttackPower, AttackPower);
-		AttackerASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data, TargetASC);
-	}
-	
+	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, Hit, GetAvatarActorFromActorInfo());
+
 	// 히트 알림 — 반응은 맞은 쪽이 선택
-	FGameplayEventData HitEvent;
-	HitEvent.Instigator = GetAvatarActorFromActorInfo();
-	HitEvent.Target = HitActor;
-	HitEvent.InstigatorTags = GetAssetTags();
-	HitEvent.ContextHandle = Context;
-	HitEvent.EventMagnitude = ShotKnockbackMultiplier;
-	
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, GameplayTags::Event_Combat_Hit, HitEvent);
+	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, ShotKnockbackMultiplier);
 	// i-frame 닷지/사망한 대상엔 타격감 큐 생략
 	if (TargetASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Invulnerable)
 		|| TargetASC->HasMatchingGameplayTag(GameplayTags::State_Dead))

@@ -37,15 +37,7 @@ void UGA_EnemyParry::ActivateAbility(const FGameplayAbilitySpecHandle Handle, co
 	}
 
 	// State.Combat.Parrying 부여 GE(Infinite) — OnCleanup에서 제거. AS_Combat이 이 태그로 데미지를 막는다.
-	if (ParryGE)
-	{
-		const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
-		const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(ParryGE, 1.0f, Ctx);
-		if (Spec.IsValid())
-		{
-			ActiveParryHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
-		}
-	}
+	ActiveParryHandle = ApplySelfEffect(ParryGE);
 
 	// 가드 윈도우 동안 막아낸 히트마다 클래시 GC를 띄우기 위해 OnlyTriggerOnce=false. GA 종료 시 자동 정리.
 	UAbilityTask_WaitGameplayEvent* ParryHitListener = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(

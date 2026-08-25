@@ -1,5 +1,6 @@
 #include "AbilitySystem/Abilities/GA_ActionBase.h"
 
+#include "AbilitySystemComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "AbilitySystem/Combo/ComboComponent.h"
@@ -42,6 +43,19 @@ void UGA_ActionBase::ClearSafetyTimer()
 	{
 		World->GetTimerManager().ClearTimer(SafetyTimerHandle);
 	}
+}
+
+FActiveGameplayEffectHandle UGA_ActionBase::ApplySelfEffect(TSubclassOf<UGameplayEffect> GEClass)
+{
+	// 기능 : 자기 자신에게 GE 적용
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC || !GEClass) return FActiveGameplayEffectHandle();
+
+	const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
+	const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(GEClass, 1.0f, Ctx);
+	if (!Spec.IsValid()) return FActiveGameplayEffectHandle();
+
+	return ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 }
 
 void UGA_ActionBase::OnSafetyTimeout()

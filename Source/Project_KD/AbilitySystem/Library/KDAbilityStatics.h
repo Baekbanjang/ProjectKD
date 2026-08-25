@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffectTypes.h"
 #include "GameplayTagContainer.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Templates/SubclassOf.h"
@@ -32,4 +33,17 @@ public:
 		const FVector& SpawnLoc,
 		const FRotator& SpawnRot,
 		const FGameplayTagContainer& AbilityTags);
+
+	// 아군 사격 유무 — 공격자·피격자 둘 다 Team.Enemy면 true
+	static bool IsFriendlyFire(const UAbilitySystemComponent* AttackerASC, const UAbilitySystemComponent* TargetASC);
+
+	// 데미지 GE 적용 — Context 생성 + SetByCaller(AttackPower) + ApplyToTarget. 반환 = 생성한 Context
+	static FGameplayEffectContextHandle ApplyDamageEffect(UAbilitySystemComponent* AttackerASC,
+		UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> DamageEffectClass,
+		float FinalAttackPower, const FHitResult& Hit, AActor* SourceActor);
+
+	// Event.Combat.Hit 발신 — 5필드 규약 (EventMagnitude = 넉백 배수)
+	static void SendHitEvent(AActor* HitActor, AActor* EventInstigator,
+		const FGameplayTagContainer& InstigatorTags, const FGameplayEffectContextHandle& Context,
+		float KnockbackMultiplier);
 };

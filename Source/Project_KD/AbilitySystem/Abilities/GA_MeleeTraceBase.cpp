@@ -3,6 +3,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/AS_Combat.h"
+#include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "KDGameplayTags.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
 #include "AbilitySystem/Tasks/AT_MeleeTrace.h"
@@ -200,8 +201,7 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 	if (!AttackerASC || !TargetASC) return;
 
 	// 팀 게이트 — 적 무기가 적을 때리는 경우 제외. 플레이어 ASC 는 Team.Enemy 없음
-	if (AttackerASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
-		&& TargetASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy))
+	if (UKDAbilityStatics::IsFriendlyFire(AttackerASC, TargetASC))
 	{
 		return;
 	}
@@ -213,29 +213,11 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 	}
 
 	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * DamageMultiplier;
-	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
-	Context.AddSourceObject(GetAvatarActorFromActorInfo());
-	Context.AddHitResult(Hit);
-
-	FGameplayEffectSpecHandle SpecHandle = AttackerASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
-	if (SpecHandle.IsValid())
-	{
-		// 양수 = IncomingDamage 게이트로 들어갈 데미지
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(
-			SpecHandle, GameplayTags::SetByCaller_AttackPower, AttackPower);
-		AttackerASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data, TargetASC);
-	}
+	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, Hit, GetAvatarActorFromActorInfo());
 
 	// 히트 알림 — 반응은 맞은 쪽이 선택
-	// ContextHandle = 방향 넉백·피격 리액션용 충돌 정보
-	FGameplayEventData HitEvent;
-	HitEvent.Instigator = GetAvatarActorFromActorInfo();
-	HitEvent.Target = HitActor;
-	HitEvent.InstigatorTags = GetAssetTags();
-	HitEvent.ContextHandle = Context;
-	HitEvent.EventMagnitude = KnockbackMultiplier;
-
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(HitActor, GameplayTags::Event_Combat_Hit, HitEvent);
+	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, KnockbackMultiplier);
 
 	// 데미지 후처리 훅 — 플레이어만 HitConfirm 큐
 	OnTargetHit(HitActor, TargetASC, Hit);

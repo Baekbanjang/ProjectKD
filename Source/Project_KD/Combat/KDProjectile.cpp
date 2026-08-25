@@ -4,6 +4,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "KDGameplayTags.h"
@@ -69,9 +70,7 @@ void AKDProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 	}
 
 	// 아군 사격 통과
-	if (InstigatorASC.IsValid()
-		&& InstigatorASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy)
-		&& TargetASC->HasMatchingGameplayTag(GameplayTags::Team_Enemy))
+	if (InstigatorASC.IsValid() && UKDAbilityStatics::IsFriendlyFire(InstigatorASC.Get(), TargetASC))
 	{
 		return;
 	}
@@ -81,13 +80,8 @@ void AKDProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor*
 		TargetASC->ApplyGameplayEffectSpecToSelf(*DamageSpec.Data);
 
 	// 히트 알림 — 반응은 맞은 쪽이 선택
-	FGameplayEventData HitEvent;
-	HitEvent.Instigator = GetInstigator();
-	HitEvent.Target = OtherActor;
-	HitEvent.InstigatorTags = InstigatorTags;
-	HitEvent.ContextHandle = DamageSpec.IsValid() ? DamageSpec.Data->GetContext() : FGameplayEffectContextHandle();
-	HitEvent.EventMagnitude = KnockbackMultiplier;
-	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(OtherActor, GameplayTags::Event_Combat_Hit, HitEvent);
+	const FGameplayEffectContextHandle Context = DamageSpec.IsValid() ? DamageSpec.Data->GetContext() : FGameplayEffectContextHandle();
+	UKDAbilityStatics::SendHitEvent(OtherActor, GetInstigator(), InstigatorTags, Context, KnockbackMultiplier);
 
 	Destroy();
 }

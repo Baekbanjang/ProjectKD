@@ -35,26 +35,10 @@ void UGA_Parry::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	}
 
 	// 홀드 방어 GE 적용 (Infinite, 버튼 누르는 동안 50% 감소). OnCleanup에서 제거.
-	if (BlockGE)
-	{
-		const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
-		const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(BlockGE, 1.0f, Ctx);
-		if (Spec.IsValid())
-		{
-			ActiveBlockHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
-		}
-	}
-	
+	ActiveBlockHandle = ApplySelfEffect(BlockGE);
+
 	// Perfect Parry 윈도우 GE 적용 (0.15s 후 자동 종료, State.Combat.PerfectParryReady 부여).
-	if (PerfectParryWindowGE)
-	{
-		const FGameplayEffectContextHandle Ctx = ASC->MakeEffectContext();
-		const FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(PerfectParryWindowGE, 1.0f, Ctx);
-		if (Spec.IsValid())
-		{
-			ActivePerfectWindowHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
-		}
-	}
+	ActivePerfectWindowHandle = ApplySelfEffect(PerfectParryWindowGE);
 
 	// 홀드 동안 막힌 히트를 계속 받기 위해 OnlyTriggerOnce=false. GA 캔슬 시 자동 정리.
 	UAbilityTask_WaitGameplayEvent* HitListener = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
