@@ -49,12 +49,36 @@ brain 정지                   Pawn 유지 (StaggerComponent 선례 - brain 소�
 4  볼트 브릿지 이관       상태 바 dev-log §6 함정 4개 -> 트러블슈팅 박제
 ```
 
+### 값 작업 완료 (2026-08-25, Content `65fb89d`)
+
+```
+KnockbackDistance   6종 전부 200 (C2 로 cm 단위가 된 뒤 첫 실값)
+MaxPoise            체급비 5배 유지 — 밴딧·패리밴딧·더미 15 / 궁수 10 / 엘리트 25
+PoiseDamageByAttack Parry 4.0 / Light 0.5 / Heavy 0.9  <- 평타로도 깎이게 확장
+                    DA_Dummy_Immortal 은 99999 + 빈 맵 유지 (불멸 더미 의도)
+```
+
+새 템포 — 밴딧 평타 30대 / 강공 17대 / 패링 4회. 길면 Light 를 0.8~1.0 으로.
+
 ### 🟡 미해결
 
 ```
+적 상태 바 칸 폭     엘리트 MaxPoise 25 = 250px 인데 바 폭이 198. 넘친다.
+                    위젯이 SizeBox_Poise 폭을 MaxPoise x 10 으로 잡는 구조.
+                    -> 위젯 조정 보류 (승환 판단)
+공중 넉백           AccumulateMode::Override 가 중력 누르는지 미검증
 오사 본 셰이크       적이 화살 막을 때 뼈 흔들림 뜨는지 미구별.
                     PlayHitFeedback 이 C++ 유일 호출처 — 로그 한 줄로 C++/BP 갈림
-Content 잔여 7개     BP_Dummy -688 / BP_Bandit_Parry -450 내용 미상 (아래 08-24 절)
+Content 잔여        Robot3/ 만 미추적 유지. 나머지는 전부 커밋됨
+ShieldAttackDamageRate  SB 적 바의 실드 4칸인지 스태미나 15칸인지 미확정
+```
+
+### 🧹 정리 잔가지
+
+```
+KDEnemyBaseCharacter.cpp:30   #include "HAL/IConsoleManager.h" 고아
+                              (CVarShowKnock 이 컴포넌트로 갔는데 include 만 남음)
+KnockbackBrainPause 0.15 < Duration 0.2   측정엔 영향 없음 확인. 연출 판단만
 ```
 
 ---
