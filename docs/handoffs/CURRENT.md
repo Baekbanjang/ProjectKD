@@ -25,12 +25,28 @@ B2                OnHitReceived 135줄 -> 4함수. 빌드·PIE 통과
 보류 13번          닫힘 — PoiseDamageByAttack 키는 전 DA 가 Ability.Player.Parry 하나뿐
 ```
 
+### C2 완료 (2026-08-25)
+
+dev-log = `2026-08-25-knockback-component.md`
+
+```
+UKnockbackComponent 신설     LaunchCharacter(속도) -> RootMotionSource(거리)
+DA 필드                      KnockbackStrength(cm/s) -> KnockbackDistance(cm)
+                             ⚠️ 뜻이 바뀌어 리다이렉트 일부러 안 걸었다
+brain 정지                   Pawn 유지 (StaggerComponent 선례 - brain 소유자 = Pawn)
+디버그                       목표 cm 대비 실제 cm. 재현성 확인됨
+```
+
+**남은 값 작업** — 더미만 `KnockbackDistance` 200. 적 5종은 체급 기준으로 나중에.
+
 ### 다음 (순서)
 
 ```
 1  Poise 설계 결정        평타로도 깎을지 / 패링 전용 유지할지        <- 판단 대기
-2  C1~C5                 아래 이월 표
-3  볼트 브릿지 이관       상태 바 dev-log §6 함정 4개 -> 트러블슈팅 박제
+2  C1                    콤보 노드 3칸(InputWindow·DamageMultiplier·KnockbackMultiplier)
+                         전부 0 -> 타격마다 계수가 안 갈린다. C2 로 넉백 축이 준비됨
+3  C3~C5                 아래 이월 표
+4  볼트 브릿지 이관       상태 바 dev-log §6 함정 4개 -> 트러블슈팅 박제
 ```
 
 ### 🟡 미해결
