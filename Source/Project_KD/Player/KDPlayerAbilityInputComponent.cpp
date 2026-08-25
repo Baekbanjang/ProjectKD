@@ -17,19 +17,21 @@
 // 헬퍼
 namespace
 {
-	// 캔슬 윈도우에서 끊을 수 있는 공격 GA 목록
-	const FGameplayTagContainer& GetCancelableAttackTags()
+	// 콤보 게이트 판단에 반복되는 태그 3종 — 한 곳에서 조회
+	struct FComboGateState
 	{
-		static const FGameplayTagContainer Tags = []
-		{
-			FGameplayTagContainer C;
-			C.AddTag(GameplayTags::Ability_Player_Light);
-			C.AddTag(GameplayTags::Ability_Player_Heavy);
-			C.AddTag(GameplayTags::Ability_Player_SprintAttack);
-			C.AddTag(GameplayTags::Ability_Player_CounterThrust);
-			return C;
-		}();
-		return Tags;
+		bool bAttacking = false;
+		bool bDodging = false;
+		bool bCanCancel = false;
+	};
+
+	FComboGateState QueryComboGateState(const UAbilitySystemComponent* ASC)
+	{
+		FComboGateState State;
+		State.bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
+		State.bDodging   = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
+		State.bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
+		return State;
 	}
 }
 
@@ -69,6 +71,16 @@ void UKDPlayerAbilityInputComponent::TickComponent(float DeltaTime, ELevelTick T
 UKDPlayerAbilityInputComponent::UKDPlayerAbilityInputComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	MovementCancelableTags.AddTag(GameplayTags::Ability_Player_Light);
+	MovementCancelableTags.AddTag(GameplayTags::Ability_Player_Heavy);
+	MovementCancelableTags.AddTag(GameplayTags::Ability_Player_Dodge);
+	MovementCancelableTags.AddTag(GameplayTags::Ability_Player_SprintAttack);
+
+	AttackCancelableTags.AddTag(GameplayTags::Ability_Player_Light);
+	AttackCancelableTags.AddTag(GameplayTags::Ability_Player_Heavy);
+	AttackCancelableTags.AddTag(GameplayTags::Ability_Player_SprintAttack);
+	AttackCancelableTags.AddTag(GameplayTags::Ability_Player_CounterThrust);
 }
 
 void UKDPlayerAbilityInputComponent::UpdateTurnInPlace(UAbilitySystemComponent* ASC) const
@@ -96,20 +108,18 @@ void UKDPlayerAbilityInputComponent::UpdateTurnInPlace(UAbilitySystemComponent* 
 void UKDPlayerAbilityInputComponent::ConsumeBufferedInput(UAbilitySystemComponent* ASC) const
 {
 	// 기능 : 버퍼된 회피 | 공격 꺼내기
-	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
-	const bool bDodging   = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
+	const FComboGateState Gate = QueryComboGateState(ASC);
 
 	// 회피 — 공격이 끝났거나 캔슬 윈도우가 열렸을 때만
-	if (!bAttacking || bCanCancel)
+	if (!Gate.bAttacking || Gate.bCanCancel)
 	{
 		// TryConsume — 버퍼에 있으면 꺼내면서 지움
 		if (InputBuffer->TryConsume(GameplayTags::Input_Action_Dodge))
 		{
 			// GA_Dodge 는 Attacking 태그가 있으면 활성화 X — 공격부터 종료시켜 태그 제거
-			if (bAttacking && bCanCancel)
+			if (Gate.bAttacking && Gate.bCanCancel)
 			{
-				ASC->CancelAbilities(&GetCancelableAttackTags());
+				ASC->CancelAbilities(&AttackCancelableTags);
 			}
 
 			FGameplayTagContainer DodgeTags;
@@ -119,13 +129,13 @@ void UKDPlayerAbilityInputComponent::ConsumeBufferedInput(UAbilitySystemComponen
 			if (ASC->TryActivateAbilitiesByTag(DodgeTags) && ComboComp)
 			{
 				const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
-				ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
+				ComboComp->EnterEvadeNode(bPerfect);
 			}
 		}
 	}
 
 	// 공격 — 회피 쪽과 대칭
-	if ((!bAttacking && !bDodging) || bCanCancel)
+	if ((!Gate.bAttacking && !Gate.bDodging) || Gate.bCanCancel)
 	{
 		const ACharacter* Owner = Cast<ACharacter>(GetOwner());
 		const UCharacterMovementComponent* Move = Owner ? Owner->GetCharacterMovement() : nullptr;
@@ -134,14 +144,14 @@ void UKDPlayerAbilityInputComponent::ConsumeBufferedInput(UAbilitySystemComponen
 		if (bAir)
 		{
 			// 공중 — 버퍼된 Light 를 AirCombo 로 교체해 발동
-			TryConsumeAndActivate(ASC, bCanCancel,
+			TryConsumeAndActivate(ASC, Gate.bCanCancel,
 				GameplayTags::Input_Action_Light, GameplayTags::Ability_Player_AirCombo);
 		}
 		else
 		{
 			// 지상 — 콤보 노드 이동은 GA 담당
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Player_Light);
-			TryConsumeAndActivate(ASC, bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Player_Heavy);
+			TryConsumeAndActivate(ASC, Gate.bCanCancel, GameplayTags::Input_Action_Light, GameplayTags::Ability_Player_Light);
+			TryConsumeAndActivate(ASC, Gate.bCanCancel, GameplayTags::Input_Action_Heavy, GameplayTags::Ability_Player_Heavy);
 		}
 	}
 }
@@ -186,9 +196,8 @@ void UKDPlayerAbilityInputComponent::TryLightAttack() const
 	}
 
 	// 회피 중이어도 캔슬 윈도우면 회피부터 끊고 공격 — 회피 쪽 처리와 대칭
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-	if (bDodging && bCanCancel)
+	const FComboGateState Gate = QueryComboGateState(ASC);
+	if (Gate.bDodging && Gate.bCanCancel)
 	{
 		CancelByTag(ASC, GameplayTags::Ability_Player_Dodge);
 	}
@@ -206,9 +215,8 @@ void UKDPlayerAbilityInputComponent::TryHeavyAttack() const
 	UAbilitySystemComponent* ASC = GetASC();
 	if (!ASC) return;
 
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
-	if (bDodging && bCanCancel)
+	const FComboGateState Gate = QueryComboGateState(ASC);
+	if (Gate.bDodging && Gate.bCanCancel)
 	{
 		CancelByTag(ASC, GameplayTags::Ability_Player_Dodge);
 	}
@@ -245,15 +253,13 @@ void UKDPlayerAbilityInputComponent::TryDodge() const
 
 	// GA_Dodge 는 ActivationBlockedTags(Attacking) 때문에 공격 중 활성화 X
 	// 캔슬 윈도우면 공격을 먼저 끊어 태그를 없앤 뒤 활성화
-	const bool bDodging = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Dodging);
-	const bool bAttacking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Attacking);
-	const bool bCanCancel = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CanCancel);
+	const FComboGateState Gate = QueryComboGateState(ASC);
 
-	if (bDodging && !bCanCancel) return;
+	if (Gate.bDodging && !Gate.bCanCancel) return;
 
-	if (bAttacking && bCanCancel)
+	if (Gate.bAttacking && Gate.bCanCancel)
 	{
-		ASC->CancelAbilities(&GetCancelableAttackTags());
+		ASC->CancelAbilities(&AttackCancelableTags);
 	}
 
 	// 활성화 실패 시 버퍼로 — Attacking 태그 해제 또는 캔슬 윈도우 개방 시 Tick 이 재시도
@@ -263,7 +269,7 @@ void UKDPlayerAbilityInputComponent::TryDodge() const
 		if (ComboComp)
 		{
 			const bool bPerfect = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady);
-			ComboComp->EnterNode(bPerfect ? TEXT("JustEvade") : TEXT("Evade"), 0.8f);
+			ComboComp->EnterEvadeNode(bPerfect);
 		}
 	}
 	else if (InputBuffer)
@@ -314,6 +320,18 @@ void UKDPlayerAbilityInputComponent::TryAimStop() const
 	}
 }
 
+void UKDPlayerAbilityInputComponent::TryMovementCancel() const
+{
+	// 기능 : 이동 입력이 공격 후반(MovementCanCancel 창) 어빌리티를 끊음
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC) return;
+
+	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_MovementCanCancel))
+	{
+		ASC->CancelAbilities(&MovementCancelableTags);
+	}
+}
+
 void UKDPlayerAbilityInputComponent::TryConsumeAndActivate(UAbilitySystemComponent* ASC, bool bCanCancel,
 	const FGameplayTag& InputTag, const FGameplayTag& AbilityTag) const
 {
@@ -324,7 +342,7 @@ void UKDPlayerAbilityInputComponent::TryConsumeAndActivate(UAbilitySystemCompone
 	// 캔슬 윈도우면 진행 중 공격 | 회피 GA 강제 종료 -> 즉시 새 GA 활성화
 	if (bCanCancel)
 	{
-		FGameplayTagContainer CancelTags = GetCancelableAttackTags();
+		FGameplayTagContainer CancelTags = AttackCancelableTags;
 		CancelTags.AddTag(GameplayTags::Ability_Player_Dodge);     // 회피 후딜에서 공격으로 연결
 		CancelTags.AddTag(GameplayTags::Ability_Player_AirCombo);  // 공중 콤보 사이 교체
 		ASC->CancelAbilities(&CancelTags);

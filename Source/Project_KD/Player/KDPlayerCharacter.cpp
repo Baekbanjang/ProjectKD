@@ -244,11 +244,6 @@ bool AKDPlayerCharacter::IsFullSprinting() const
 	return SprintComp ? SprintComp->IsFullSprinting() : false;
 }
 
-bool AKDPlayerCharacter::IsWalking() const
-{
-	return SprintComp ? SprintComp->IsWalking() : false;
-}
-
 void AKDPlayerCharacter::RefreshMaxWalkSpeed()
 {
 	// 기능 : 락온 | 조준 감속을 반영해서 MaxWalkSpeed 갱신

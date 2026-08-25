@@ -38,8 +38,6 @@ void UKDPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 워커스레드가 쓸 속도/회전 스냅샷.
 	CachedVelocity = OwningPlayer->GetVelocity();
 	CachedActorRotation = OwningPlayer->GetActorRotation();
-	CachedVelocity = OwningPlayer->GetVelocity();
-	CachedActorRotation = OwningPlayer->GetActorRotation();
 	CachedControlYaw = OwningPlayer->GetControlRotation().Yaw;
 	CachedRailAlpha = OwningPlayer->GetCameraRailAlpha();
 	CachedAimPitchScale = OwningPlayer->GetAimPitchScale();

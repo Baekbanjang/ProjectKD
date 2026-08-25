@@ -24,10 +24,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Curves")
 	TObjectPtr<UCurveFloat> FovByDistanceCurve;
 
-	// 경사 각도 -> Look-at IK 강도. M2 폴리싱에서 본격 적용
-	UPROPERTY(EditDefaultsOnly, Category = "Camera|Curves")
-	TObjectPtr<UCurveFloat> SlopeControlCurve;
-
 	// FOV 임팩트 커브: 시간 -> FOV 델타(음수=줌인)
 	UPROPERTY(EditDefaultsOnly, Category = "Camera|Impact")
 	TObjectPtr<UCurveFloat> FovPunchCurve;

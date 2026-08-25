@@ -22,9 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HitStop")
 	void RequestHitStop(float Duration);
 
-	UFUNCTION(BlueprintPure, Category = "HitStop")
-	bool IsHitStopActive() const;
-	
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

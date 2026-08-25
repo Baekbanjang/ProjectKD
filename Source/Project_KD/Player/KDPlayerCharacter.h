@@ -132,14 +132,14 @@ protected:
 public:
 	UComboComponent* GetComboComponent() const {return ComboComp;}
 	ULockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
+	UKDPlayerAbilityInputComponent* GetAbilityInputComponent() const {return AbilityInputComp;}
 	
 	// 마우스 상하 각도 0~1  애님 조준용
 	float GetCameraRailAlpha() const;
 	float GetAimPitchScale() const { return AimPitchScale; }
 
-	bool IsSprinting() const;     
-	bool IsFullSprinting() const; 
-	bool IsWalking() const;       
+	bool IsSprinting() const;
+	bool IsFullSprinting() const;
 
 private:
 	UFUNCTION()

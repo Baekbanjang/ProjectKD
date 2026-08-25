@@ -30,6 +30,9 @@ void UGA_PlayerExecution::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		return;
 	}
 
+	// InstancedPerActor 잔류 방지 — 매 활성화 시 명시 리셋.
+	ActiveCameraCue = FGameplayTag();
+
 	AActor* Player = GetAvatarActorFromActorInfo();
 	const AActor* Enemy = TriggerEventData ? TriggerEventData->Instigator : nullptr;
 

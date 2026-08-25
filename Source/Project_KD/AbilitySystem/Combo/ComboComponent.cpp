@@ -118,6 +118,18 @@ void UComboComponent::EnterNode(FName NodeId, float ResetTimeOverride)
 	}
 }
 
+void UComboComponent::EnterEvadeNode(bool bPerfect)
+{
+	// 회피 합류 — 트리 DA의 진입 ID로 EnterNode 호출, 트리 없으면 기존 이름 유지
+	const UComboTreeDataAsset* Tree = ComboTree ? ComboTree : AirComboTree;
+	const FName NodeId = bPerfect
+		? (Tree ? Tree->JustEvadeEntryId : TEXT("JustEvade"))
+		: (Tree ? Tree->EvadeEntryId : TEXT("Evade"));
+
+	// 0.8f 고정값 — 추후 InputWindow로 흡수 예정
+	EnterNode(NodeId, 0.8f);
+}
+
 const FComboNode* UComboComponent::FindEntryNode(const UComboTreeDataAsset* Tree, FGameplayTag InputTag) const
 {
 	const UAbilitySystemComponent* ASC =

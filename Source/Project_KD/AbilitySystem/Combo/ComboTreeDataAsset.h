@@ -99,7 +99,15 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combo")
 	TArray<FComboNode> Nodes;
-	
+
+	// 회피 합류 진입 노드 ID
+	UPROPERTY(EditAnywhere, Category = "Entry")
+	FName EvadeEntryId = TEXT("Evade");
+
+	// 퍼펙트 회피 합류 진입 노드 ID
+	UPROPERTY(EditAnywhere, Category = "Entry")
+	FName JustEvadeEntryId = TEXT("JustEvade");
+
 	// NodeId로 노드 찾기, 없으면 nullptr
 	const FComboNode* FindNode(FName NodeId) const;
 };

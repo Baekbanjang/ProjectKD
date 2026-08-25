@@ -35,10 +35,3 @@ ALevelSequenceActor* UKDCinematicLibrary::PlaySequenceAtTransform(const UObject*
 	SeqActor->FinishSpawning(FTransform::Identity);
 	return SeqActor;
 }
-
-ALevelSequenceActor* UKDCinematicLibrary::PlaySequenceAtActor(const UObject* WorldContextObject, ULevelSequence* Sequence,
-	AActor* OriginActor, bool bAutoPlay)
-{
-	if (!OriginActor) { return nullptr; }
-	return PlaySequenceAtTransform(WorldContextObject, Sequence, OriginActor->GetActorTransform(), bAutoPlay);
-}

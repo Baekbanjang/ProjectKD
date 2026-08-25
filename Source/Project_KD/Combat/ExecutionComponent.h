@@ -35,9 +35,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Execution")
 	TObjectPtr<UExecutionProfile> ExecutionProfile;
 
-	UFUNCTION(BlueprintPure, Category = "Execution")
-	bool IsBeingExecuted() const { return bIsBeingExecuted; }
-
 	// 이번 처형이 데스블로(치명)인지 — HandleExecution 시작 시 결정. 모션/데미지 분기에 사용.
 	UFUNCTION(BlueprintPure, Category = "Execution")
 	bool IsDeathblow() const { return bDeathblow; }

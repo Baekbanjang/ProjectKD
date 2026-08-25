@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
+#include "Player/KDPlayerAbilityInputComponent.h"
 #include "Player/KDPlayerCharacter.h"
 
 void AKDPlayerController::BeginPlay()
@@ -94,16 +95,11 @@ void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
 	if (!ControlledPawn) return;
 
 	// Movement Cancel — 공격 후반(ANS_MovementCancel 활성 중)에 이동 입력 들어오면 어빌리티 캔슬
-	if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(ControlledPawn))
+	if (AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(ControlledPawn))
 	{
-		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_MovementCanCancel))
+		if (UKDPlayerAbilityInputComponent* AbilityInputComp = PC->GetAbilityInputComponent())
 		{
-			FGameplayTagContainer CancelTags;
-			CancelTags.AddTag(GameplayTags::Ability_Player_Light);
-			CancelTags.AddTag(GameplayTags::Ability_Player_Heavy);
-			CancelTags.AddTag(GameplayTags::Ability_Player_Dodge);
-			CancelTags.AddTag(GameplayTags::Ability_Player_SprintAttack);
-			ASC->CancelAbilities(&CancelTags);
+			AbilityInputComp->TryMovementCancel();
 		}
 	}
 

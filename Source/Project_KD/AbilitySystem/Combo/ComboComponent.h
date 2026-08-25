@@ -25,10 +25,6 @@ public:
 	// 콤보 중이면 현재 노드 NextLinks에서, 아니면 Entries에서 갈 곳 확인
 	const FComboNode* ProcessInput(FGameplayTag InputTag, EComboContext Context = EComboContext::Ground);
 	
-	// 지금 서 있는 노드 이름 — 디버그용
-	UFUNCTION(BlueprintCallable, Category = "Combo")
-	FName GetCurrentNodeId() const { return CurrentNodeId; }
-	
 	// 외부 강제 리셋(피격으로 콤보 끊김 등), 이름 유지 = BP 호출부 보호
 	UFUNCTION(BlueprintCallable, Category = "Combo")
 	void ClearHistory();
@@ -37,6 +33,9 @@ public:
 	// ResetTimeOverride > 0 이면 그 시간 뒤 만료
 	UFUNCTION(BlueprintCallable, Category = "Combo")
 	void EnterNode(FName NodeId, float ResetTimeOverride = -1.f);
+
+	// 회피(퍼펙트 포함) 합류 — 트리 DA의 진입 ID로 EnterNode 호출
+	void EnterEvadeNode(bool bPerfect);
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combo")

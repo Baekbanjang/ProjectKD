@@ -10,9 +10,6 @@
 class UWidgetComponent;
 class ULockOnConfig;
 
-// 락온 대상 변경 델리게이트
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLockOnTargetChanged, AActor*, NewTarget);
-
 // 토글 입력으로 가장 가까운 적(IKDTargetable 구현) 자동 선택, 카메라/캐릭터 추적
 UCLASS( ClassGroup=(Combat), meta=(BlueprintSpawnableComponent) )
 class PROJECT_KD_API ULockOnComponent : public UActorComponent
@@ -22,10 +19,6 @@ class PROJECT_KD_API ULockOnComponent : public UActorComponent
 public:	
 	ULockOnComponent();
 
-	// 락온 대상 변경
-	UPROPERTY(BlueprintAssignable, Category = "LockOn")
-	FOnLockOnTargetChanged OnLockOnTargetChanged;
-	
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -39,8 +32,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "LockOn")
 	AActor* GetLockedTarget() const { return LockedTarget.Get(); }
-
-	const ULockOnConfig* GetConfig() const { return Config; }
 
 	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과 중 각도 최소
 	// Radius / ConeAngle 음수 = Config 값

@@ -47,12 +47,6 @@ void UHitStopComponent::RequestHitStop(float Duration)
 	Timers.SetTimer(ResumeTimer, this, &UHitStopComponent::RestoreTime, Duration, false);
 }
 
-bool UHitStopComponent::IsHitStopActive() const
-{
-	const UWorld* World = GetWorld();
-	return World && World->GetTimerManager().IsTimerActive(ResumeTimer);
-}
-
 void UHitStopComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	// 타이머 초기화
