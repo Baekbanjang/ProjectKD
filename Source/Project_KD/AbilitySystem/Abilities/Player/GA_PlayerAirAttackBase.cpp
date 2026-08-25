@@ -4,7 +4,6 @@
 #include "AbilitySystem/Abilities/Player/GA_PlayerAirAttackBase.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Combo/ComboComponent.h"
 #include "AbilitySystem/Combo/ComboTreeDataAsset.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -16,51 +15,15 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 	// 매 활성화마다 막타 플래그 리셋 (InstancedPerActor 잔류 차단).
 	bIsFinisher = false;
 
-	// 콤보 컴포넌트 없으면 몽타주 없이 종료
-	UComboComponent* Combo = GetComboComponentFromActorInfo();
-
 	// 공중 컨텍스트 -> AirComboTree만 봄
-	const FComboNode* Node = IsValid(Combo)
-		? Combo->ProcessInput(ComboInputTag, EComboContext::Air)
-		: nullptr;
-	// 매 시작에 디폴트 복원 — 직전 노드 값 잔류 차단
-	DamageEffectClass = DefaultAirDamageEffectClass;
-	DamageMultiplier = DefaultAirDamageMultiplier;
-	KnockbackMultiplier = DefaultAirKnockbackMultiplier;
-	
-	if (Node)
-	{
-		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr; // 노드의 몽타주 GA 변수에 대입
-		if (!AttackMontage)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("[KD] Air combo node '%s' 몽타주 미지정"), *Node->NodeId.ToString());
-		}
+	const FComboNode* Node = ApplyComboNode(ComboInputTag, EComboContext::Air,
+		DefaultAirDamageEffectClass, DefaultAirDamageMultiplier, DefaultAirKnockbackMultiplier);
 
-		if (Node->DamageEffectClass)
-		{
-			DamageEffectClass = Node->DamageEffectClass;
-		}
+	// 다음 없는 노드 = 막타(피니셔)
+	bIsFinisher = (Node && Node->NextLinks.Num() == 0);
 
-		if (Node->DamageMultiplier > 0.f)
-		{
-			DamageMultiplier = Node->DamageMultiplier;
-		}
-		if (Node->KnockbackMultiplier > 0.f)
-		{
-			KnockbackMultiplier = Node->KnockbackMultiplier;
-		}
-		
-		// 다음 없는 노드 = 막타(피니셔)
-		bIsFinisher = (Node->NextLinks.Num() == 0);
-	}
-	else
-	{
-		// 트리에서 못 찾음 = 데이터 문제, 몽타주 없이 두면 부모가 EndAbility
-		AttackMontage = nullptr;
-	}
-	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	
+
 }
 
 void UGA_PlayerAirAttackBase::OnActivated()

@@ -3,10 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "AbilitySystem/Abilities/GA_MeleeTraceBase.h"
 #include "GA_PlayerMeleeAttackBase.generated.h"
 
 class UHitConfirmProfile;
+struct FComboNode;
+enum class EComboContext : uint8;
 // 플레이어 근접 공격 공통 베이스 — 히트스탑 + 타격감 큐 + 락온 자동조준
 // 아래 두 계열이 상속, 차이는 몽타주를 어디서 받느냐 하나뿐
 //   UGA_PlayerAttackBase    = 콤보 — DA_ComboTree 노드가 AttackMontage를 채움
@@ -48,6 +51,10 @@ protected:
 	// 접근 가능 최대 거리 — 초과 시 제자리
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Approach", meta = (ClampMin = "0.0"))
 	float MaxApproachRange = 700.f;
+
+	// 콤보 노드 소비 — 노드 값으로 몽타주·데미지 GE·계수 결정, 노드 없으면 기본값
+	const FComboNode* ApplyComboNode(FGameplayTag InputTag, EComboContext Context,
+		TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul);
 
 	// 타격 시 플레이어 전용 HitConfirm 큐 실행
 	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) override;

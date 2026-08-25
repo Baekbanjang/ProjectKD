@@ -11,6 +11,8 @@
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
+#include "AbilitySystem/Combo/ComboComponent.h"
+#include "AbilitySystem/Combo/ComboTreeDataAsset.h"
 #include "Combat/Data/HitConfirmProfile.h"
 
 #if !UE_BUILD_SHIPPING
@@ -56,6 +58,53 @@ void UGA_PlayerMeleeAttackBase::OnTargetHit(AActor* HitActor, UAbilitySystemComp
 	StopEvent.EventMagnitude = AttackerHitStopDuration;
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
 		GetAvatarActorFromActorInfo(), GameplayTags::Event_Combat_HitStop, StopEvent);
+}
+
+const FComboNode* UGA_PlayerMeleeAttackBase::ApplyComboNode(FGameplayTag InputTag, EComboContext Context,
+	TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul)
+{
+	// 기능 : 콤보 노드 소비 — 몽타주·데미지 GE·계수 결정, 노드 없으면 기본값
+	UComboComponent* Combo = GetComboComponentFromActorInfo();
+
+	const FComboNode* Node = IsValid(Combo)
+		? Combo->ProcessInput(InputTag, Context)
+		: nullptr;
+
+	// 매 시작에 디폴트 복원 — 직전 값이 다음 활성화까지 남는 것 막음
+	DamageEffectClass = DefaultGE;
+	DamageMultiplier = DefaultDamageMul;
+	KnockbackMultiplier = DefaultKnockbackMul;
+
+	if (Node)
+	{
+		// 노드 = 이번 콤보
+		AttackMontage = IsValid(Node->Montage) ? Node->Montage : nullptr; // 노드의 몽타주 GA 변수에 대입
+		if (!AttackMontage)
+		{
+			const TCHAR* LogPrefix = (Context == EComboContext::Air) ? TEXT("[KD] Air combo node") : TEXT("[KD] Combo node");
+			UE_LOG(LogTemp, Warning, TEXT("%s '%s' 몽타주 미지정"), LogPrefix, *Node->NodeId.ToString());
+		}
+
+		if (Node->DamageEffectClass)
+		{
+			DamageEffectClass = Node->DamageEffectClass;
+		}
+		if (Node->DamageMultiplier > 0.f)
+		{
+			DamageMultiplier = Node->DamageMultiplier;
+		}
+		if (Node->KnockbackMultiplier > 0.f)
+		{
+			KnockbackMultiplier = Node->KnockbackMultiplier;
+		}
+	}
+	else
+	{
+		// 트리에서 못 찾음 = 데이터 문제, 몽타주 없이 두면 부모가 EndAbility
+		AttackMontage = nullptr;
+	}
+
+	return Node;
 }
 
 void UGA_PlayerMeleeAttackBase::OnActivated()
