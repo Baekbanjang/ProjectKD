@@ -24,16 +24,11 @@
 #include "Animation/AnimMontage.h"
 #include "Perception/AISense_Damage.h"
 #include "TimerManager.h"
+#include "Combat/KnockbackComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/KDEnemyStateBarWidget.h"
 #include "HAL/IConsoleManager.h"
 
-#if !UE_BUILD_SHIPPING
-// 개발용 넉백 표시 스위치 — 콘솔 KD.ShowKnock 1
-static TAutoConsoleVariable<int32> CVarShowKnock(
-	TEXT("KD.ShowKnock"), 0,
-	TEXT("넉백 배수·속도·거리 온스크린 표시 유무"), ECVF_Cheat);
-#endif
 
 AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
 {
@@ -51,6 +46,7 @@ AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
 	// 경직·처형 = 전용 컴포넌트 — 각자 BeginPlay 에서 ASC 캐시 + 이벤트 구독
 	StaggerComp = CreateDefaultSubobject<UStaggerComponent>(TEXT("StaggerComp"));
 	ExecutionComp = CreateDefaultSubobject<UExecutionComponent>(TEXT("ExecutionComp"));
+	KnockbackComp = CreateDefaultSubobject<UKnockbackComponent>(TEXT("KnockbackComp"));
 
 	// 상태 바 — 위젯 클래스 지정 = BP
 	StateBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("StateBarWidget"));
@@ -140,6 +136,10 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 		{
 			ExecutionComp->OnExecutionResolved.AddDynamic(StaggerComp, &UStaggerComponent::HandleExecutionResolved);
 		}
+	}
+	if (KnockbackComp)
+	{
+		KnockbackComp->OnKnockbackBegin.AddDynamic(this, &AKDEnemyBaseCharacter::OnKnockbackBegin);
 	}
 }
 
@@ -453,7 +453,10 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 		return;
 	}
 
-	ApplyKnockback(Payload);
+	if (KnockbackComp)
+	{
+		KnockbackComp->ApplyKnockback(*Payload, EnemyDefinition ? EnemyDefinition->KnockbackDistance : 0.f);
+	}
 }
 
 void AKDEnemyBaseCharacter::ReportHitToPerception(const FGameplayEventData* Payload)
@@ -514,78 +517,6 @@ bool AKDEnemyBaseCharacter::ApplyPoiseDamage(const FGameplayEventData* Payload)
 	return IsStaggered();
 }
 
-void AKDEnemyBaseCharacter::ApplyKnockback(const FGameplayEventData* Payload)
-{
-	// 기능 : 밀림 + 밀리는 동안 brain 정지
-	// 경로추종 정지 — StopMovement 는 현재 요청만 취소, BT 가 다음 틱에 재요청
-	// 넉백 구간만 brain 정지 — 재개 = ResumeBrainFromKnockback
-	if (AAIController* AICon = GetController<AAIController>())
-	{
-		AICon->StopMovement();
-
-		if (UBrainComponent* Brain = AICon->GetBrainComponent())
-		{
-			Brain->PauseLogic(TEXT("Knockback"));
-			GetWorldTimerManager().SetTimer(KnockbackBrainTimer, this,
-				&AKDEnemyBaseCharacter::ResumeBrainFromKnockback, KnockbackBrainPause, false);
-		}
-	}
-
-	// 넉백 세기 = 적 DA 기준값 x 공격 배수
-	const float KnockbackMult = (Payload->EventMagnitude > 0.f) ? Payload->EventMagnitude : 1.f;
-	const float KnockbackStrength = (EnemyDefinition ? EnemyDefinition->KnockbackStrength : 0.f) * KnockbackMult;
-	FVector Dir = FVector::ZeroVector;
-	if (KnockbackStrength > 0.f && IsValid(Payload->Instigator))
-	{
-		// 공격자 반대 방향 (수평) — ImpactNormal 은 캡슐 접선이라 미사용
-		Dir = (GetActorLocation() - Payload->Instigator->GetActorLocation()).GetSafeNormal2D();
-
-		// 폴백 = 공격자 정면 — 겹친 액터의 위치 델타 0
-		if (Dir.IsNearlyZero())
-		{
-			Dir = Payload->Instigator->GetActorForwardVector().GetSafeNormal2D();
-		}
-	}
-
-	if (!Dir.IsNearlyZero())
-	{
-		LaunchCharacter(Dir * KnockbackStrength, true, false);
-
-#if !UE_BUILD_SHIPPING
-		// 개발용 넉백 표시 — 공격 태그 / 배수 / 속도 / 0.1초 뒤 이동 거리 + 남은 속도
-		if (CVarShowKnock.GetValueOnGameThread() > 0)
-		{
-			FString SrcTag = Payload->InstigatorTags.IsEmpty()
-				? TEXT("-") : Payload->InstigatorTags.First().ToString();
-			int32 DotIdx = INDEX_NONE;
-			if (SrcTag.FindLastChar(TEXT('.'), DotIdx)) { SrcTag = SrcTag.RightChop(DotIdx + 1); }
-
-			const FVector KnockStart = GetActorLocation();
-			const float DbgMult = KnockbackMult;
-			const float DbgSpeed = KnockbackStrength;
-			FTimerHandle DbgKnockTimer;
-			GetWorldTimerManager().SetTimer(DbgKnockTimer, FTimerDelegate::CreateWeakLambda(this,
-				[this, SrcTag, DbgMult, DbgSpeed, KnockStart]()
-				{
-					const float Moved = FVector::Dist2D(GetActorLocation(), KnockStart);
-					const float NowSpeed = GetVelocity().Size2D();
-					if (GEngine)
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-							FString::Printf(TEXT("Knock  %-12s x%.2f   speed %.0f   ->  %.0f cm   (남은속도 %.0f)"),
-								*SrcTag, DbgMult, DbgSpeed, Moved, NowSpeed));
-					}
-				}), 0.1f, false);
-		}
-#endif
-	}
-	else if (UCharacterMovementComponent* Move = GetCharacterMovement())
-	{
-		// 넉백 0 또는 방향 X — 잔여 속도만 제거
-		Move->StopMovementImmediately();
-	}
-}
-
 void AKDEnemyBaseCharacter::OnExecutionBegin()
 {
 	// 피니셔 몽타주 재생 — 종료 델리게이트에서 FinishExecution
@@ -623,6 +554,25 @@ void AKDEnemyBaseCharacter::OnExecutionBegin()
 				}
 			}
 		}
+	}
+}
+
+void AKDEnemyBaseCharacter::OnKnockbackBegin()
+{
+	// 기능 : 적 AI 정지
+	// 경로추종 정지 — StopMovement 는 현재 요청만 취소, BT 가 다음 틱에 재요청
+	AAIController* AICon = GetController<AAIController>();
+	if (!AICon)
+	{
+		return;
+	}
+	
+	AICon->StopMovement();
+	if (UBrainComponent* Brain = AICon->GetBrainComponent())
+	{
+		Brain->PauseLogic(TEXT("Knockback"));
+		GetWorldTimerManager().SetTimer(KnockbackBrainTimer, this,
+			&AKDEnemyBaseCharacter::ResumeBrainFromKnockback, KnockbackBrainPause, false);
 	}
 }
 

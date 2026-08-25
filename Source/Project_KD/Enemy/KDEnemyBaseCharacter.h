@@ -7,6 +7,7 @@
 #include "Interface/KDTargetableInterface.h"
 #include "KDEnemyBaseCharacter.generated.h"
 
+class UKnockbackComponent;
 class UWidgetComponent;
 class UAS_CharacterBase;
 class UAS_Combat;
@@ -142,6 +143,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UExecutionComponent> ExecutionComp;
 
+	// 피격 밀림 — 거리 지정 + RootMotionSource
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	TObjectPtr<UKnockbackComponent> KnockbackComp;
+
 	// 상태 바 — HP | Poise
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> StateBarWidget;
@@ -172,6 +177,10 @@ protected:
 	UFUNCTION()
 	void OnExecutionBegin();
 
+	// KnockbackComp.OnKnockbackBegin 수신 
+	UFUNCTION()
+	void OnKnockbackBegin();
+
 private:
 	// Health 변화 콜백 — 0 이하 시 HandleDeath
 	void OnHealthChanged(const FOnAttributeChangeData& Data);
@@ -187,10 +196,7 @@ private:
 
 	// Poise 차감 — 반환 = 이 차감으로 경직 진입 유무
 	bool ApplyPoiseDamage(const FGameplayEventData* Payload);
-
-	// 넉백 — brain 정지 + LaunchCharacter
-	void ApplyKnockback(const FGameplayEventData* Payload);
-
+	
 	// 처형 몽타주 종료 콜백 — ExecutionComp FinishExecution 호출
 	void OnExecutionMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 

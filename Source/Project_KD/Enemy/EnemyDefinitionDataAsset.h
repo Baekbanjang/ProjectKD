@@ -81,10 +81,10 @@ public:
 	float PatrolRadius = 800.f;
 
 	// --- 전투 ---
-	// 피격 시 공격자 반대로 수평 넉백 세기(cm/s). 0이면 넉백 없음.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (ClampMin = "0.0", ClampMax = "2000.0"))
-	float KnockbackStrength = 400.f;
-
+	// 피격 시 공격자 반대로 수평으로 밀리는 거리(cm). 0이면 넉백 없음.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
+	float KnockbackDistance = 60.f;
+	
 	// 적이 피격당 잃는 Poise(균형). 공격 식별 태그 → 데미지량. 플레이어 공격만 등록(적끼리 friendly fire 무시).
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TMap<FGameplayTag, float> PoiseDamageByAttack;
