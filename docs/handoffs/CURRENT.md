@@ -387,7 +387,7 @@ C:/Users/asdasd/Desktop/Obsidian_organize/ProjectKD/notes/_세션브릿지.md
 | # | 항목 | 내용 |
 |---|---|---|
 1 | ~~**`DA_ComboTree` 값 채우기**~~ ✅**칸은 둘 다 생겼다** (2026-08-24 실측: `InputWindow` = `ComboTreeDataAsset.h:62`, `DamageMultiplier` = `:66`, 곱셈 = `GA_MeleeTraceBase.cpp:215`). **남은 건 값 채우기뿐** — 아래 SB 실측치 참조 | **두 값의 상태가 다르다 — 헷갈리지 말 것** (2026-07-31 A레인 지적으로 정정)<br>· **`InputWindow`** = **칸 있음 / 값 전부 0** → 아직 `ComboResetTime 1.5f` 공용값으로 돈다<br>· **`DamageMultiplier`** = **칸 자체가 없다.** `.h` 실측 확인 — DA를 열어도 그 칸은 안 보인다. `FComboNode`에 추가부터 해야 함(`InputWindow` 바로 아랫줄, 같은 형식)<br>SB 입력창 실측: 1~2타 0.7~0.8 / 3~4타 0.9~1.2 / 마무리 1.4~2.0 / 회피 0.8 / 저스트회피 1.5<br>⚠️ **DA는 2개다** — `DA_ComboTree` + `DA_AirComboTree`(같은 `FComboNode` 구조)<br>⚠️ `FComboNode`에 **`DamageEffectClass`(노드별 GE)가 이미 있다** — 계수를 float으로 넣을지 노드별 GE로 갈지 먼저 정할 것. 26노드 × 개별 GE = 에셋 26개라 **float 계수가 가볍다** |
-2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(f62) · `Combo_05_03`(f70) · `Combo_02_03`(f74). 버퍼 0.5초로도 못 덮는다. `ANS_CancelWindow`를 앞으로 당기는 게 유일한 해법 — 단 안무 자체가 후딜이 긴 동작일 수 있어 포즈 재확인 필요 |
+2 | **캔슬 윈도우 늦은 몽타주 3개** | `Combo_02_02`(1.03s/f62) · `Combo_05_03`(1.17s/f70) · `Combo_02_03`(1.23s/f74) — 08-26 재실측: 위치 그대로(프레임=60fps 기준). **단 버퍼가 0.8초로 커져 상황 완화** — 타 시작 직후 0.2~0.4초 안의 이른 연타만 증발. 선택지 = `KDAnimNotifyState_CancelWindow` 당기기(안무 후딜 포즈 확인 필요) vs 현행 수용. 판단=승환 |
 4 | ~~발사체 리팩토링 3건~~ **2/3 이미 닫힘** (2026-08-13 실측) | ① 델리게이트 바인딩 → `KDProjectile.cpp:53~54`에서 **`BeginPlay`로 이미 이동됨**(08-10 `b36c1c2`) ✅<br>② `GA_Dodge`가 발사자를 안 봄 → `GA_Dodge.cpp:198`에 **`&& Proj->GetInstigator() != Avatar` 이미 있음** ✅<br>③ faction 게이트 비대칭 → `KDProjectile.cpp:72~77`이 "적→적 통과"만 검사. **살아 있으나 소환수·동료가 생겨야 터진다. 급하지 않음**<br>곁가지 = `InitProjectile`에 방향을 정하는 줄이 없다(스폰 회전을 그대로 씀). 버그가 아니라 현재 설계 |
 5 | `EnterNode`가 `Context`를 안 받는다 | 트리를 지상→공중 순차 조회로 우회 중. 노드 ID가 안 겹쳐서 지금은 확실하지만, 겹치는 ID가 생기면 깨진다 |
 6 | `OnInActionTagChanged` 재호출 | GA가 겹치면 `NewCount` 1→2로 재호출. 같은 소켓 재부착이라 결과 동일. **제약**: `AttachWeaponToHand()`에 1회성 작업(사운드·이펙트) 넣지 말 것 |
@@ -400,7 +400,7 @@ C:/Users/asdasd/Desktop/Obsidian_organize/ProjectKD/notes/_세션브릿지.md
 8 | ~~`AM_SB_Combo_05_03` 첫 `Shot` 노티 각도~~ **닫힘** (2026-08-13 MCP 실측) | **5개 전부 `muzzleDir=True` / `halfAngle=180` / `ignoreHitStop=True`로 이미 통일돼 있다.** "1번만 10, 나머지 179"는 지나간 기록<br>**총격 노티 전수 = 13개 몽타주 20발.** 05_03(5발)만 위 설정이고 **나머지 12개는 전부 기본값**(`muzzleDir=False` / `halfAngle=0`→GA 값 20도 / `ignoreHitStop=False`)<br>→ 08-13에 붙인 총격 자동 조준은 **12개 몽타주 15발에 먹는다.** 05_03은 각도 180(=전방위)이라 방향이 판정에 영향 없음 |
 9 | ~~360° 콘이면 한 적이 5번 맞는다~~ **의도로 확정** (2026-08-13 승환) | 발당 데미지 분배 **안 한다.** 5연타 전방위가 의도. `ignoreHitStop=True`도 그 의도와 맞물림(SB도 다단히트 스텝은 히트스톱을 끈다). `ShotRange` 500도 유지 |
 10 | **디버그 구체 그리기 미적용** ★ | 각도 90° 이상이면 `DrawDebugSphere`로 대체. **05_03이 정확히 그 경우라 지금 그 판정 범위를 눈으로 볼 방법이 없다**(`DrawDebugCone`이 180°에서 뒤쪽 한 점으로 뭉쳐 바늘로 보임 — `LineBatchComponent.cpp:515~546`). 판정은 정상, 그리기만 문제<br>코드 = `GA_ShotBlast.cpp:107`의 `ConeRad` 선언을 `else` 안으로 옮기고 `if (HalfAngle >= 90.f) DrawDebugSphere(World, Origin, ShotRange, 24, ...)` 분기. include 불필요(`:163`에서 이미 사용) |
-11 | **일반 공격 자동 조준(미착수)** | 락온 안 걸었을 때 가장 가까운 적 쪽으로 자동 회전. `ULockOnComponent::FindBestTarget()`이 public이라 재사용 가능 — `GA_PlayerMeleeAttackBase::OnActivated`의 락온 게이트만 바꾸면 됨. 미결 = 카메라 정면 기준(현재 동작, ±45°)이냐 스틱 입력 방향 기준이냐 |
+11 | ~~일반 공격 자동 조준(미착수)~~ ✅**구현돼 있음** (2026-08-26 실측) | `UKDGameplayAbility::FindAutoAimTarget()`(락온 중=락온 타겟 / 아니면 `FindBestTarget` 재사용) + `KDGameplayAbility_PlayerMelee.cpp:127`에서 Range 500 · 콘 180° 로 사용 중. 🟡 **승환이 아는 수정거리 있음**(내용 미기재 — 지시 대기) |
 12 | **`UKDPlayerAbilityInputComponent.cpp` 352줄** | §1 Component 300줄 선 초과. 분리 여부 미결 |
 13 | **`DA_Sword_Bandit` 등 적 정의 4개 `PoiseDamageByAttack` 키 미확정 관측** | python 조회 결과 비어 보이나 조회 한계일 수 있음. 에디터에서 직접 확인 필요 |
 
@@ -444,7 +444,8 @@ Run_Aim 미사용  구멍 아님 — 조준 중 속도가 167 클램프라 달�
 (b) 전환식     완전 미착수 — Gun 콤보트리 없음, Combo_Attack_Shoot 5클립 참조 0건. 안 간다
 ```
 
-**남은 잔가지 2개** = ①이동 중 사격(Walk_Shoot 클립 미사용 — 상체 분리로 자연스러운지 PIE 확인) ②총구 이펙트 GC 경로(08-12부터 미해결).
+~~남은 잔가지 2개~~ → **둘 다 종결 (2026-08-26)** = ①이동 중 사격 PIE 정상(승환 실측) ②총구 이펙트는 GC 대신
+**탄 궤적으로 해결** — `GA_Shoot -> BP_Bullet -> NS_Laser` 체인 실측. 콤보 속 히트스캔(`GA_ShotBlast`)엔 궤적 없음(현행 의도).
 
 아래 SB 스탠스 속도표는 참고 자료로 유지.
 
@@ -473,11 +474,20 @@ SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·�
 방향: **07 유지 + 14~16 `Attack_Air_to_Floor`를 마무리로 붙여 지상 콤보로 연결**(공중 공격 → 지상 찍기 → 자연스럽게 지상 콤보).
 `02_Attack` 폴더는 **전부 루트모션** — InPlace 클립이 없다. "제자리 공중 공격"은 RM을 끄는 게 아니라 **이동량 0인 클립**으로 얻어야 한다.
 
-### ③ 스태미나 폐기
-점프·달리기 자원 폐기 결정(스킬 코스트는 유지). SB 644행 실측으로 검증됨(SB의 Stamina = 적 격파 게이지). **미착수.** 소모처 3곳 값 0 + BP Cost GE 함정 주의.
+### ③ 스태미나 폐기 — ✅ 실행돼 있었다 (2026-08-26 실측. 이 항목은 종결)
+```
+소모 GE 3개(Dodge/FullSprint/RegenBlock)   참조 0 고아 — 어떤 GA·컴포넌트도 안 씀
+GA_Dodge · GA_HeavyCombo Cost              null
+SprintComponent                            코스트 프로퍼티 자체가 없음
+살아있는 것                                  GE_StaminaRegen (BP_PlayerState) + Stamina 어트리뷰트
+스킬 코스트 몫                               C++ UKDGameplayEffect_StaminaCost 뼈대 보존 — 스킬 만들 때 꽂는다
+```
+잔가지 = 고아 GE 3개를 지울지(에셋 정리 때 같이).
 
-### ④ 락온 애니
-락온 상태 전용 애니가 보류 상태. 검 콤보 → 총 순서로 미뤄뒀다.
+### ④ 락온 애니 — 보류 유지. 단 "미배선"이 실측으로 확정됐다 (2026-08-26)
+`ABP_SB` 바이너리에 LockOn/Strafe 0건 / MM DB 9개 = Unarmed·Combat·Aim 뿐(락온 카테고리 없음).
+현재 락온 중 = **속도만 280 감속, 애니는 일반 로코 그대로.** 발견된 락온 BS·클립은 전부 고아 또는 버터 잔재.
+착수 시 재료 = 팩 Combat Walk/Run 방향 세트 (Aim DB 만들 때 쓴 Chooser 패턴 재사용).
 
 ### ⑤ 미착수 폴리싱
 ~~트레일 NS 27개 미배정~~ ✅ 완료 (07-31) / ~~사운드 3대 배선~~ ✅ 완료 (아래) / ~~데미지 GE 26노드~~ ✅ DamageMultiplier 방식으로 대체 배선됨 / LoP식 방사형 회피 이펙트 보류.
