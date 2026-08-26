@@ -11,7 +11,74 @@
 
 ---
 
-## 🟢 2026-08-25 (2) — B2 완료 + 상태 바 버그 해결. **다음 세션은 여기부터**
+## 🔴 2026-08-26 — 클래스 개명 68개. **에디터 검증이 남았다. 새 세션은 여기부터**
+
+dev-log = `2026-08-26-class-naming-convention.md` · `2026-08-26-poise-context-channel.md`
+
+### 지금 상태
+
+```
+빌드            통과 (E·D·C 한 번에)
+정적 검사 3종    전부 0건 — 깨진 include / generated.h 불일치 / 구 이름 잔존
+커밋            456fc3d(E) · a510235(D) · 56ff9a4(C) + 개명 dev-log
+에디터          켜져 있음. ⚠️ MCP 연결이 끊긴 상태라 조회를 못 했다
+```
+
+### 🔴 새 세션이 이어서 할 일 — 순서대로
+
+```
+1  MCP 연결 확인          에디터 우하단 ● MCP :3000 / 안 되면 /mcp 재연결
+                         그래도 안 되면 아래 "MCP 없이" 절 참조
+
+2  ★ BP 19개 부모·태그     GA 22개가 한꺼번에 바뀐 자리. 개명의 진짜 관문
+                         부모가 Project_KD.KDGameplayAbility_* 로 나오나
+                         ★ AbilityTags 가 빈 BP 가 있나
+                         (2026-08-26 아침 GA_SprintAttack 이 정확히 여기서 죽어 있었다)
+
+3  ★ 몽타주 노티            Notifies 배열이 비지 않았나 = 리다이렉트가 먹는가
+                         ANS_MeleeTrace 의 per-window 오버라이드 값도
+
+4  DA 값                   적 DA 6개 MaxPoise 15/10/25 · KnockbackDistance 200
+                         · PoiseDamageByAttack 3키 (Parry 4.0 / Light 0.5 / Heavy 0.9)
+                         DA_ComboTree 2개 노드 26개
+
+5  PIE 한 바퀴             콤보 · 패링 3종 · 회피 · 처형 · 총격 · 넉백 · 공중 콤보
+
+6  몽타주 전수 재저장        C그룹 마무리. 리다이렉트 의존을 끊는다 -> Content 커밋
+                         ⚠️ 대량 쓰기라 승환 승인 후
+
+7  푸시                    현재 로컬에만 4커밋 쌓여 있다
+```
+
+> 🔴 **2~5 통과 전엔 아무 에셋도 저장하지 말 것.** 리다이렉트가 실패한 상태로 저장하면
+> 깨진 상태가 에셋에 구워진다. 되돌릴 지점 = Content `f5da3fe`.
+
+> 🔴 **6 전에 `DefaultEngine.ini` 의 ClassRedirects 68줄을 지우면 안 된다.**
+> 지금 에셋들을 붙잡고 있는 유일한 다리다.
+
+### MCP 없이 검증하는 법
+
+에디터 `Output Log` 하단 Cmd 드롭다운 -> `Python` 에서 조회 스크립트를 직접 돌린다.
+읽기 전용이라 안전하다. 스크립트는 아래 항목을 뽑으면 된다.
+
+```
+BP        get_tag_value('ParentClass') + CDO 의 AbilityTags
+적 DA     MaxPoise · KnockbackDistance · PoiseDamageByAttack
+콤보 트리  Nodes 길이
+몽타주     notifies 배열 길이
+```
+
+### 문서 파급 — 아직 안 함
+
+```
+docs/PROJECT_OVERVIEW.md   §2 시스템 맵 · 상속 트리에 옛 클래스명이 전부 남아 있다
+볼트 notes/코드구조/ 10문서  브릿지로 갱신 요청 등록함 (2026-08-26)
+docs/reference/네이밍 규약   Op 예시만 KD 로 (🔒 승환)
+```
+
+---
+
+## ✅ 2026-08-25 (2) — B2 완료 + 상태 바 버그 해결
 
 dev-log = `2026-08-25-refactor-b2-onhitreceived.md` · `2026-08-25-enemy-statebar-resubscribe.md`
 
