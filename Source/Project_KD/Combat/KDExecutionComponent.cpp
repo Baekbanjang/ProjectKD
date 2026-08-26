@@ -4,7 +4,7 @@
 #include "Combat/KDExecutionProfile.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "AbilitySystem/Attributes/AS_CharacterBase.h"
+#include "AbilitySystem/Attributes/KDCharacterAttributeSet.h"
 #include "GameplayEffect.h"
 #include "TimerManager.h"
 #include "Animation/AnimMontage.h"
@@ -71,7 +71,7 @@ void UKDExecutionComponent::HandleExecution()
 	bDeathblow = true;
 	if (ExecutionProfile && ExecutionProfile->bSurvivable)
 	{
-		const float Health = ASC.IsValid() ? ASC->GetNumericAttribute(UAS_CharacterBase::GetHealthAttribute()) : 0.f;
+		const float Health = ASC.IsValid() ? ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetHealthAttribute()) : 0.f;
 		bDeathblow = Health <= ExecutionProfile->DeathblowHealthThreshold;
 	}
 
@@ -148,7 +148,7 @@ void UKDExecutionComponent::FinishExecution()
 	if (bDeathblow)
 	{
 		bResolvingExecution = true;
-		OwnerASC->SetNumericAttributeBase(UAS_CharacterBase::GetHealthAttribute(), 0.f);
+		OwnerASC->SetNumericAttributeBase(UKDCharacterAttributeSet::GetHealthAttribute(), 0.f);
 	}
 	// 생존 처형(엘리트, Health>임계) = 칩 데미지만(비치명). 미지정이면 데미지 없음(HP는 일반 공격으로만).
 	else if (ExecutionProfile && ExecutionProfile->SurviveDamageEffectClass)
@@ -165,7 +165,7 @@ void UKDExecutionComponent::FinishExecution()
 
 	// State.Dead 태그/델리게이트 타이밍 의존 없이 Health 값으로 직접 판정(동기 갱신 보장).
 	// 생존 → 플래그 해제(이후 일반 사망은 죽음 몽타주 정상). 사망 → 래치 유지(지연 HandleDeath가 소비).
-	const float Health = OwnerASC->GetNumericAttribute(UAS_CharacterBase::GetHealthAttribute());
+	const float Health = OwnerASC->GetNumericAttribute(UKDCharacterAttributeSet::GetHealthAttribute());
 	const bool bSurvived = Health > 0.f;
 	if (bSurvived)
 	{

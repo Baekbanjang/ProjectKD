@@ -5,7 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/AS_Combat.h"
+#include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
 #include "Combat/KDProjectile.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
@@ -64,7 +64,7 @@ AKDProjectile* UKDAbilityStatics::SpawnDamageProjectile(
 	if (!World) return nullptr;
 
 	// 데미지 Spec
-	const float AttackPower = InstigatorASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute());
+	const float AttackPower = InstigatorASC->GetNumericAttribute(UKDCombatAttributeSet::GetAttackPowerAttribute());
 	FGameplayEffectContextHandle Context = InstigatorASC->MakeEffectContext();
 	Context.AddSourceObject(Avatar);
 

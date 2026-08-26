@@ -2,8 +2,8 @@
 
 #include "Enemy/KDEnemyBaseCharacter.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/AS_CharacterBase.h"
-#include "AbilitySystem/Attributes/AS_Combat.h"
+#include "AbilitySystem/Attributes/KDCharacterAttributeSet.h"
+#include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
 #include "Abilities/GameplayAbility.h"
 #include "Combat/KDHitFeedbackComponent.h"
 #include "Combat/KDStaggerComponent.h"
@@ -34,8 +34,8 @@ AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
 {
 	// ASC = Pawn 직접 소유 (플레이어는 PlayerState)
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	CharacterAttributes = CreateDefaultSubobject<UAS_CharacterBase>(TEXT("CharacterAttributes"));
-	CombatAttributes = CreateDefaultSubobject<UAS_Combat>(TEXT("CombatAttributes"));
+	CharacterAttributes = CreateDefaultSubobject<UKDCharacterAttributeSet>(TEXT("CharacterAttributes"));
+	CombatAttributes = CreateDefaultSubobject<UKDCombatAttributeSet>(TEXT("CombatAttributes"));
 
 	// Minimal 모드 — 큐만 복제
 	AbilitySystemComponent->SetIsReplicated(true);
@@ -88,14 +88,14 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 	if (ensureMsgf(EnemyDefinition != nullptr, TEXT("EnemyDefinition unset on %s — using AttributeSet defaults"), *GetName()))
 	{
 		// 델리게이트 바인딩 전에 스탯 set — 순서 고정
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetMaxHealthAttribute(), EnemyDefinition->MaxHealth);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetHealthAttribute(),    EnemyDefinition->MaxHealth);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetMaxPoiseAttribute(),  EnemyDefinition->MaxPoise);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetPoiseAttribute(),     EnemyDefinition->MaxPoise);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_Combat::GetAttackPowerAttribute(),      EnemyDefinition->AttackPower);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_Combat::GetDefenseAttribute(),          EnemyDefinition->Defense);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetMaxShieldAttribute(), EnemyDefinition->MaxShield);
-		AbilitySystemComponent->SetNumericAttributeBase(UAS_CharacterBase::GetShieldAttribute(),    EnemyDefinition->MaxShield);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetMaxHealthAttribute(), EnemyDefinition->MaxHealth);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetHealthAttribute(),    EnemyDefinition->MaxHealth);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetMaxPoiseAttribute(),  EnemyDefinition->MaxPoise);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetPoiseAttribute(),     EnemyDefinition->MaxPoise);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCombatAttributeSet::GetAttackPowerAttribute(),      EnemyDefinition->AttackPower);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCombatAttributeSet::GetDefenseAttribute(),          EnemyDefinition->Defense);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetMaxShieldAttribute(), EnemyDefinition->MaxShield);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetShieldAttribute(),    EnemyDefinition->MaxShield);
 
 
 		// 싱글 전제 — 멀티 전환 시 HasAuthority 게이트 필요
@@ -114,7 +114,7 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 	}
 
 	// Pawn 구독 = Health -> 사망 / Poise -> StaggerComp / 처형 -> ExecutionComp
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UAS_CharacterBase::GetHealthAttribute())
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UKDCharacterAttributeSet::GetHealthAttribute())
 		.AddUObject(this, &AKDEnemyBaseCharacter::OnHealthChanged);
 
 	// Poise 차감 + 넉백 = Pawn / 처형 트리거 = ExecutionComp 별도 구독
@@ -519,9 +519,9 @@ bool AKDEnemyBaseCharacter::ApplyPoiseDamage(const FGameplayEventData* Payload)
 
 
 	// 0 도달 시 StaggerComp.OnPoiseChanged 가 이 줄 안에서 BeginStagger 호출
-	const float Cur = AbilitySystemComponent->GetNumericAttribute(UAS_CharacterBase::GetPoiseAttribute());
+	const float Cur = AbilitySystemComponent->GetNumericAttribute(UKDCharacterAttributeSet::GetPoiseAttribute());
 	AbilitySystemComponent->SetNumericAttributeBase(
-		UAS_CharacterBase::GetPoiseAttribute(), FMath::Max(Cur - PoiseDamage, 0.f));
+		UKDCharacterAttributeSet::GetPoiseAttribute(), FMath::Max(Cur - PoiseDamage, 0.f));
 
 	return IsStaggered();
 }

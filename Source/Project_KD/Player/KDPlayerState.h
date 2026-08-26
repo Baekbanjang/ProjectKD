@@ -9,8 +9,8 @@
 
 class UGameplayEffect;
 class UAbilitySystemComponent;
-class UAS_Combat;
-class UAS_Player;
+class UKDCombatAttributeSet;
+class UKDPlayerAttributeSet;
 class UGameplayAbility;
 
 UCLASS()
@@ -32,10 +32,10 @@ protected:
 
 	// 플레이어 전용 어트리뷰트 (Stamina, Ammo)
 	UPROPERTY()
-	TObjectPtr<UAS_Player> PlayerAttributes;
+	TObjectPtr<UKDPlayerAttributeSet> PlayerAttributes;
 
 	UPROPERTY()
-	TObjectPtr<UAS_Combat> CombatAttributes;
+	TObjectPtr<UKDCombatAttributeSet> CombatAttributes;
 
 	// 시작 시 적용할 GA
 	UPROPERTY(EditDefaultsOnly, Category = "GAS")

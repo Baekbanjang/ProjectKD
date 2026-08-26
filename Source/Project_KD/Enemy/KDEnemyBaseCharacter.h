@@ -9,8 +9,8 @@
 
 class UKDKnockbackComponent;
 class UWidgetComponent;
-class UAS_CharacterBase;
-class UAS_Combat;
+class UKDCharacterAttributeSet;
+class UKDCombatAttributeSet;
 class UGameplayAbility;
 class UBehaviorTree;
 class UKDHitFeedbackComponent;
@@ -117,10 +117,10 @@ public:
 protected:
 	// 생성자에서 직접 생성 — Pawn 직접 소유
 	UPROPERTY()
-	TObjectPtr<UAS_CharacterBase> CharacterAttributes;
+	TObjectPtr<UKDCharacterAttributeSet> CharacterAttributes;
 
 	UPROPERTY()
-	TObjectPtr<UAS_Combat> CombatAttributes;
+	TObjectPtr<UKDCombatAttributeSet> CombatAttributes;
 
 	// 적 1종 정의 — 스탯 | AI 거리 | 전투 | StartupAbilities | 공격셋
 	// 적용 시점 = PossessedBy

@@ -1,14 +1,14 @@
 #include "Player/KDPlayerState.h"
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Attributes/AS_Combat.h"
-#include "AbilitySystem/Attributes/AS_Player.h"
+#include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
+#include "AbilitySystem/Attributes/KDPlayerAttributeSet.h"
 #include "Abilities/GameplayAbility.h"
 
 AKDPlayerState::AKDPlayerState()
 {
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	PlayerAttributes = CreateDefaultSubobject<UAS_Player>(TEXT("PlayerAttributes"));
-	CombatAttributes = CreateDefaultSubobject<UAS_Combat>(TEXT("CombatAttributes"));
+	PlayerAttributes = CreateDefaultSubobject<UKDPlayerAttributeSet>(TEXT("PlayerAttributes"));
+	CombatAttributes = CreateDefaultSubobject<UKDCombatAttributeSet>(TEXT("CombatAttributes"));
 
 	// Standard GAS setup — Mixed mode for player-owned ASC
 	AbilitySystemComponent->SetIsReplicated(true);

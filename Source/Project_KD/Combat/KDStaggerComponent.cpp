@@ -5,8 +5,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffect.h"
 #include "TimerManager.h"
-#include "AbilitySystem/Attributes/AS_CharacterBase.h"
-#include "AbilitySystem/Effects/GE_Stagger.h"
+#include "AbilitySystem/Attributes/KDCharacterAttributeSet.h"
+#include "AbilitySystem/Effects/KDGameplayEffect_Stagger.h"
 #include "KDGameplayTags.h"
 
 UKDStaggerComponent::UKDStaggerComponent()
@@ -14,7 +14,7 @@ UKDStaggerComponent::UKDStaggerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	// F10 GE 기본값 = C++ base (테스트 즉시 동작). 튜닝 필요 시 BP child로 교체.
-	StaggerEffectClass = UGE_Stagger::StaticClass();
+	StaggerEffectClass = UKDGameplayEffect_Stagger::StaticClass();
 }
 
 void UKDStaggerComponent::BeginPlay()
@@ -27,7 +27,7 @@ void UKDStaggerComponent::BeginPlay()
 	ASC = OwnerASC;
 
 	// AttributeSet는 데이터만 — 구독 및 경직 판정은 컴포넌트 여기서.
-	OwnerASC->GetGameplayAttributeValueChangeDelegate(UAS_CharacterBase::GetPoiseAttribute())
+	OwnerASC->GetGameplayAttributeValueChangeDelegate(UKDCharacterAttributeSet::GetPoiseAttribute())
 		.AddUObject(this, &UKDStaggerComponent::OnPoiseChanged);
 }
 
@@ -97,8 +97,8 @@ void UKDStaggerComponent::RecoverFromStagger()
 	}
 
 	// 경직 사이클 종료 시 Poise 풀 리셋 — 재경직하려면 다시 0까지 깎아야 함.
-	const float MaxPoise = OwnerASC->GetNumericAttribute(UAS_CharacterBase::GetMaxPoiseAttribute());
-	OwnerASC->SetNumericAttributeBase(UAS_CharacterBase::GetPoiseAttribute(), MaxPoise);
+	const float MaxPoise = OwnerASC->GetNumericAttribute(UKDCharacterAttributeSet::GetMaxPoiseAttribute());
+	OwnerASC->SetNumericAttributeBase(UKDCharacterAttributeSet::GetPoiseAttribute(), MaxPoise);
 
 	// Pawn resumes the brain on this.
 	OnStaggerRecovered.Broadcast();
