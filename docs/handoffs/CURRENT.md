@@ -431,7 +431,22 @@ C:/Users/asdasd/Desktop/Obsidian_organize/ProjectKD/notes/_세션브릿지.md
 
 코드가 아니라 **판단이 필요한** 것들. 착수 전에 승환이 정해야 한다.
 
-### ① 스탠스 체계
+### ① 스탠스 체계 — ✅ (a) 홀드 조준으로 구현·확정돼 있었다 (2026-08-26 실측. 이 항목은 종결)
+
+```
+홀드 방식      IA_Aim Started/Completed 바인딩 (KDPlayerController.cpp:84-85) — 누르는 동안만
+조준 감속      Aiming 태그 시 Speed = min(Speed, AimMoveSpeed 167)  (KDPlayerCharacter.cpp:266)
+              167 = SB 100 이 아니라 팩 걷기 클립 실측 속도에 맞춘 튜닝값
+락온 속도      LockOnMoveSpeed 280 (KDPlayerCharacter.h:124) — SB 실측과 동일
+조준 로코      MotionMatching/DataBase/Aim/ PSD 3개 -> CHT_LocomotionDatabase -> ABP_SB
+              + AO_SB_Aim (9포즈 전부 사용) + Aim_the_Target Start/Loop/Shoot/End 몽타주
+Run_Aim 미사용  구멍 아님 — 조준 중 속도가 167 클램프라 달리며 조준하는 상황이 없다
+(b) 전환식     완전 미착수 — Gun 콤보트리 없음, Combo_Attack_Shoot 5클립 참조 0건. 안 간다
+```
+
+**남은 잔가지 2개** = ①이동 중 사격(Walk_Shoot 클립 미사용 — 상체 분리로 자연스러운지 PIE 확인) ②총구 이펙트 GC 경로(08-12부터 미해결).
+
+아래 SB 스탠스 속도표는 참고 자료로 유지.
 
 > **★2026-07-31 — 실목록과 수치를 찾았다.** `Content/Local/Data/CharacterStanceTable.json`. 스탠스가 곧 이동 속도 세트다.
 
@@ -445,18 +460,13 @@ C:/Users/asdasd/Desktop/Obsidian_organize/ProjectKD/notes/_세션브릿지.md
 | `P_Eve_Fishing` | 0 | 0 | 0 | 0 |
 
 **여기서 나오는 것 3가지**
-- **총 스탠스 = 100. 걷기(150)보다 느리다.** "총은 딜링이 아니라 근접의 준비 도구"라는 §1-B 해석이 수치로 확증됐다. **사격 착수 시 이 값을 그대로 쓴다**
-- **락온 전용 속도가 따로 있다** (500 → 280, 44% 감속). 우리는 이 개념이 없다
+- **총 스탠스 = 100. 걷기(150)보다 느리다.** "총은 딜링이 아니라 근접의 준비 도구"라는 §1-B 해석이 수치로 확증됐다. (우리 실적용은 167 — 클립 발맞춤)
+- **락온 전용 속도가 따로 있다** (500 → 280, 44% 감속). ~~우리는 이 개념이 없다~~ → LockOnMoveSpeed 280 으로 적용돼 있다 (08-26 실측)
 - **스프린트가 없다.** SB는 150/300/500 3단계. 우리는 250/500/700/800 4단계로 **전반적으로 빠르다** — 우리 Jog(500)가 SB 최고속과 같다
 
 SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·동결·튜토리얼)`로 나뉜다. **평시 스탠스가 없다** — Eve는 항상 무장 상태다.
 우리 초안(승환): `Default(평시 전투 = Sword&Gun) / Gun(진짜 사격만) / 사망`.
-→ **사격 로직 착수 전까지 보류 결정됨**(YAGNI). 사격을 시작할 때 이 표를 확정해야 한다.
-
-> **2026-07-31 갱신 — 이제 확정할 재료가 다 모였다.** §1-B의 사격 조사 참조.
-> 팩 구성이 **두 설계를 다 지원한다**: (a) SB식 홀드 조준(임시 모드, 놓으면 검 복귀) / (b) 스탠스 전환식(검·총 대등, `Combo_Attack_Shoot` 4타 사용).
-> **권장은 (a)** — 검 콤보 구조를 안 건드리고 MM Chooser 컬럼 하나로 조준 로코모션이 들어온다. (b)는 `DA_GunComboTree`가 하나 더 필요하고, 그건 아직 값도 안 채운 콤보 트리를 하나 더 이고 가는 것.
-> **사격 착수 전에 확정할 것.**
+→ ~~사격 로직 착수 전까지 보류~~ → **(a) 홀드 조준으로 구현 완료됐다** (상단 08-26 실측 참조. (a)/(b) 비교 원문은 archive §1-B).
 
 ### ② 공중 콤보 재설계
 `Air_01`이 **총 클립**이라 1타에 검 판정이 없다(`MeleeTrace` 없음이 의도).
