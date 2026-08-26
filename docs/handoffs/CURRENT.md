@@ -32,8 +32,10 @@ dev-log = `2026-08-26-class-naming-convention.md` · `2026-08-26-poise-context-c
 > → BP 3개 재저장 + 에디터 재시작으로 복구(맵 재덤프 + PIE 확인) → **전수 재저장 312개**
 > (Content `372dcd6`·`f408086`) → 검증 3중(풀패스 옛 참조 0건) → 코드 푸시 완료.
 >
-> 🔴 **남은 것 = `DefaultEngine.ini` +ClassRedirects 80줄 삭제 시기 판단.** 며칠 문제없이
-> 돌면 삭제. 단 두 폴더 밖 stale 에셋(killdong 잔재)은 재저장 안 했으므로 지우면 그쪽 노티가 죽는다.
+> ✅ **ClassRedirects 80줄 삭제까지 완료 (`19a931a`).** 맵 검사에서 걸린 `LV0_Test` 잔존
+> 임포트 13개도 재저장(Content `7303945`) 후 삭제. 재시작 검증(큐 맵·PIE) 통과.
+> ⚠️ 두 폴더 밖 killdong 잔재 몽타주의 노티는 이제 죽어 있다(폐기 라인, 감수 방침).
+> **개명 작업 완전 종결 — 다음 = C1 콤보 노드 값 채우기.**
 
 <details><summary>종전 할 일 목록 원문 (완료됨, 접힘)</summary>
 
