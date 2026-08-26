@@ -470,26 +470,27 @@ SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·�
 락온 상태 전용 애니가 보류 상태. 검 콤보 → 총 순서로 미뤄뒀다.
 
 ### ⑤ 미착수 폴리싱
-~~트레일 NS 27개 미배정~~ **✅ 완료 (2026-07-31, Content `4f1ac60`)** / **사운드 노티 없음** / 데미지 GE 26노드 비어 있음 / LoP식 방사형 회피 이펙트.
+~~트레일 NS 27개 미배정~~ ✅ 완료 (07-31) / ~~사운드 3대 배선~~ ✅ 완료 (아래) / ~~데미지 GE 26노드~~ ✅ DamageMultiplier 방식으로 대체 배선됨 / LoP식 방사형 회피 이펙트 보류.
 
-> **사운드가 이제 제일 큰 구멍이다.** 트레일 27개가 붙어서 **볼 건 생겼는데 들을 게 없다.**
-> 노티 자리는 이미 잡혀 있다(`ANS_MeleeTrace` 위치 그대로) — 사운드 노티를 얹는 작업이다. SB도 `FootStepL/R` + `CheckPhyMat`(물리재질 연동)으로 발소리를 따로 관리한다.
+> **★ 사운드는 2026-08-26 재실측으로 "구멍" 딱지를 뗐다** — 상세 = 메모리 `reference_project_sound_inventory`
+> ```
+> 발소리     ✅ 03_Walk 112 + 04_Run 84 시퀀스에 PlaySound 직결 -> Audio/Footstep/ MetaSound 11종
+> 검 타격    ✅ 큐 3개를 콤보 몽타주 23개가 참조. Swing 엔 SW_Slash 믹스 적용됨.
+>            톤은 "소재 대기"(승환 방침 — 괜찮은 소리 올 때까지 현행 유지). Audio/Sword/ 미배선 후보 6개
+> 총성       ✅ Audio/Shotgun/ 땜빵 소재를 총 몽타주 3개에 노티 배선 (승환: 별로지만 유지)
+> ```
+> **남은 진짜 구멍 3종 (재료 임포트됨·배선 0)** = 발검/납검음(소재도 없음) · 피격 보이스(Audio/HitReact/ 7개) · UI음(Audio/UI/ 4개). 우선순위 낮음 — 뒤로 미룸 확정(2026-08-26 승환).
 
-> **★ 2026-08-13 MCP 전수 실측으로 그림이 바뀌었다 — 상세 = 메모리 `reference_project_sound_inventory`**
->
-> | | 실제 |
-> |---|---|
-> **발소리** | ❌"전부 없다" → ✅ **`/Game/MotionMatchingAnimation/Audio` 에 286개 이미 있다.** 걷기30·달리기29·스트레이프29·착지20·점프17·구르기9 + `MSS_FoleySound_*` **동작별 래퍼 13개**. **없는 건 재료가 아니라 배선.** Sonniss 없이 지금 붙일 수 있다 |
-> **검 소리** | 배선 완료(08-11). `SC_Sword_Hit`→`Metal_Hit_Flesh_1~20` / `SC_Sword_Swing`→`Metal_Light_Whoosh_1~12` / `_Heavy`→`Metal_Heavy_Whoosh_1~10`. **랜덤 풀은 넉넉하다** |
-> **"빈 철봉" 정체** | `Metal_Light_Whoosh` = **공기 가르는 소리만 든 팩.** 금속 울림 성분이 없다. → `SlashTrailElemental/Resource/SW_Basic_Slash`·`SW_Distortion_Slash` 를 큐 안에서 Mixer 로 겹치면 붙는다(⚠️ 미시험) |
-> **총성** | **0개.** Sonniss GDC 7.47GB 필요. `Gun_and_Sword` 팩엔 사운드가 하나도 없다 |
-> **그 밖 없는 것** | 피격 보이스·신음 / UI / 발검·납검 금속음 = 전부 0. 앰비언트는 MM 샘플 딸림 4개뿐 |
->
-> 우리가 만든 사운드 에셋은 `/Game/SB_Style_GameProject/Audio/Combat` **큐 3개가 전부**다. `/Game/Assets/Sfx` 2개는 길동 잔재.
-
-### ⑥ 카메라 (2026-07-31 신규)
-1단계 값 표는 §1-B에 **완성돼 있다**(BP 6 + 코드 1줄, 30분). 2단계 스플라인 돌리도 실현 가능 확인됨.
-**판단 필요**: 카메라를 지금 하나, 사격 뒤로 미루나. 승환은 "시점이 중요하다"고 했고, 값 이식은 30분이라 사격 전에 끼워넣을 수 있다.
+### ⑥ 카메라 — ✅ 1·2단계 전부 완료 (2026-08-26 실측 확인. 이 항목은 종결)
+```
+1단계 값 이식     07-31 완료 (Content e542cb3). 08-26 CDO 실측 재확인 —
+                 382 / Y40 / 랙 on 19·57 / Probe 10 / 피치 -89~+45 / FOV 75 + 커브 3키 전부 SB와 일치
+                 SocketOffset.Z 만 104 (표의 111에서 승환 튜닝, 유지)
+2단계 스플라인 돌리  구현돼 있음 — UKDSpringArmComponent(SampleRail) + 레일 2개
+                 CameraDollySpline 3점 = SB 기본 궤도 그대로 / AimDollySpline = 자체 튜닝(SB엔 데이터 없음)
+```
+남은 것 = 작업 아님. ①카메라 레일 재학습(승환 공부 — 완성 코드+볼트 06_스플라인_돌리 같이 보며, 헷갈린 지점 3개)
+②참고: LagSpeed 19 는 SB 최고속 500 기준 — 우리 800 에서 같은 체감 원하면 30 (현 체감 문제 없으면 유지)
 
 ---
 
