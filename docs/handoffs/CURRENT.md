@@ -24,7 +24,18 @@ dev-log = `2026-08-26-class-naming-convention.md` · `2026-08-26-poise-context-c
 에디터          켜져 있음. ⚠️ MCP 연결이 끊긴 상태라 조회를 못 했다
 ```
 
-### 🔴 새 세션이 이어서 할 일 — 순서대로
+### ✅ 1~7 전부 완료 (2026-08-26 오후) — 개명 에디터 검증 종결
+
+> dev-log = `2026-08-26-rename-editor-verification.md`. 요약:
+> 검증 1~4 통과 → PIE 에서 **처형 GC 만 사망** → 원인 = 큐 매니저 스캔에 ClassRedirects
+> 안 먹음(개명 부모를 둔 GCN BP 3개가 맵 누락, 전조 링·히트 임팩트도 같이 죽어 있었다)
+> → BP 3개 재저장 + 에디터 재시작으로 복구(맵 재덤프 + PIE 확인) → **전수 재저장 312개**
+> (Content `372dcd6`·`f408086`) → 검증 3중(풀패스 옛 참조 0건) → 코드 푸시 완료.
+>
+> 🔴 **남은 것 = `DefaultEngine.ini` +ClassRedirects 80줄 삭제 시기 판단.** 며칠 문제없이
+> 돌면 삭제. 단 두 폴더 밖 stale 에셋(killdong 잔재)은 재저장 안 했으므로 지우면 그쪽 노티가 죽는다.
+
+<details><summary>종전 할 일 목록 원문 (완료됨, 접힘)</summary>
 
 ```
 1  MCP 연결 확인          에디터 우하단 ● MCP :3000 / 안 되면 /mcp 재연결
@@ -55,6 +66,8 @@ dev-log = `2026-08-26-class-naming-convention.md` · `2026-08-26-poise-context-c
 
 > 🔴 **6 전에 `DefaultEngine.ini` 의 ClassRedirects 68줄을 지우면 안 된다.**
 > 지금 에셋들을 붙잡고 있는 유일한 다리다.
+
+</details>
 
 ### MCP 없이 검증하는 법
 
@@ -189,10 +202,14 @@ PoiseDamageByAttack Parry 4.0 / Light 0.5 / Heavy 0.9  <- 평타로도 깎이게
                     위젯이 SizeBox_Poise 폭을 MaxPoise x 10 으로 잡는 구조.
                     -> 위젯 조정 보류 (승환 판단)
 공중 넉백           AccumulateMode::Override 가 중력 누르는지 미검증
+Combat.Execution 큐  받는 GCN 이 프로젝트 전체에 0개 (08-26 레지스트리 실측).
+                    KDExecutionComponent.cpp:92 가 허공에 쏜다. 피니셔 연출은 몽타주 쪽.
+                    GCN 을 배선하든 호출을 지우든 — 처형 폴리싱 때 판단
 오사 본 셰이크       적이 화살 막을 때 뼈 흔들림 뜨는지 미구별.
                     PlayHitFeedback 이 C++ 유일 호출처 — 로그 한 줄로 C++/BP 갈림
 Content 잔여        Robot3/ 만 미추적 유지. 나머지는 전부 커밋됨
-ShieldAttackDamageRate  SB 적 바의 실드 4칸인지 스태미나 15칸인지 미확정
+ShieldAttackDamageRate  ✅해결(08-26) — 별도 Shield 축 확정. CharacterTable 에 MaxShield/MaxStamina
+                    독립 공존 + 계산 타입 enum 3축(Physic/Shield/StaminaDamage). 상세 = 세션브릿지 KD 판정
 ```
 
 ### 🧹 정리 잔가지
