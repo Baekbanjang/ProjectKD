@@ -39,6 +39,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float DefaultAirKnockbackMultiplier = 1.f;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+    float DefaultAirPoiseMultiplier = 1.f;
+
+
 	// 막타 종료 시 부여할 쿨다운 GE. State.Combat.AirComboLock GrantsTag, Duration ~0.6~1.0s.
 	UPROPERTY(EditDefaultsOnly, Category = "Action|AirCombo")
 	TSubclassOf<UGameplayEffect> AirComboLockGE;

@@ -61,7 +61,7 @@ void UGA_PlayerMeleeAttackBase::OnTargetHit(AActor* HitActor, UAbilitySystemComp
 }
 
 const FComboNode* UGA_PlayerMeleeAttackBase::ApplyComboNode(FGameplayTag InputTag, EComboContext Context,
-	TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul)
+	TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul, float DefaultPoiseMul)
 {
 	// 기능 : 콤보 노드 소비 — 몽타주·데미지 GE·계수 결정, 노드 없으면 기본값
 	UComboComponent* Combo = GetComboComponentFromActorInfo();
@@ -74,6 +74,7 @@ const FComboNode* UGA_PlayerMeleeAttackBase::ApplyComboNode(FGameplayTag InputTa
 	DamageEffectClass = DefaultGE;
 	DamageMultiplier = DefaultDamageMul;
 	KnockbackMultiplier = DefaultKnockbackMul;
+	PoiseMultiplier = DefaultPoiseMul;
 
 	if (Node)
 	{
@@ -96,6 +97,10 @@ const FComboNode* UGA_PlayerMeleeAttackBase::ApplyComboNode(FGameplayTag InputTa
 		if (Node->KnockbackMultiplier > 0.f)
 		{
 			KnockbackMultiplier = Node->KnockbackMultiplier;
+		}
+		if (Node->PoiseMultiplier > 0.f)
+		{
+			PoiseMultiplier = Node->PoiseMultiplier;
 		}
 	}
 	else

@@ -211,8 +211,10 @@ bool UGA_ShotBlast::ApplyHit(const FHitResult& Hit)
 
 	// 데미지 Spec
 	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * ShotDamageMultiplier;
+
+	// *Poise 추가 Action_Base 멤버 추가 필요*
 	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
-		AttackerASC, TargetASC, DamageEffectClass, AttackPower, Hit, GetAvatarActorFromActorInfo());
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, 1.f , Hit, GetAvatarActorFromActorInfo());
 
 	// 히트 알림 — 반응은 맞은 쪽이 선택
 	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, ShotKnockbackMultiplier);

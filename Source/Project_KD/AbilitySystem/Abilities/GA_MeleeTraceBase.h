@@ -38,10 +38,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 
-	// 콤보 노드 없을시
-	// 해당 공격의 데미지, 넉백 배수
+	// 콤보 노드 없을 시 사용할 해당 공격의 데미지, 넉백, Poise 배수
 	float DamageMultiplier = 1.f;
 	float KnockbackMultiplier = 1.f;
+	float PoiseMultiplier = 1.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	FName WeaponMeshComponentTag = TEXT("Sword");

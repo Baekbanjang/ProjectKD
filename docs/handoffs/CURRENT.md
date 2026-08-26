@@ -58,16 +58,52 @@ PIE 확인 완료. **언제부터였는지는 `.uasset` 바이너리라 미상.*
 
 GA 태그 전수 감사 19개 — 위 1건 빼고 정상. `BP_DaggerShot` 만 미사용 습작(참조 0건).
 
+### Poise 2단계 완료 (2026-08-26)
+
+dev-log = `2026-08-26-poise-context-channel.md`
+
+```
+FKDGameplayEffectContext   커스텀 EffectContext — PoiseMultiplier 운반
+UKDAbilitySystemGlobals    ASC 가 우리 Context 를 만들게 함
+DefaultGame.ini:12         AbilitySystemGlobalsClassName 교체 (되돌리려면 이 줄만)
+배선 10군데                기존 DamageMultiplier · KnockbackMultiplier 와 같은 모양
+```
+
+**노드 값은 안 채웠다 — 통로만 뚫었다.** 26노드 전부 0 이라 동작은 종전과 동일.
+
+> 🔴 **미검증 — 통로 관통 확인.** `DA_ComboTree` 노드 하나에 `PoiseMultiplier = 3.0` 을
+> 넣고 그 타의 Poise 칸이 3배로 깎이는지 봐야 한다. 값이 전부 1.0 이라 지금은
+> **먹는지 안 먹는지 구분이 안 된다.** C1 착수 전 필수.
+
 ### 다음 (순서)
 
 ```
-1  Poise 2단계           타별 차등. EventMagnitude 가 넉백에 쓰여 통로가 막힘 = 코드 필요
-2  C1                    콤보 노드 3칸(InputWindow·DamageMultiplier·KnockbackMultiplier)
-                         전부 0 -> 타격마다 계수가 안 갈린다. 승환 판단으로 보류 중
-3  볼트 브릿지 회수       2026-08-25 요청 3건 처리 여부 확인
+1  클래스 개명            E -> D -> C 그룹 순. 아래 절
+2  C1                    콤보 노드 4칸 값 채우기 (PoiseMultiplier 포함)
+3  볼트 브릿지 회수       FGameplayEffectContext 학습 노트 요청 (08-26 등록)
 ```
 
 **이월 리팩토링은 C1 만 남았다.** A·B1·B2·C2·C3·C4·C5 완료.
+
+### 🔤 클래스 개명 (착수 예정)
+
+문서(`docs/reference/UE5-GAS-Naming-Convention.md`)가 표준이고 **코드가 비표준**이다.
+엔진 실측 — `UAbilitySystemComponent` · `UGameplayAbility` 처럼 타입 접두를 안 쓴다.
+`GA_` `GE_` `AS_` 는 **에셋 이름 규칙**이지 C++ 클래스 규칙이 아니다.
+
+```
+A  이미 준수        17개   AKDPlayerCharacter 등            변경 X
+B  엔진 관례        9개    UBTTask_ · UBTService_ · UEnvQueryContext_   변경 X (엔진과 동일)
+E  접두 없음        21개   UWeaponComponent -> UKDWeaponComponent      🟢 1단계
+D  GAS 에셋 접두    36개   UAS_ · UGA_ · UGE_ · UGCN_                  🟠 2단계 (BP 19개가 부모)
+C  엔진 관례 축약    11개   UANS_ · UAN_ · UAT_ -> 풀네임               🔴 3단계 (몽타주에 인스턴스)
+```
+
+**C 그룹은 개명 후 몽타주 전수 재저장이 필수.** 노티는 몽타주 안에 인스턴스로 박혀 있어
+`+ClassRedirects` 는 임시 다리일 뿐이다. 재저장 안 하면 나중에 그 줄을 지우는 순간 조용히 죽는다.
+✅ 노티 11개가 전부 `GetNotifyName_Implementation` 을 오버라이드하므로 **타임라인 표시명은 안 바뀐다.**
+
+⚠️ `DefaultGame.ini:12` 의 `KDAbilitySystemGlobals` 는 문자열 경로라 리다이렉트가 안 먹는다.
 
 ### 값 작업 완료 (2026-08-25, Content `65fb89d`)
 

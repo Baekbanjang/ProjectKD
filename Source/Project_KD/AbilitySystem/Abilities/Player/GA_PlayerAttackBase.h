@@ -42,4 +42,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float DefaultKnockbackMultiplier = 1.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Damage", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float DefaultPoiseMultiplier = 1.f;
+
 };

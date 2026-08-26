@@ -11,7 +11,7 @@ void UGA_PlayerAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 {
 	// 콤보 컴포넌트가 없으면(= 플레이어가 아니면) 노드도 없음 -> 몽타주 없이 종료
 	ApplyComboNode(ComboInputTag, EComboContext::Ground,
-		DefaultDamageEffectClass, DefaultDamageMultiplier, DefaultKnockbackMultiplier);
+		DefaultDamageEffectClass, DefaultDamageMultiplier, DefaultKnockbackMultiplier, DefaultPoiseMultiplier);
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }

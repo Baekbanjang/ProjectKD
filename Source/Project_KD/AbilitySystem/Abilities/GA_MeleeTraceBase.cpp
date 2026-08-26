@@ -214,7 +214,7 @@ void UGA_MeleeTraceBase::OnWeaponHit(const FHitResult& Hit)
 
 	const float AttackPower = AttackerASC->GetNumericAttribute(UAS_Combat::GetAttackPowerAttribute()) * DamageMultiplier;
 	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
-		AttackerASC, TargetASC, DamageEffectClass, AttackPower, Hit, GetAvatarActorFromActorInfo());
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, PoiseMultiplier, Hit, GetAvatarActorFromActorInfo());
 
 	// 히트 알림 — 반응은 맞은 쪽이 선택
 	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, KnockbackMultiplier);

@@ -12,6 +12,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
 #include "KDGameplayTags.h"
+#include "AbilitySystem/Context/KDGameplayEffectContext.h"
 #include "Combat/WeaponComponent.h"
 
 FTransform UKDAbilityStatics::GetMuzzleTransform(const AActor* Avatar, FName MuzzleSocket, FName WeaponTag)
@@ -96,12 +97,18 @@ bool UKDAbilityStatics::IsFriendlyFire(const UAbilitySystemComponent* AttackerAS
 
 FGameplayEffectContextHandle UKDAbilityStatics::ApplyDamageEffect(UAbilitySystemComponent* AttackerASC,
 	UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> DamageEffectClass,
-	float FinalAttackPower, const FHitResult& Hit, AActor* SourceActor)
+	float FinalAttackPower, float PoiseMultiplier, const FHitResult& Hit, AActor* SourceActor)
 {
 	// 기능 : 데미지 GE 적용 — Context 생성 + SetByCaller(AttackPower) + ApplyToTarget
 	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
 	Context.AddSourceObject(SourceActor);
 	Context.AddHitResult(Hit);
+
+	// Poise 배수 포함 (KDGameplayEffectContext)
+	if (FKDGameplayEffectContext* KDContext = FKDGameplayEffectContext::GetMutable(Context))
+	{
+		KDContext->PoiseMultiplier = PoiseMultiplier; // Poise 배수 적용
+	}
 
 	FGameplayEffectSpecHandle SpecHandle = AttackerASC->MakeOutgoingSpec(DamageEffectClass, 1.f, Context);
 	if (SpecHandle.IsValid())

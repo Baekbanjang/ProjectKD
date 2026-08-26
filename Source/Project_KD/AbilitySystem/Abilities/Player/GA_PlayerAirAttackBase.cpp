@@ -17,7 +17,7 @@ void UGA_PlayerAirAttackBase::ActivateAbility(const FGameplayAbilitySpecHandle H
 
 	// 공중 컨텍스트 -> AirComboTree만 봄
 	const FComboNode* Node = ApplyComboNode(ComboInputTag, EComboContext::Air,
-		DefaultAirDamageEffectClass, DefaultAirDamageMultiplier, DefaultAirKnockbackMultiplier);
+		DefaultAirDamageEffectClass, DefaultAirDamageMultiplier, DefaultAirKnockbackMultiplier, DefaultAirPoiseMultiplier);
 
 	// 다음 없는 노드 = 막타(피니셔)
 	bIsFinisher = (Node && Node->NextLinks.Num() == 0);

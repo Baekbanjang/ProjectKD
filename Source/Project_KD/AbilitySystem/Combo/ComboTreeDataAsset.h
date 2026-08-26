@@ -68,6 +68,10 @@ struct FComboNode
 	// 넉백 배수
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float KnockbackMultiplier = 0.f;
+
+	// Poise 배수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combo", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float PoiseMultiplier = 0.f;
 };
 
 // 콤보 시작 — 상황 + 입력 -> 첫 노드

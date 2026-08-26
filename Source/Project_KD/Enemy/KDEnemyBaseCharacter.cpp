@@ -24,10 +24,10 @@
 #include "Animation/AnimMontage.h"
 #include "Perception/AISense_Damage.h"
 #include "TimerManager.h"
+#include "AbilitySystem/Context/KDGameplayEffectContext.h"
 #include "Combat/KnockbackComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/KDEnemyStateBarWidget.h"
-#include "HAL/IConsoleManager.h"
 
 
 AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
@@ -508,6 +508,15 @@ bool AKDEnemyBaseCharacter::ApplyPoiseDamage(const FGameplayEventData* Payload)
 	{
 		return false;
 	}
+
+	// 노드 배수
+	float PoiseMult = 1.f;
+	if (const FKDGameplayEffectContext* Ctx = FKDGameplayEffectContext::Get(Payload->ContextHandle))
+	{
+		if (Ctx->PoiseMultiplier > 0.f) { PoiseMult = Ctx->PoiseMultiplier; }
+	}
+	PoiseDamage *= PoiseMult;
+
 
 	// 0 도달 시 StaggerComp.OnPoiseChanged 가 이 줄 안에서 BeginStagger 호출
 	const float Cur = AbilitySystemComponent->GetNumericAttribute(UAS_CharacterBase::GetPoiseAttribute());

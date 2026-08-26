@@ -54,7 +54,7 @@ protected:
 
 	// 콤보 노드 소비 — 노드 값으로 몽타주·데미지 GE·계수 결정, 노드 없으면 기본값
 	const FComboNode* ApplyComboNode(FGameplayTag InputTag, EComboContext Context,
-		TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul);
+		TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul, float DefaultPoiseMul);
 
 	// 타격 시 플레이어 전용 HitConfirm 큐 실행
 	virtual void OnTargetHit(AActor* HitActor, UAbilitySystemComponent* TargetASC, const FHitResult& Hit) override;
