@@ -8,7 +8,7 @@
 #include "AbilitySystem/AnimNotifies/AN_ShotBlast.h"
 #include "AbilitySystem/Attributes/AS_Combat.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
-#include "Combat/Data/HitConfirmProfile.h"
+#include "Combat/Data/KDHitConfirmProfile.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 

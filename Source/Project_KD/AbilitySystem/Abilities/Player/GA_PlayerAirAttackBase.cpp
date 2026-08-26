@@ -4,7 +4,7 @@
 #include "AbilitySystem/Abilities/Player/GA_PlayerAirAttackBase.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Combo/ComboTreeDataAsset.h"
+#include "AbilitySystem/Combo/KDComboTreeDataAsset.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 

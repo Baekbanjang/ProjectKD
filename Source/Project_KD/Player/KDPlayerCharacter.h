@@ -4,25 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Character/BaseCharacter.h"
+#include "Character/KDBaseCharacter.h"
 #include "KDPlayerCharacter.generated.h"
 
-class UHitStopComponent;
-class USprintComponent;
+class UKDHitStopComponent;
+class UKDSprintComponent;
 class UMotionWarpingComponent;
-class UCombatStateComponent;
-class ULockOnComponent;
+class UKDCombatStateComponent;
+class UKDLockOnComponent;
 struct FGameplayTag;
-class UWeaponComponent;
+class UKDWeaponComponent;
 class UCameraComponent;
-class UInputBufferComponent;
+class UKDInputBufferComponent;
 class UKDSpringArmComponent;
 class USplineComponent;
-class UComboComponent;
+class UKDComboComponent;
 class UKDPlayerAbilityInputComponent;
 
 UCLASS()
-class PROJECT_KD_API AKDPlayerCharacter : public ABaseCharacter
+class PROJECT_KD_API AKDPlayerCharacter : public AKDBaseCharacter
 {
 	GENERATED_BODY()
 
@@ -86,32 +86,32 @@ protected:
 
 	// 선입력 버퍼 (D6). BP -> TryLightAttack -> Push, GA→OnComboWindowOpen -> TryConsume.
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputBufferComponent> InputBuffer;
+	TObjectPtr<UKDInputBufferComponent> InputBuffer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TObjectPtr<UWeaponComponent> WeaponComp;
+	TObjectPtr<UKDWeaponComponent> WeaponComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TObjectPtr<UWeaponComponent> GunWeaponComp;
+	TObjectPtr<UKDWeaponComponent> GunWeaponComp;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UComboComponent> ComboComp;
+	TObjectPtr<UKDComboComponent> ComboComp;
 
 	// 입력 -> 어빌리티 활성화 담당
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<UKDPlayerAbilityInputComponent> AbilityInputComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "LockOn")
-	TObjectPtr<ULockOnComponent> LockOnComponent;
+	TObjectPtr<UKDLockOnComponent> LockOnComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UCombatStateComponent> CombatStateComp;
+	TObjectPtr<UKDCombatStateComponent> CombatStateComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UHitStopComponent> HitStopComp;
+	TObjectPtr<UKDHitStopComponent> HitStopComp;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement|Sprint")
-	TObjectPtr<USprintComponent> SprintComp;
+	TObjectPtr<UKDSprintComponent> SprintComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement|Turn")
 	TObjectPtr<UCurveFloat> TurnSpeedCurve;
@@ -130,8 +130,8 @@ protected:
 	float AimPitchScale = 0.33f;
 	
 public:
-	UComboComponent* GetComboComponent() const {return ComboComp;}
-	ULockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
+	UKDComboComponent* GetComboComponent() const {return ComboComp;}
+	UKDLockOnComponent* GetLockOnComponent() const {return LockOnComponent;}
 	UKDPlayerAbilityInputComponent* GetAbilityInputComponent() const {return AbilityInputComp;}
 	
 	// 마우스 상하 각도 0~1  애님 조준용

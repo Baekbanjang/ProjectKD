@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
-#include "PlayerExecutionProfile.h"
+#include "KDPlayerExecutionProfile.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
 UGA_PlayerExecution::UGA_PlayerExecution()

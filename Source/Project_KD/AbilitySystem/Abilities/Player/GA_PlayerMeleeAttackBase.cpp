@@ -11,9 +11,9 @@
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
 #include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
-#include "AbilitySystem/Combo/ComboComponent.h"
-#include "AbilitySystem/Combo/ComboTreeDataAsset.h"
-#include "Combat/Data/HitConfirmProfile.h"
+#include "AbilitySystem/Combo/KDComboComponent.h"
+#include "AbilitySystem/Combo/KDComboTreeDataAsset.h"
+#include "Combat/Data/KDHitConfirmProfile.h"
 
 #if !UE_BUILD_SHIPPING
 // 개발용 접근 판정 표시 스위치 — 콘솔 KD.ShowApproach 1
@@ -64,7 +64,7 @@ const FComboNode* UGA_PlayerMeleeAttackBase::ApplyComboNode(FGameplayTag InputTa
 	TSubclassOf<UGameplayEffect> DefaultGE, float DefaultDamageMul, float DefaultKnockbackMul, float DefaultPoiseMul)
 {
 	// 기능 : 콤보 노드 소비 — 몽타주·데미지 GE·계수 결정, 노드 없으면 기본값
-	UComboComponent* Combo = GetComboComponentFromActorInfo();
+	UKDComboComponent* Combo = GetComboComponentFromActorInfo();
 
 	const FComboNode* Node = IsValid(Combo)
 		? Combo->ProcessInput(InputTag, Context)

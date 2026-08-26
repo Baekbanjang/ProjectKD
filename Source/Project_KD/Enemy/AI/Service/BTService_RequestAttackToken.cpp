@@ -6,7 +6,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
-#include "Enemy/AI/EncounterSubsystem.h"
+#include "Enemy/AI/KDEncounterSubsystem.h"
 #include "Enemy/KDEnemyBaseCharacter.h"
 
 UBTService_RequestAttackToken::UBTService_RequestAttackToken()
@@ -42,7 +42,7 @@ void UBTService_RequestAttackToken::TickNode(UBehaviorTreeComponent& OwnerComp, 
 
 	AKDEnemyBaseCharacter* Enemy = Cast<AKDEnemyBaseCharacter>(AICon->GetPawn());
 	UWorld* World = AICon->GetWorld();
-	UEncounterSubsystem* Encounter = World ? World->GetSubsystem<UEncounterSubsystem>() : nullptr;
+	UKDEncounterSubsystem* Encounter = World ? World->GetSubsystem<UKDEncounterSubsystem>() : nullptr;
 	if (!Enemy || !Encounter) return;
 
 	// 원거리 kiter(StandoffRange>0)는 토큰 면제 — 토큰은 근접 동시공격 제한 자원이라 원거리엔 부적합

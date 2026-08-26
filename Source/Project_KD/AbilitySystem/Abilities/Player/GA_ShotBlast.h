@@ -6,7 +6,7 @@
 #include "AbilitySystem/Abilities/GA_ActionBase.h"
 #include "GA_ShotBlast.generated.h"
 
-class UHitConfirmProfile;
+class UKDHitConfirmProfile;
 // 콤보 속 총 발사 판정 GA 
 // AN_ShotBlast의 Event.Montage.ShotBlast로 자동 활성 후 즉시 종료
 // 판정 = 총구 콘 히트스캔. Overlap 수집 -> 각도 필터 -> 시야 확인
@@ -70,7 +70,7 @@ protected:
 	
 	// 무기별 타격감 DA
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
-	TObjectPtr<UHitConfirmProfile> HitConfirmProfile;
+	TObjectPtr<UKDHitConfirmProfile> HitConfirmProfile;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Debug")
 	bool bDrawDebug = false;

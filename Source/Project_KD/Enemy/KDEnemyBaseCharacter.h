@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/BaseCharacter.h"
+#include "Character/KDBaseCharacter.h"
 #include "Interface/KDTargetableInterface.h"
 #include "KDEnemyBaseCharacter.generated.h"
 
-class UKnockbackComponent;
+class UKDKnockbackComponent;
 class UWidgetComponent;
 class UAS_CharacterBase;
 class UAS_Combat;
 class UGameplayAbility;
 class UBehaviorTree;
-class UHitFeedbackComponent;
-class UStaggerComponent;
-class UExecutionComponent;
+class UKDHitFeedbackComponent;
+class UKDStaggerComponent;
+class UKDExecutionComponent;
 class UAnimMontage;
-class UEnemyDefinitionDataAsset;
+class UKDEnemyDefinitionDataAsset;
 struct FOnAttributeChangeData;
 struct FGameplayEventData;
 struct FEnemyAttackEntry;
@@ -28,7 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemyDeath);
 // Pawn 담당 = ASC 소유·init | brain | movement | 몽타주 | 넉백 | 사망
 // 경직·처형 = 전용 컴포넌트 / 통신 = 델리게이트
 UCLASS(Abstract)
-class PROJECT_KD_API AKDEnemyBaseCharacter : public ABaseCharacter, public IKDTargetableInterface
+class PROJECT_KD_API AKDEnemyBaseCharacter : public AKDBaseCharacter, public IKDTargetableInterface
 {
 	GENERATED_BODY()
 
@@ -72,7 +72,7 @@ public:
 	float GetAttackRange() const;
 
 	// 적 정의 DA 읽기 접근
-	const UEnemyDefinitionDataAsset* GetEnemyDefinition() const { return EnemyDefinition; }
+	const UKDEnemyDefinitionDataAsset* GetEnemyDefinition() const { return EnemyDefinition; }
 
 	// 원거리형 유지 거리 (cm) — 0 = 후퇴 X
 	UFUNCTION(BlueprintPure, Category = "Enemy|AI")
@@ -125,7 +125,7 @@ protected:
 	// 적 1종 정의 — 스탯 | AI 거리 | 전투 | StartupAbilities | 공격셋
 	// 적용 시점 = PossessedBy
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy")
-	TObjectPtr<UEnemyDefinitionDataAsset> EnemyDefinition;
+	TObjectPtr<UKDEnemyDefinitionDataAsset> EnemyDefinition;
 
 	// 빙의 후 실행할 BT
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Enemy|AI")
@@ -133,19 +133,19 @@ protected:
 
 	// 피격 BoneShake 구동
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UHitFeedbackComponent> HitFeedback;
+	TObjectPtr<UKDHitFeedbackComponent> HitFeedback;
 
 	// 경직 GAS 상태머신 — Poise 0 -> Stagger GE | 타이머
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UStaggerComponent> StaggerComp;
+	TObjectPtr<UKDStaggerComponent> StaggerComp;
 
 	// 처형 판정 사이클 — 경직 중 강공 -> invuln | GE | 큐 | 안전망
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UExecutionComponent> ExecutionComp;
+	TObjectPtr<UKDExecutionComponent> ExecutionComp;
 
 	// 피격 밀림 — 거리 지정 + RootMotionSource
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UKnockbackComponent> KnockbackComp;
+	TObjectPtr<UKDKnockbackComponent> KnockbackComp;
 
 	// 상태 바 — HP | Poise
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")

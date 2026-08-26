@@ -10,10 +10,10 @@
 // 플레이어 입력 -> 어빌리티 활성화 담당
 
 struct FGameplayTag;
-class USprintComponent;
-class ULockOnComponent;
-class UComboComponent;
-class UInputBufferComponent;
+class UKDSprintComponent;
+class UKDLockOnComponent;
+class UKDComboComponent;
+class UKDInputBufferComponent;
 class UAbilitySystemComponent;
 
 UCLASS( ClassGroup=(KD), meta=(BlueprintSpawnableComponent) )
@@ -67,8 +67,8 @@ private:
 	// 버퍼된 회피 | 공격 꺼내기
 	void ConsumeBufferedInput(UAbilitySystemComponent* ASC) const;
 	
-	UPROPERTY(Transient) TObjectPtr<UInputBufferComponent> InputBuffer;
-	UPROPERTY(Transient) TObjectPtr<UComboComponent> ComboComp;
-	UPROPERTY(Transient) TObjectPtr<ULockOnComponent> LockOnComp;
-	UPROPERTY(Transient) TObjectPtr<USprintComponent> SprintComp;
+	UPROPERTY(Transient) TObjectPtr<UKDInputBufferComponent> InputBuffer;
+	UPROPERTY(Transient) TObjectPtr<UKDComboComponent> ComboComp;
+	UPROPERTY(Transient) TObjectPtr<UKDLockOnComponent> LockOnComp;
+	UPROPERTY(Transient) TObjectPtr<UKDSprintComponent> SprintComp;
 };

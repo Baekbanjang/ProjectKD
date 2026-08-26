@@ -13,7 +13,7 @@
 #include "GameFramework/Pawn.h"
 #include "KDGameplayTags.h"
 #include "AbilitySystem/Context/KDGameplayEffectContext.h"
-#include "Combat/WeaponComponent.h"
+#include "Combat/KDWeaponComponent.h"
 
 FTransform UKDAbilityStatics::GetMuzzleTransform(const AActor* Avatar, FName MuzzleSocket, FName WeaponTag)
 {
@@ -22,9 +22,9 @@ FTransform UKDAbilityStatics::GetMuzzleTransform(const AActor* Avatar, FName Muz
 	// 무기 메시 — 검/총 구분: WeaponComponentTag
 	if (WeaponTag != NAME_None)
 	{
-		TArray<UWeaponComponent*> Weapons;
-		Avatar->GetComponents<UWeaponComponent>(Weapons);
-		for (const UWeaponComponent* Weapon : Weapons)
+		TArray<UKDWeaponComponent*> Weapons;
+		Avatar->GetComponents<UKDWeaponComponent>(Weapons);
+		for (const UKDWeaponComponent* Weapon : Weapons)
 		{
 			if (!IsValid(Weapon) || Weapon->GetWeaponComponentTag() != WeaponTag) continue;
 			const UMeshComponent* Mesh = Weapon->GetWeaponMesh();

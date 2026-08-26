@@ -71,14 +71,13 @@ DefaultGame.ini:12         AbilitySystemGlobalsClassName 교체 (되돌리려면
 
 **노드 값은 안 채웠다 — 통로만 뚫었다.** 26노드 전부 0 이라 동작은 종전과 동일.
 
-> 🔴 **미검증 — 통로 관통 확인.** `DA_ComboTree` 노드 하나에 `PoiseMultiplier = 3.0` 을
-> 넣고 그 타의 Poise 칸이 3배로 깎이는지 봐야 한다. 값이 전부 1.0 이라 지금은
-> **먹는지 안 먹는지 구분이 안 된다.** C1 착수 전 필수.
+✅ **통로 관통 확인 완료** — 노드 하나에 `PoiseMultiplier = 3.0` 을 넣으니 Poise 칸이
+3배로 깎였다. 확인 후 원복. C1 로 넘어가도 된다.
 
 ### 다음 (순서)
 
 ```
-1  클래스 개명            E -> D -> C 그룹 순. 아래 절
+1  클래스 개명            E 완료 -> D -> C 그룹 순. 아래 절
 2  C1                    콤보 노드 4칸 값 채우기 (PoiseMultiplier 포함)
 3  볼트 브릿지 회수       FGameplayEffectContext 학습 노트 요청 (08-26 등록)
 ```

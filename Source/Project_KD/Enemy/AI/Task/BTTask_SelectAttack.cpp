@@ -9,7 +9,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Actor.h"
 
-#include "Enemy/EnemyDefinitionDataAsset.h"
+#include "Enemy/KDEnemyDefinitionDataAsset.h"
 #include "Enemy/KDEnemyBaseCharacter.h"
 
 UBTTask_SelectAttack::UBTTask_SelectAttack()

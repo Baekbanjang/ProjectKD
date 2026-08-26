@@ -10,15 +10,15 @@
 #include "GameplayTagContainer.h"
 #include "KDSpringArmComponent.h"
 #include "MotionWarpingComponent.h"
-#include "AbilitySystem/Combo/ComboComponent.h"
-#include "Combat/CombatStateComponent.h"
-#include "Combat/HitStopComponent.h"
-#include "Combat/LockOnComponent.h"
-#include "Combat/WeaponComponent.h"
+#include "AbilitySystem/Combo/KDComboComponent.h"
+#include "Combat/KDCombatStateComponent.h"
+#include "Combat/KDHitStopComponent.h"
+#include "Combat/KDLockOnComponent.h"
+#include "Combat/KDWeaponComponent.h"
 #include "Components/SplineComponent.h"
-#include "Input/InputBufferComponent.h"
+#include "Input/KDInputBufferComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Movement/SprintComponent.h"
+#include "Movement/KDSprintComponent.h"
 #include "Player/KDPlayerAbilityInputComponent.h"
 
 
@@ -66,21 +66,21 @@ AKDPlayerCharacter::AKDPlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
-	InputBuffer = CreateDefaultSubobject<UInputBufferComponent>(TEXT("InputBuffer"));
+	InputBuffer = CreateDefaultSubobject<UKDInputBufferComponent>(TEXT("InputBuffer"));
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	JumpMaxCount = 2;
 
-	SprintComp = CreateDefaultSubobject<USprintComponent>(TEXT("SprintComponent"));
-	WeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("WeaponComponent"));
-	GunWeaponComp = CreateDefaultSubobject<UWeaponComponent>(TEXT("GunWeaponComponent"));
-	ComboComp = CreateDefaultSubobject<UComboComponent>(TEXT("ComboComponent"));
+	SprintComp = CreateDefaultSubobject<UKDSprintComponent>(TEXT("SprintComponent"));
+	WeaponComp = CreateDefaultSubobject<UKDWeaponComponent>(TEXT("WeaponComponent"));
+	GunWeaponComp = CreateDefaultSubobject<UKDWeaponComponent>(TEXT("GunWeaponComponent"));
+	ComboComp = CreateDefaultSubobject<UKDComboComponent>(TEXT("ComboComponent"));
 	AbilityInputComp = CreateDefaultSubobject<UKDPlayerAbilityInputComponent>(TEXT("AbilityInputComponent"));
-	LockOnComponent = CreateDefaultSubobject<ULockOnComponent>(TEXT("LockOnComponent"));
-	CombatStateComp = CreateDefaultSubobject<UCombatStateComponent>(TEXT("CombatStateComp"));
-	HitStopComp = CreateDefaultSubobject<UHitStopComponent>(TEXT("HitStopComp"));
+	LockOnComponent = CreateDefaultSubobject<UKDLockOnComponent>(TEXT("LockOnComponent"));
+	CombatStateComp = CreateDefaultSubobject<UKDCombatStateComponent>(TEXT("CombatStateComp"));
+	HitStopComp = CreateDefaultSubobject<UKDHitStopComponent>(TEXT("HitStopComp"));
 	MotionWarping = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
 }
 

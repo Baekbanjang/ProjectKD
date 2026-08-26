@@ -3,7 +3,7 @@
 
 #include "AbilitySystem/AnimNotifies/AN_WeaponAttach.h"
 
-#include "Combat/WeaponComponent.h"
+#include "Combat/KDWeaponComponent.h"
 
 void UAN_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                               const FAnimNotifyEventReference& EventReference)
@@ -15,9 +15,9 @@ void UAN_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
 	if (!Owner) return;
 
 	// 메시 소유자에서 무기 컴포넌트를 찾아 재부여
-	TInlineComponentArray<UWeaponComponent*> WeaponComps(Owner);
+	TInlineComponentArray<UKDWeaponComponent*> WeaponComps(Owner);
 
-	for (UWeaponComponent* WeaponComp : WeaponComps)
+	for (UKDWeaponComponent* WeaponComp : WeaponComps)
 	{
 		if (!TargetWeaponTag.IsNone() && WeaponComp->GetWeaponComponentTag() != TargetWeaponTag) continue;
 		

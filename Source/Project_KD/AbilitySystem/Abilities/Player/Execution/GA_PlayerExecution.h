@@ -6,7 +6,7 @@
 #include "AbilitySystem/Abilities/GA_ActionBase.h"
 #include "GA_PlayerExecution.generated.h"
 
-class UPlayerExecutionProfile;
+class UKDPlayerExecutionProfile;
 /**
  *
  * 처형 피니셔 GA. 적이 쏜 Event.Combat.ExecutionStarted로 자동발동
@@ -30,7 +30,7 @@ protected:
 
 	// 플레이어 피니셔 데이터(몽타주/카메라큐/워프거리)
 	UPROPERTY(EditDefaultsOnly, Category = "Execution")
-	TObjectPtr<UPlayerExecutionProfile> Profile;
+	TObjectPtr<UKDPlayerExecutionProfile> Profile;
 
 private:
 	UFUNCTION()

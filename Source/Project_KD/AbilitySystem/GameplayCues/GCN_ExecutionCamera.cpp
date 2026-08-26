@@ -5,7 +5,7 @@
 
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
-#include "AbilitySystem/Abilities/Player/Execution/PlayerExecutionProfile.h"
+#include "AbilitySystem/Abilities/Player/Execution/KDPlayerExecutionProfile.h"
 #include "GameFramework/PlayerController.h"   
 #include "Engine/World.h"                     
 #include "Library/KDCinematicLibrary.h"
@@ -18,7 +18,7 @@ AGCN_ExecutionCamera::AGCN_ExecutionCamera()
 bool AGCN_ExecutionCamera::OnActive_Implementation(AActor* Target, const FGameplayCueParameters& Parameters)
 {
 	// GA가 컨텍스트에 실어보낸 Profile에서 시퀀스 꺼냄. 시퀀스 비면 시네마틱 스킵
-	const UPlayerExecutionProfile* Profile = Cast<UPlayerExecutionProfile>(Parameters.EffectContext.GetSourceObject());
+	const UKDPlayerExecutionProfile* Profile = Cast<UKDPlayerExecutionProfile>(Parameters.EffectContext.GetSourceObject());
 	if (!Target || !Profile || !Profile->FinisherSequence) { return false; }
 
 	// 기준점 = 큐에 실린 만남점 좌표 + 적을 향한 플레이어 회전. 없으면 Target 트랜스폼 폴백

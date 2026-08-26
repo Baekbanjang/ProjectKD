@@ -6,12 +6,12 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
-#include "AbilitySystem/Combo/ComboComponent.h"
-#include "Combat/LockOnComponent.h"
+#include "AbilitySystem/Combo/KDComboComponent.h"
+#include "Combat/KDLockOnComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Input/InputBufferComponent.h"
-#include "Movement/SprintComponent.h"
+#include "Input/KDInputBufferComponent.h"
+#include "Movement/KDSprintComponent.h"
 
 
 // 헬퍼
@@ -42,10 +42,10 @@ void UKDPlayerAbilityInputComponent::BeginPlay()
 
 	if (const AActor* Owner = GetOwner())
 	{
-		InputBuffer = Owner->FindComponentByClass<UInputBufferComponent>();
-		ComboComp   = Owner->FindComponentByClass<UComboComponent>();
-		LockOnComp  = Owner->FindComponentByClass<ULockOnComponent>();
-		SprintComp  = Owner->FindComponentByClass<USprintComponent>();
+		InputBuffer = Owner->FindComponentByClass<UKDInputBufferComponent>();
+		ComboComp   = Owner->FindComponentByClass<UKDComboComponent>();
+		LockOnComp  = Owner->FindComponentByClass<UKDLockOnComponent>();
+		SprintComp  = Owner->FindComponentByClass<UKDSprintComponent>();
 	}
 }
 

@@ -4,8 +4,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "GA_ActionBase.generated.h"
 
-class ULockOnComponent;
-class UComboComponent;
+class UKDLockOnComponent;
+class UKDComboComponent;
 
 // Common base for all action GAs (LightAttack, Dodge, EnemyAttack).
 // Centralizes SafetyTimer (montage length / play rate × mult) and EndAbility → OnCleanup pipeline.
@@ -42,10 +42,10 @@ protected:
 
 	// 아바타에서 컴포넌트 조회
 	UFUNCTION(BlueprintPure, Category = "Ability")
-	ULockOnComponent* GetLockOnComponentFromActorInfo() const;
+	UKDLockOnComponent* GetLockOnComponentFromActorInfo() const;
 
 	UFUNCTION(BlueprintPure, Category = "Ability")
-	UComboComponent* GetComboComponentFromActorInfo() const;
+	UKDComboComponent* GetComboComponentFromActorInfo() const;
 
 	// 자동 조준 대상 — 락온 중이면 고정 타겟 / 그 외 범위 안 각도 최소 적
 	AActor* FindAutoAimTarget(float Range, float ConeAngle) const;

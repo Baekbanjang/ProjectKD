@@ -5,12 +5,12 @@
 #include "AbilitySystem/Attributes/AS_CharacterBase.h"
 #include "AbilitySystem/Attributes/AS_Combat.h"
 #include "Abilities/GameplayAbility.h"
-#include "Combat/HitFeedbackComponent.h"
-#include "Combat/StaggerComponent.h"
-#include "Combat/ExecutionComponent.h"
-#include "Combat/ExecutionProfile.h"
-#include "Enemy/EnemyDefinitionDataAsset.h"
-#include "Enemy/AI/EncounterSubsystem.h"
+#include "Combat/KDHitFeedbackComponent.h"
+#include "Combat/KDStaggerComponent.h"
+#include "Combat/KDExecutionComponent.h"
+#include "Combat/KDExecutionProfile.h"
+#include "Enemy/KDEnemyDefinitionDataAsset.h"
+#include "Enemy/AI/KDEncounterSubsystem.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "KDGameplayTags.h"
@@ -25,7 +25,7 @@
 #include "Perception/AISense_Damage.h"
 #include "TimerManager.h"
 #include "AbilitySystem/Context/KDGameplayEffectContext.h"
-#include "Combat/KnockbackComponent.h"
+#include "Combat/KDKnockbackComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/KDEnemyStateBarWidget.h"
 
@@ -41,12 +41,12 @@ AKDEnemyBaseCharacter::AKDEnemyBaseCharacter()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 
-	HitFeedback = CreateDefaultSubobject<UHitFeedbackComponent>(TEXT("HitFeedback"));
+	HitFeedback = CreateDefaultSubobject<UKDHitFeedbackComponent>(TEXT("HitFeedback"));
 
 	// 경직·처형 = 전용 컴포넌트 — 각자 BeginPlay 에서 ASC 캐시 + 이벤트 구독
-	StaggerComp = CreateDefaultSubobject<UStaggerComponent>(TEXT("StaggerComp"));
-	ExecutionComp = CreateDefaultSubobject<UExecutionComponent>(TEXT("ExecutionComp"));
-	KnockbackComp = CreateDefaultSubobject<UKnockbackComponent>(TEXT("KnockbackComp"));
+	StaggerComp = CreateDefaultSubobject<UKDStaggerComponent>(TEXT("StaggerComp"));
+	ExecutionComp = CreateDefaultSubobject<UKDExecutionComponent>(TEXT("ExecutionComp"));
+	KnockbackComp = CreateDefaultSubobject<UKDKnockbackComponent>(TEXT("KnockbackComp"));
 
 	// 상태 바 — 위젯 클래스 지정 = BP
 	StateBarWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("StateBarWidget"));
@@ -134,7 +134,7 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 		// 처형 생존 리셋 — ExecutionComp.OnExecutionResolved -> StaggerComp.HandleExecutionResolved
 		if (StaggerComp)
 		{
-			ExecutionComp->OnExecutionResolved.AddDynamic(StaggerComp, &UStaggerComponent::HandleExecutionResolved);
+			ExecutionComp->OnExecutionResolved.AddDynamic(StaggerComp, &UKDStaggerComponent::HandleExecutionResolved);
 		}
 	}
 	if (KnockbackComp)
@@ -212,7 +212,7 @@ void AKDEnemyBaseCharacter::ReturnAttackToken()
 {
 	if (UWorld* World = GetWorld())
 	{
-		if (UEncounterSubsystem* Encounter = World->GetSubsystem<UEncounterSubsystem>())
+		if (UKDEncounterSubsystem* Encounter = World->GetSubsystem<UKDEncounterSubsystem>())
 		{
 			Encounter->ReturnToken(this);
 		}

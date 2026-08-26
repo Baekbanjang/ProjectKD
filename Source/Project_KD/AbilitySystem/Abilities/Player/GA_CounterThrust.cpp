@@ -6,7 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
-#include "Combat/LockOnComponent.h"
+#include "Combat/KDLockOnComponent.h"
 
 UGA_CounterThrust::UGA_CounterThrust()
 {
@@ -26,7 +26,7 @@ void UGA_CounterThrust::OnActivated()
 
 
 	AActor* PC = GetAvatarActorFromActorInfo();
-	ULockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
+	UKDLockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
 	if (!IsValid(PC) || !LockOn) return;
 
 	// 락온 타겟 우선, 없으면 자동 탐색. 둘 다 없으면 제자리 찌르기.

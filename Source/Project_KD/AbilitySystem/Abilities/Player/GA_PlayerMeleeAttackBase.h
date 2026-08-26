@@ -7,7 +7,7 @@
 #include "AbilitySystem/Abilities/GA_MeleeTraceBase.h"
 #include "GA_PlayerMeleeAttackBase.generated.h"
 
-class UHitConfirmProfile;
+class UKDHitConfirmProfile;
 struct FComboNode;
 enum class EComboContext : uint8;
 // 플레이어 근접 공격 공통 베이스 — 히트스탑 + 타격감 큐 + 락온 자동조준
@@ -30,7 +30,7 @@ protected:
 	
 	// 무기별 타격감 프로필 — CueParams.SourceObject로 전달, BP GC가 무기별 분기
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
-	TObjectPtr<UHitConfirmProfile> HitConfirmProfile;
+	TObjectPtr<UKDHitConfirmProfile> HitConfirmProfile;
 
 	// 일반 자동 조준 사거리
 	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "0.0", ClampMax = "2000.0"))

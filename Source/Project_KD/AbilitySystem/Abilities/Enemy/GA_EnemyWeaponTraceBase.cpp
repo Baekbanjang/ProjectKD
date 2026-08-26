@@ -3,7 +3,7 @@
 #include "AbilitySystem/Abilities/Enemy/GA_EnemyWeaponTraceBase.h"
 #include "AbilitySystemComponent.h"
 #include "AIController.h"
-#include "Enemy/AI/EncounterSubsystem.h"
+#include "Enemy/AI/KDEncounterSubsystem.h"
 #include "Enemy/KDEnemyBaseCharacter.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -56,7 +56,7 @@ void UGA_EnemyWeaponTraceBase::OnCleanup(bool bWasCancelled)
 	{
 		if (UWorld* World = Char->GetWorld())
 		{
-			if (UEncounterSubsystem* ES = World->GetSubsystem<UEncounterSubsystem>())
+			if (UKDEncounterSubsystem* ES = World->GetSubsystem<UKDEncounterSubsystem>())
 				ES->ReturnToken(Char);
 		}
 	}
