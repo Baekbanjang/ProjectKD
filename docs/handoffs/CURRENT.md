@@ -469,10 +469,24 @@ SB는 `Default(=Sword) / Tachy / Fusion / Gun계열 / Fishing / 특수(사망·�
 우리 초안(승환): `Default(평시 전투 = Sword&Gun) / Gun(진짜 사격만) / 사망`.
 → ~~사격 로직 착수 전까지 보류~~ → **(a) 홀드 조준으로 구현 완료됐다** (상단 08-26 실측 참조. (a)/(b) 비교 원문은 archive §1-B).
 
-### ② 공중 콤보 재설계
+### ② 공중 콤보 재설계 — 뼈대는 완성. 남은 건 "내리꽂기 마무리" 하나 (2026-08-26 실측)
+```
+DA_AirComboTree   Air_1~4 선형 체인(분기 X) · DamageMult 0.9/1.0/1.2/1.8 · Knockback 0.3/0.3/0.3/1.2
+                  InputWindow · PoiseMultiplier 는 4노드 전부 0
+몽타주 4개         전부 CancelWindow 배선됨. 판정은 홀짝 교대 —
+                  Air_01·03 = ShotBlast(총, MeleeTrace 없음) / Air_02·04 = MeleeTrace(검)
+중력 억제          C++ 구현됨 (UKDGameplayAbility_PlayerAirCombo 의 OrigGravityScale 캐시·복원)
+소유               콤보트리는 GA 가 아니라 BP_SBPlayer 의 ComboComponent 가 들고 있다
+```
+**남은 것 = 막타 뒤 내리꽂기로 지상 콤보 연결.** 재료 `02_Attack/14·15·16_Attack_Air_to_Floor`
+3세트(각 Start/Loop/End) 전부 미사용 상태로 대기 중. 승환 지시 = 잠시 대기.
+
+<details><summary>종전 서술 (접힘)</summary>
 `Air_01`이 **총 클립**이라 1타에 검 판정이 없다(`MeleeTrace` 없음이 의도).
 방향: **07 유지 + 14~16 `Attack_Air_to_Floor`를 마무리로 붙여 지상 콤보로 연결**(공중 공격 → 지상 찍기 → 자연스럽게 지상 콤보).
 `02_Attack` 폴더는 **전부 루트모션** — InPlace 클립이 없다. "제자리 공중 공격"은 RM을 끄는 게 아니라 **이동량 0인 클립**으로 얻어야 한다.
+
+</details>
 
 ### ③ 스태미나 폐기 — ✅ 실행돼 있었다 (2026-08-26 실측. 이 항목은 종결)
 ```
@@ -484,10 +498,14 @@ SprintComponent                            코스트 프로퍼티 자체가 없�
 ```
 잔가지 = 고아 GE 3개를 지울지(에셋 정리 때 같이).
 
-### ④ 락온 애니 — 보류 유지. 단 "미배선"이 실측으로 확정됐다 (2026-08-26)
-`ABP_SB` 바이너리에 LockOn/Strafe 0건 / MM DB 9개 = Unarmed·Combat·Aim 뿐(락온 카테고리 없음).
-현재 락온 중 = **속도만 280 감속, 애니는 일반 로코 그대로.** 발견된 락온 BS·클립은 전부 고아 또는 버터 잔재.
-착수 시 재료 = 팩 Combat Walk/Run 방향 세트 (Aim DB 만들 때 쓴 Chooser 패턴 재사용).
+### ④ 락온 애니 — ✅ 항목 자체가 성립 안 했다 (2026-08-26 종결)
+**락온 전용 DB 가 없는 게 맞고, 필요도 없다** (승환 확인). 락온하면 전투 상태로 들어가고
+**Combat DB 를 여는 스위치는 `bIsInBattleStance`(InCombat)** 이라, 락온 중에도 전투용 이동 애니가 나온다.
+```
+Walk_Combat 40/40 · Run_Combat 42/55 클립이 PSD_SB_Loco_Combat · Stops_Combat 에 배선 완료
+CHT_LocomotionDatabase = Unarmed·Combat·Aim 3세트 x Idle/Loco/Stop 9 PSD 전부 연결
+```
+미배선 잔여 = `11_Run_Combat_Fast` 13클립(스프린트 락온 이동)뿐. 필요해지면 그때.
 
 ### ⑤ 미착수 폴리싱
 ~~트레일 NS 27개 미배정~~ ✅ 완료 (07-31) / ~~사운드 3대 배선~~ ✅ 완료 (아래) / ~~데미지 GE 26노드~~ ✅ DamageMultiplier 방식으로 대체 배선됨 / LoP식 방사형 회피 이펙트 보류.
