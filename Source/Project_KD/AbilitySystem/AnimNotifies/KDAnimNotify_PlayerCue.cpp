@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/AnimNotifies/AN_PlayerCue.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotify_PlayerCue.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 
-void UAN_PlayerCue::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotify_PlayerCue::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                            const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
@@ -22,7 +22,7 @@ void UAN_PlayerCue::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
 	ASC->ExecuteGameplayCue(CueTag, CueParams);
 }
 
-FString UAN_PlayerCue::GetNotifyName_Implementation() const
+FString UKDAnimNotify_PlayerCue::GetNotifyName_Implementation() const
 {
 	return TEXT("GameplayCue");
 }

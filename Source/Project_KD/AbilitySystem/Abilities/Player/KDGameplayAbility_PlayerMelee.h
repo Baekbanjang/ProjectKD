@@ -12,8 +12,8 @@ struct FComboNode;
 enum class EComboContext : uint8;
 // 플레이어 근접 공격 공통 베이스 — 히트스탑 + 타격감 큐 + 락온 자동조준
 // 자식의 차이는 몽타주를 어디서 받느냐 하나뿐
-//   콤보 계열   UGA_PlayerAttackBase | UGA_PlayerAirAttackBase — 노드가 AttackMontage 를 채움
-//   단발 계열   UGA_SprintAttack | UGA_CounterThrust — 에디터에서 AttackMontage 직접 지정
+//   콤보 계열   UKDGameplayAbility_PlayerCombo | UKDGameplayAbility_PlayerAirCombo — 노드가 AttackMontage 를 채움
+//   단발 계열   UKDGameplayAbility_SprintAttack | UKDGameplayAbility_CounterThrust — 에디터에서 AttackMontage 직접 지정
 UCLASS(Abstract)
 class PROJECT_KD_API UKDGameplayAbility_PlayerMelee : public UKDGameplayAbility_MeleeTrace
 {

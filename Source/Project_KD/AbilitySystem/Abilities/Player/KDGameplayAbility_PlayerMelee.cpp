@@ -10,7 +10,7 @@
 #include "HAL/IConsoleManager.h"
 #include "KDGameplayTags.h"
 #include "MotionWarpingComponent.h"
-#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_MeleeTrace.h"
 #include "AbilitySystem/Combo/KDComboComponent.h"
 #include "AbilitySystem/Combo/KDComboTreeDataAsset.h"
 #include "Combat/Data/KDHitConfirmProfile.h"
@@ -50,7 +50,7 @@ void UKDGameplayAbility_PlayerMelee::OnTargetHit(AActor* HitActor, UAbilitySyste
 	AttackerASC->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_PlayerHitConfirm, CueParams);
 
 	// 히트스탑 윈도우 확보 - bIgnoreHitStop 확인 후 생략 가능
-	const UANS_MeleeTrace* Window = GetActiveWindow();
+	const UKDAnimNotifyState_MeleeTrace* Window = GetActiveWindow();
 	if (Window && Window->bIgnoreHitStop) { return; }
 	
 	// 정지 주체는 공격자 HitStopComponent

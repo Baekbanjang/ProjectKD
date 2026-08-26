@@ -1,18 +1,18 @@
-#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_MeleeTrace.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
 
-UANS_MeleeTrace::UANS_MeleeTrace()
+UKDAnimNotifyState_MeleeTrace::UKDAnimNotifyState_MeleeTrace()
 {
 #if WITH_EDITORONLY_DATA
 	NotifyColor = FColor::Red;
 #endif
 }
 
-void UANS_MeleeTrace::NotifyBegin(
+void UKDAnimNotifyState_MeleeTrace::NotifyBegin(
 	USkeletalMeshComponent* MeshComp,
 	UAnimSequenceBase* Animation,
 	float TotalDuration,
@@ -35,7 +35,7 @@ void UANS_MeleeTrace::NotifyBegin(
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
-void UANS_MeleeTrace::NotifyEnd(
+void UKDAnimNotifyState_MeleeTrace::NotifyEnd(
 	USkeletalMeshComponent* MeshComp,
 	UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
@@ -53,7 +53,7 @@ void UANS_MeleeTrace::NotifyEnd(
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
-FString UANS_MeleeTrace::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_MeleeTrace::GetNotifyName_Implementation() const
 {
 	return TEXT("MeleeTrace");
 }

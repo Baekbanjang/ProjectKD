@@ -9,7 +9,7 @@
 UKDGameplayEffect_StaminaCost::UKDGameplayEffect_StaminaCost()
 {
 	// Instant: Stamina += SetByCaller(SetByCaller.Stamina).
-	// 호출자가 음수 전달, UAS_Player::PreAttributeChange가 0~Max 자동 클램프.
+	// 호출자가 음수 전달, UKDPlayerAttributeSet::PreAttributeChange가 0~Max 자동 클램프.
 	
 	DurationPolicy = EGameplayEffectDurationType::Instant;
 

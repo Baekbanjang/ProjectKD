@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "AT_MeleeTrace.generated.h"
+#include "KDAbilityTask_MeleeTrace.generated.h"
 
 class UMeshComponent;
 
@@ -28,16 +28,16 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponTraceHitDelegate, const FHitR
 // StartSocket↔EndSocket 축을 따라 prev→cur 프레임 궤적을 캡슐 스윕.
 // SubSteps(1~8) 보간으로 고속 스윙 터널링 방지. 태스크 수명 동안 액터당 OnHit 1회.
 UCLASS()
-class PROJECT_KD_API UAT_MeleeTrace : public UAbilityTask
+class PROJECT_KD_API UKDAbilityTask_MeleeTrace : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
-	UAT_MeleeTrace(const FObjectInitializer& ObjectInitializer);
+	UKDAbilityTask_MeleeTrace(const FObjectInitializer& ObjectInitializer);
 
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
 		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "true"))
-	static UAT_MeleeTrace* MeleeTrace(
+	static UKDAbilityTask_MeleeTrace* MeleeTrace(
 		UGameplayAbility* OwningAbility,
 		UMeshComponent* WeaponMesh,
 		FName StartSocket,

@@ -1,20 +1,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystem/Tasks/AT_MeleeTrace.h" // ETraceMode
+#include "AbilitySystem/Tasks/KDAbilityTask_MeleeTrace.h" // ETraceMode
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_MeleeTrace.generated.h"
+#include "KDAnimNotifyState_MeleeTrace.generated.h"
 
 // 몽타주 타임라인에 배치해 무기 위험 구간을 표시.
-// Begin → Event.Montage.TraceBegin 발신(GA가 UAT_MeleeTrace 시작). End → TraceEnd.
+// Begin → Event.Montage.TraceBegin 발신(GA 가 UKDAbilityTask_MeleeTrace 시작). End → TraceEnd.
 // Per-window 오버라이드(below): empty/zero = GA 기본값 상속. Payload.OptionalObject=this로 동기 전달.
 UCLASS(meta = (DisplayName = "Melee Trace Window"))
-class PROJECT_KD_API UANS_MeleeTrace : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_MeleeTrace : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
-	UANS_MeleeTrace();
+	UKDAnimNotifyState_MeleeTrace();
 
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

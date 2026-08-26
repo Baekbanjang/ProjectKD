@@ -5,8 +5,8 @@
 #include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "KDGameplayTags.h"
-#include "AbilitySystem/AnimNotifies/ANS_MeleeTrace.h"
-#include "AbilitySystem/Tasks/AT_MeleeTrace.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_MeleeTrace.h"
+#include "AbilitySystem/Tasks/KDAbilityTask_MeleeTrace.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Animation/AnimInstance.h"
@@ -99,7 +99,7 @@ void UKDGameplayAbility_MeleeTrace::OnTraceBeginEvent(FGameplayEventData Payload
 	ETraceMode EffMode = TraceMode;
 	float EffRadius = CapsuleRadius;
 	ETraceMeshSource EffSource = MeshSource;
-	if (const UANS_MeleeTrace* Window = Cast<UANS_MeleeTrace>(Payload.OptionalObject))
+	if (const UKDAnimNotifyState_MeleeTrace* Window = Cast<UKDAnimNotifyState_MeleeTrace>(Payload.OptionalObject))
 	{
 		ActiveWindow = Window;
 		if (Window->StartSocketOverride != NAME_None) EffStartSocket = Window->StartSocketOverride;
@@ -162,7 +162,7 @@ void UKDGameplayAbility_MeleeTrace::OnTraceBeginEvent(FGameplayEventData Payload
 		ActiveTraceTask = nullptr;
 	}
 	
-	ActiveTraceTask = UAT_MeleeTrace::MeleeTrace(
+	ActiveTraceTask = UKDAbilityTask_MeleeTrace::MeleeTrace(
 		this, TraceMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug);
 	if (!IsValid(ActiveTraceTask))
 	{

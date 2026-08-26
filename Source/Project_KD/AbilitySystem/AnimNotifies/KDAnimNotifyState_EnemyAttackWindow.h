@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_EnemyAttackWindow.generated.h"
+#include "KDAnimNotifyState_EnemyAttackWindow.generated.h"
 
 /**
  * 적 공격 몽타주의 "위험 구간"에 배치 — 이 구간 동안 owner ASC에 State.Combat.EnemyAttackHitWindow 태그 부여.
@@ -13,12 +13,12 @@
  * Begin: AddLooseGameplayTag / End: RemoveLooseGameplayTag
  */
 UCLASS()
-class PROJECT_KD_API UANS_EnemyAttackWindow : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_EnemyAttackWindow : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
-	UANS_EnemyAttackWindow();
+	UKDAnimNotifyState_EnemyAttackWindow();
 
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

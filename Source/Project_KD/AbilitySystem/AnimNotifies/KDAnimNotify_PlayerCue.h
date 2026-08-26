@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AN_PlayerCue.generated.h"
+#include "KDAnimNotify_PlayerCue.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_KD_API UAN_PlayerCue : public UAnimNotify
+class PROJECT_KD_API UKDAnimNotify_PlayerCue : public UAnimNotify
 {
 	GENERATED_BODY()
 

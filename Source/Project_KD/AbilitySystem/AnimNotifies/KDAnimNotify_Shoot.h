@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AN_Shoot.generated.h"
+#include "KDAnimNotify_Shoot.generated.h"
 
 /**
  * 발사 프레임 노티 — Event.Montage.Shoot 전송
  */
 UCLASS()
-class PROJECT_KD_API UAN_Shoot : public UAnimNotify
+class PROJECT_KD_API UKDAnimNotify_Shoot : public UAnimNotify
 {
 	GENERATED_BODY()
 

@@ -1,17 +1,17 @@
-#include "AbilitySystem/AnimNotifies/ANS_WeaponTrail.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_WeaponTrail.h"
 
 #include "Components/MeshComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 
-UANS_WeaponTrail::UANS_WeaponTrail()
+UKDAnimNotifyState_WeaponTrail::UKDAnimNotifyState_WeaponTrail()
 {
 	// 기능 : 현재 NS 계열의 기본 파라미터 등록
 	FloatParams.Add(TEXT("Trail Width"), 200.f);      // 트레일 폭
 	FloatParams.Add(TEXT("Lifetime_Trail"), 0.12f);   // 라이프타임
 }
 
-void UANS_WeaponTrail::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_WeaponTrail::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                    float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
@@ -68,7 +68,7 @@ void UANS_WeaponTrail::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequen
 	SpawnedTrails.Add(MeshComp, Trail);   // 액터별 등록 
 }
 
-void UANS_WeaponTrail::NotifyEnd(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_WeaponTrail::NotifyEnd(USkeletalMeshComponent* MeshComp,UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
@@ -83,7 +83,7 @@ void UANS_WeaponTrail::NotifyEnd(USkeletalMeshComponent* MeshComp,UAnimSequenceB
 	}
 }
 
-FString UANS_WeaponTrail::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_WeaponTrail::GetNotifyName_Implementation() const
 {
 	return TEXT("WeaponTrail");
 }

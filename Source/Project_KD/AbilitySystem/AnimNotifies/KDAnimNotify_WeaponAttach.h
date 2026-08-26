@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AN_WeaponAttach.generated.h"
+#include "KDAnimNotify_WeaponAttach.generated.h"
 
 /**
  * 
@@ -19,7 +19,7 @@ enum class EWeaponAttachTarget : uint8
 };
 
 UCLASS(meta = (DisplayName = "Weapon Attach"))
-class PROJECT_KD_API UAN_WeaponAttach : public UAnimNotify
+class PROJECT_KD_API UKDAnimNotify_WeaponAttach : public UAnimNotify
 {
 	GENERATED_BODY()
 

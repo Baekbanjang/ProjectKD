@@ -1,17 +1,17 @@
-#include "AbilitySystem/Tasks/AT_MeleeTrace.h"
+#include "AbilitySystem/Tasks/KDAbilityTask_MeleeTrace.h"
 
 #include "Components/MeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 
-UAT_MeleeTrace::UAT_MeleeTrace(const FObjectInitializer& ObjectInitializer)
+UKDAbilityTask_MeleeTrace::UKDAbilityTask_MeleeTrace(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bTickingTask = true;
 }
 
-UAT_MeleeTrace* UAT_MeleeTrace::MeleeTrace(
+UKDAbilityTask_MeleeTrace* UKDAbilityTask_MeleeTrace::MeleeTrace(
 	UGameplayAbility* OwningAbility,
 	UMeshComponent* InWeaponMesh,
 	FName InStartSocket,
@@ -20,7 +20,7 @@ UAT_MeleeTrace* UAT_MeleeTrace::MeleeTrace(
 	float InCapsuleRadius,
 	bool bInDrawDebug)
 {
-	UAT_MeleeTrace* Task = NewAbilityTask<UAT_MeleeTrace>(OwningAbility);
+	UKDAbilityTask_MeleeTrace* Task = NewAbilityTask<UKDAbilityTask_MeleeTrace>(OwningAbility);
 	Task->WeaponMesh = InWeaponMesh;
 	Task->StartSocket = InStartSocket;
 	Task->EndSocket = InEndSocket;
@@ -30,7 +30,7 @@ UAT_MeleeTrace* UAT_MeleeTrace::MeleeTrace(
 	return Task;
 }
 
-void UAT_MeleeTrace::Activate()
+void UKDAbilityTask_MeleeTrace::Activate()
 {
 	Super::Activate();
 
@@ -44,7 +44,7 @@ void UAT_MeleeTrace::Activate()
 	AlreadyHitActors.Reset();
 }
 
-void UAT_MeleeTrace::TickTask(float DeltaTime)
+void UKDAbilityTask_MeleeTrace::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 
@@ -185,7 +185,7 @@ void UAT_MeleeTrace::TickTask(float DeltaTime)
 	PrevEnd = CurEnd;
 }
 
-void UAT_MeleeTrace::OnDestroy(bool bInOwnerFinished)
+void UKDAbilityTask_MeleeTrace::OnDestroy(bool bInOwnerFinished)
 {
 	AlreadyHitActors.Reset();
 	Super::OnDestroy(bInOwnerFinished);

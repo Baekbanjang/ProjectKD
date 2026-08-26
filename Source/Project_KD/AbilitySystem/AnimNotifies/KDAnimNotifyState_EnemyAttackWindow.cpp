@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/AnimNotifies/ANS_EnemyAttackWindow.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_EnemyAttackWindow.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 
-UANS_EnemyAttackWindow::UANS_EnemyAttackWindow()
+UKDAnimNotifyState_EnemyAttackWindow::UKDAnimNotifyState_EnemyAttackWindow()
 : AttackWindowTag(GameplayTags::State_Combat_EnemyAttackHitWindow)
 {
 #if WITH_EDITORONLY_DATA
@@ -15,7 +15,7 @@ UANS_EnemyAttackWindow::UANS_EnemyAttackWindow()
 #endif
 }
 
-void UANS_EnemyAttackWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_EnemyAttackWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                          float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
@@ -30,7 +30,7 @@ void UANS_EnemyAttackWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnim
 	ASC->AddLooseGameplayTag(AttackWindowTag);
 }
 
-void UANS_EnemyAttackWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_EnemyAttackWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
@@ -45,7 +45,7 @@ void UANS_EnemyAttackWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSe
 	ASC->RemoveLooseGameplayTag(AttackWindowTag);
 }
 
-FString UANS_EnemyAttackWindow::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_EnemyAttackWindow::GetNotifyName_Implementation() const
 {
 	return TEXT("EnemyAttackWindow");
 }

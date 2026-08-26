@@ -1,16 +1,16 @@
-#include "AbilitySystem/AnimNotifies/ANS_TelegraphWindow.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_TelegraphWindow.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 
-UANS_TelegraphWindow::UANS_TelegraphWindow()
+UKDAnimNotifyState_TelegraphWindow::UKDAnimNotifyState_TelegraphWindow()
 {
 #if WITH_EDITORONLY_DATA
 	NotifyColor = FColor::Orange;
 #endif
 }
 
-void UANS_TelegraphWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_TelegraphWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
@@ -25,7 +25,7 @@ void UANS_TelegraphWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSe
 	ASC->AddGameplayCue(TelegraphCueTag);
 }
 
-void UANS_TelegraphWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_TelegraphWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
@@ -40,7 +40,7 @@ void UANS_TelegraphWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequ
 	ASC->RemoveGameplayCue(TelegraphCueTag);
 }
 
-FString UANS_TelegraphWindow::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_TelegraphWindow::GetNotifyName_Implementation() const
 {
 	return TEXT("TelegraphWindow");
 }

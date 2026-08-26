@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "AN_ShotBlast.generated.h"
+#include "KDAnimNotify_ShotBlast.generated.h"
 
 // 콤보 속 총 발사 프레임 노티 — Event.Montage.ShotBlast 전송
 UCLASS(meta = (DisplayName = "Shot Blast"))
-class PROJECT_KD_API UAN_ShotBlast : public UAnimNotify
+class PROJECT_KD_API UKDAnimNotify_ShotBlast : public UAnimNotify
 {
 	GENERATED_BODY()
 

@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/AnimNotifies/AN_WeaponAttach.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotify_WeaponAttach.h"
 
 #include "Combat/KDWeaponComponent.h"
 
-void UAN_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotify_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                               const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
@@ -32,7 +32,7 @@ void UAN_WeaponAttach::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
 	}
 }
 
-FString UAN_WeaponAttach::GetNotifyName_Implementation() const
+FString UKDAnimNotify_WeaponAttach::GetNotifyName_Implementation() const
 {
 	return TEXT("Weapon Attach");
 }

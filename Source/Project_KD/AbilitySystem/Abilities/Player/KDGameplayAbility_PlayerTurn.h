@@ -24,7 +24,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
 
-	// UGA_ActionBase virtual hook — orient-to-movement 복원 + State.Movement.Turning 태그 제거.
+	// UKDGameplayAbility virtual hook — orient-to-movement 복원 + State.Movement.Turning 태그 제거.
 	virtual void OnCleanup(bool bWasCancelled) override;
 
 	// 180도 턴 몽타주. [0] = 우(R, +각도), [1] = 좌(L, -각도).

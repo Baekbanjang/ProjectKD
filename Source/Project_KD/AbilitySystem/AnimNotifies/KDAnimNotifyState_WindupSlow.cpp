@@ -1,4 +1,4 @@
-#include "AbilitySystem/AnimNotifies/ANS_WindupSlow.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_WindupSlow.h"
 
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
@@ -13,11 +13,11 @@ static float GetEffectiveSlowRate(USkeletalMeshComponent* MeshComp, float SlowRa
 	return FMath::Clamp(SlowRate * Multiplier, 0.05f, 1.0f);
 }
 
-UANS_WindupSlow::UANS_WindupSlow()
+UKDAnimNotifyState_WindupSlow::UKDAnimNotifyState_WindupSlow()
 {
 }
 
-void UANS_WindupSlow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UKDAnimNotifyState_WindupSlow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
@@ -31,7 +31,7 @@ void UANS_WindupSlow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	}
 }
 
-void UANS_WindupSlow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UKDAnimNotifyState_WindupSlow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
@@ -51,7 +51,7 @@ void UANS_WindupSlow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceB
 	}
 }
 
-FString UANS_WindupSlow::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_WindupSlow::GetNotifyName_Implementation() const
 {
 	return TEXT("WindupSlow");
 }

@@ -37,7 +37,7 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		const FGameplayEventData* TriggerEventData) override;
 
-	// UGA_ActionBase virtual hook — GE 핸들 + 태그 정리.
+	// UKDGameplayAbility virtual hook — GE 핸들 + 태그 정리.
 	virtual void OnCleanup(bool bWasCancelled) override;
 
 	// 4방향 닷지 Montage. 인덱스 = EDodgeDirection 순서 (F/B/L/R).

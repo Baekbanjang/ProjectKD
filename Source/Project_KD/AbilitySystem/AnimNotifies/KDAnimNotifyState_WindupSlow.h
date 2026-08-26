@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_WindupSlow.generated.h"
+#include "KDAnimNotifyState_WindupSlow.generated.h"
 
 // Drag onto an enemy attack Montage's wind-up region to stretch the telegraph,
 // giving the player a fair reaction window (asymmetric combat: only enemies telegraph).
@@ -11,12 +11,12 @@
 // SlowRate = "apex hold" (reads as charging). Keep this region OUT of the forward
 // swing so root-motion lunge distance stays full-speed.
 UCLASS(meta = (DisplayName = "Windup Slow (Telegraph)"))
-class PROJECT_KD_API UANS_WindupSlow : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_WindupSlow : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
-	UANS_WindupSlow();
+	UKDAnimNotifyState_WindupSlow();
 
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

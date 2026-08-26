@@ -12,7 +12,7 @@ class UGameplayEffect;
 // 콤보 계열 플레이어 공격 GA
 // 몽타주는 DA_ComboTree 노드가 줌 — ActivateAbility가 AttackMontage를 덮어씀
 // 그래서 Action|Montage 카테고리를 디테일에서 숨김
-// 타격감/락온은 부모(UGA_PlayerMeleeAttackBase)가 함
+// 타격감/락온은 부모(UKDGameplayAbility_PlayerMelee)가 함
 // 자식(Light/Heavy)은 생성자에서 ComboInputTag만 지정
 
 UCLASS(Abstract, HideCategories = ("Action|Montage"))

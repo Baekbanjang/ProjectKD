@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "KDGameplayAbility.h"
-#include "AbilitySystem/Tasks/AT_MeleeTrace.h"
+#include "AbilitySystem/Tasks/KDAbilityTask_MeleeTrace.h"
 #include "KDGameplayAbility_MeleeTrace.generated.h"
 
-class UANS_MeleeTrace;
+class UKDAnimNotifyState_MeleeTrace;
 class UAnimMontage;
-class UAT_MeleeTrace;
+class UKDAbilityTask_MeleeTrace;
 class UGameplayEffect;
 
 // 근접 무기 판정 베이스 — 플레이어 공격 / 적 공격
@@ -79,7 +79,7 @@ protected:
 	// 오버라이드 시 Super 호출 필수 — 트레이스 정리가 여기에 연결됨
 	virtual void OnCleanup(bool bWasCancelled) override;
 
-	const UANS_MeleeTrace* GetActiveWindow() const { return ActiveWindow.Get(); }
+	const UKDAnimNotifyState_MeleeTrace* GetActiveWindow() const { return ActiveWindow.Get(); }
 
 private:
 	UFUNCTION() void OnTraceBeginEvent(FGameplayEventData Payload);
@@ -89,10 +89,10 @@ private:
 	UFUNCTION() void OnMontageInterrupted();
 
 	UPROPERTY()
-	TObjectPtr<UAT_MeleeTrace> ActiveTraceTask;
+	TObjectPtr<UKDAbilityTask_MeleeTrace> ActiveTraceTask;
 
 	UPROPERTY()
 	TSet<TObjectPtr<AActor>> AlreadyHitActors;
 	
-	TWeakObjectPtr<const UANS_MeleeTrace> ActiveWindow;
+	TWeakObjectPtr<const UKDAnimNotifyState_MeleeTrace> ActiveWindow;
 };

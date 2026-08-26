@@ -123,7 +123,7 @@ public:
 	float TurnRate = 360.f;
 
 	// --- 어빌리티 ---
-	// 스폰 시 부여(예: UGA_EnemyBasicAttack BP child, ranged GA BP child).
+	// 스폰 시 부여(예: UKDGameplayAbility_EnemyMeleeTrace BP child, ranged GA BP child).
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;
 

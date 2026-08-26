@@ -1,4 +1,4 @@
-#include "AbilitySystem/AnimNotifies/ANS_CancelWindow.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_CancelWindow.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
@@ -6,12 +6,12 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Actor.h"
 
-UANS_CancelWindow::UANS_CancelWindow()
+UKDAnimNotifyState_CancelWindow::UKDAnimNotifyState_CancelWindow()
 	: CancelTag(GameplayTags::State_Combat_CanCancel)
 {
 }
 
-void UANS_CancelWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
+void UKDAnimNotifyState_CancelWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 
@@ -25,7 +25,7 @@ void UANS_CancelWindow::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeque
 	ASC->AddLooseGameplayTag(CancelTag);
 }
 
-void UANS_CancelWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
+void UKDAnimNotifyState_CancelWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);
 
@@ -39,7 +39,7 @@ void UANS_CancelWindow::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	ASC->RemoveLooseGameplayTag(CancelTag);
 }
 
-FString UANS_CancelWindow::GetNotifyName_Implementation() const
+FString UKDAnimNotifyState_CancelWindow::GetNotifyName_Implementation() const
 {
 	return TEXT("CancelWindow");
 }

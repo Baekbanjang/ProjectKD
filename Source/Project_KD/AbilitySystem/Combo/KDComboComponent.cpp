@@ -25,7 +25,7 @@ const FComboNode* UKDComboComponent::ProcessInput(FGameplayTag InputTag, EComboC
 	const UKDComboTreeDataAsset* Tree = (Context == EComboContext::Air) ? AirComboTree : ComboTree;
 	if (!IsValid(Tree))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[KD] UComboComponent: ComboTree(ctx=%d) not assigned on %s"),
+		UE_LOG(LogTemp, Warning, TEXT("[KD] UKDComboComponent: ComboTree(ctx=%d) not assigned on %s"),
 			(int32)Context, *GetOwner()->GetName());
 		return nullptr;
 	}

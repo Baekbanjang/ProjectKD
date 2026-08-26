@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_WeaponTrail.generated.h"
+#include "KDAnimNotifyState_WeaponTrail.generated.h"
 
 class UNiagaraSystem;
 class UNiagaraComponent;
@@ -11,12 +11,12 @@ class UNiagaraComponent;
 // Begin = SocketName에 시스템 부착 + 등록된 유저 파라미터 전달
 // End = Deactivate로 리본 자연 소멸
 UCLASS(meta = (DisplayName = "Weapon Trail"))
-class PROJECT_KD_API UANS_WeaponTrail : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_WeaponTrail : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
-	UANS_WeaponTrail();
+	UKDAnimNotifyState_WeaponTrail();
 	
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

@@ -5,7 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
-#include "AbilitySystem/AnimNotifies/AN_ShotBlast.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotify_ShotBlast.h"
 #include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/Data/KDHitConfirmProfile.h"
@@ -42,8 +42,8 @@ void UKDGameplayAbility_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHan
 	}
 
 	// 노티 설정 — 히트스톱 끄기 | 총구 방향 | 총구 원점
-	const UAN_ShotBlast* Notify = TriggerEventData
-		? Cast<UAN_ShotBlast>(TriggerEventData->OptionalObject) : nullptr;
+	const UKDAnimNotify_ShotBlast* Notify = TriggerEventData
+		? Cast<UKDAnimNotify_ShotBlast>(TriggerEventData->OptionalObject) : nullptr;
 
 	// 총구 트랜스폼 — 무기 메시 소켓
 	const FTransform MuzzleXf = UKDAbilityStatics::GetMuzzleTransform(Avatar, MuzzleSocket, WeaponTag);

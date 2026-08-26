@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/AnimNotifies/AN_ShotBlast.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotify_ShotBlast.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "KDGameplayTags.h"
 
-void UAN_ShotBlast::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotify_ShotBlast::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                            const FAnimNotifyEventReference& EventReference)
 {
 	// 기능 : 발사 프레임에 GA 트리거용 이벤트 전송
@@ -25,7 +25,7 @@ void UAN_ShotBlast::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, Payload.EventTag, Payload);
 }
 
-FString UAN_ShotBlast::GetNotifyName_Implementation() const
+FString UKDAnimNotify_ShotBlast::GetNotifyName_Implementation() const
 {
 	return TEXT("ShotBlast");
 }

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_TelegraphWindow.generated.h"
+#include "KDAnimNotifyState_TelegraphWindow.generated.h"
 
 // Place in the montage windup region (before TraceBegin) to control telegraph timing.
 // NotifyBegin → AddGameplayCue(TelegraphCueTag)  → GCN_EnemyTelegraph spawns the VFX.
@@ -11,12 +11,12 @@
 // GA_EnemyBasicAttack::OnCleanup keeps its own RemoveGameplayCue as a cancellation safety net
 // in case the ability is interrupted before NotifyEnd fires.
 UCLASS(meta = (DisplayName = "Telegraph Window"))
-class PROJECT_KD_API UANS_TelegraphWindow : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_TelegraphWindow : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
 public:
-	UANS_TelegraphWindow();
+	UKDAnimNotifyState_TelegraphWindow();
 
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;

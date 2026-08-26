@@ -178,7 +178,7 @@ void AKDPlayerController::Handle_HeavyAttack()
 	if (PC) PC->TryHeavyAttack();
 }
 
-// IA_Dodge (Tap) — Shift 짧게 누르면 발동. Perfect 여부는 UGA_Dodge가 자체 판단
+// IA_Dodge (Tap) — Shift 짧게 누르면 발동. Perfect 여부는 UKDGameplayAbility_Dodge 가 자체 판단
 void AKDPlayerController::Handle_Dodge()
 {
 	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());

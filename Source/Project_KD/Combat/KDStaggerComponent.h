@@ -57,7 +57,7 @@ protected:
 	// 자동 복귀 타이머 콜백 — 처형 진행 중(State.Combat.Invulnerable)이면 skip.
 	void OnStaggerTimeout();
 
-	// F10 Stagger GE (BP 지정 가능, 기본값 = UGE_Stagger). Infinite + GrantedTag(State.Combat.Staggered).
+	// F10 Stagger GE (BP 지정 가능, 기본값 = UKDGameplayEffect_Stagger). Infinite + GrantedTag(State.Combat.Staggered).
 	UPROPERTY(EditDefaultsOnly, Category = "Stagger")
 	TSubclassOf<UGameplayEffect> StaggerEffectClass;
 

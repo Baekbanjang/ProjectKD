@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AbilitySystem/AnimNotifies/ANS_MovementCancel.h"
+#include "AbilitySystem/AnimNotifies/KDAnimNotifyState_MovementCancel.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 
-void UANS_MovementCancel::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_MovementCancel::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                                   float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
@@ -19,7 +19,7 @@ void UANS_MovementCancel::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeq
 	ASC->AddLooseGameplayTag(GameplayTags::State_Combat_MovementCanCancel);
 }
 
-void UANS_MovementCancel::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+void UKDAnimNotifyState_MovementCancel::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference)
 {
 	Super::NotifyEnd(MeshComp, Animation, EventReference);

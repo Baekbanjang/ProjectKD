@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ANS_MovementCancel.generated.h"
+#include "KDAnimNotifyState_MovementCancel.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECT_KD_API UANS_MovementCancel : public UAnimNotifyState
+class PROJECT_KD_API UKDAnimNotifyState_MovementCancel : public UAnimNotifyState
 {
 	GENERATED_BODY()
 
