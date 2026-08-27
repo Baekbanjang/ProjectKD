@@ -44,10 +44,6 @@ protected:
 	// 홀드 방어 GE(Infinite) — State.Combat.Parrying 부여(50% 감소)
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Parry")
 	TSubclassOf<UGameplayEffect> BlockGE;
-
-	// 퍼펙트 윈도우 길이(초). 
-	UPROPERTY(EditAnywhere, Category = "Action|Parry", meta = (ClampMin = "0.05", ClampMax = "1.0"))
-	float PerfectParryWindowSec = 0.2f;
 	
 	// Montage 재생 속도.
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage", meta = (ClampMin = "0.1", ClampMax = "3.0"))
