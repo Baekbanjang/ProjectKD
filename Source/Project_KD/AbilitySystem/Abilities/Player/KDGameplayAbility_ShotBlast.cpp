@@ -23,6 +23,10 @@ UKDGameplayAbility_ShotBlast::UKDGameplayAbility_ShotBlast()
 	Trigger.TriggerTag = GameplayTags::Event_Montage_ShotBlast;
 	Trigger.TriggerSource = EGameplayAbilityTriggerSource::GameplayEvent;
 	AbilityTriggers.Add(Trigger);
+
+	// 총격 조준
+	AutoAimFilter.Basis = EKDTargetBasisType::Camera;
+	AutoAimFilter.SortType = EKDTargetSortType::SmallestAngle;
 }
 
 void UKDGameplayAbility_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -53,22 +57,14 @@ void UKDGameplayAbility_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHan
 	const FVector ConeOrigin = (Notify && Notify->bUseMuzzleOrigin)
 		? MuzzleXf.GetLocation() : Avatar->GetActorLocation();
 
-	// 조준 각도 = 노티파이 우선, 0이면 GA 값
-	const float AimConeAngle = (Notify && Notify->AutoAimConeAngleOverride > 0.f)
-		? Notify->AutoAimConeAngleOverride : AutoAimConeAngle;
-
 	const float BodyAimLimit = (Notify && Notify->BodyAimLimitAngleOverride > 0.f)
 		? Notify->BodyAimLimitAngleOverride : BodyAimLimitAngle;
 
-	// 총격 자동 조준 
-	FKDTargetFilter ShotFilter;
-	ShotFilter.ShapeType = EKDTargetShapeType::Arc;
-	ShotFilter.Radius = ShotRange;
-	ShotFilter.HalfAngle = FMath::Clamp(AimConeAngle * 0.5f, 5.f, 135.f);
-	ShotFilter.Height = 500.f;
-	ShotFilter.HeightOffset = -150.f;
-	ShotFilter.Basis = EKDTargetBasisType::Camera;
-	ShotFilter.SortType = EKDTargetSortType::SmallestAngle;
+	FKDTargetFilter ShotFilter = AutoAimFilter;
+	if (Notify && Notify->AutoAimConeAngleOverride > 0.f)
+	{
+		ShotFilter.HalfAngle = FMath::Clamp(Notify->AutoAimConeAngleOverride * 0.5f, 5.f, 135.f);
+	}
 
 	// 발사 방향 = 총구 | 락온 타겟 | 폴백 = 액터 전방
 	FVector ShotDir = Avatar->GetActorForwardVector();
@@ -140,7 +136,7 @@ void UKDGameplayAbility_ShotBlast::GatherTargets(const FVector& Origin, const FV
 	// 후보 수집 — 총구 중심 사거리 구체
 	TArray<FOverlapResult> Overlaps;
 	World->OverlapMultiByChannel(Overlaps, Origin, FQuat::Identity, ECC_Pawn,
-		FCollisionShape::MakeSphere(ShotRange), Params);
+		FCollisionShape::MakeSphere(AutoAimFilter.Radius), Params);
 	
 	const float CosHalfAngle = FMath::Cos(FMath::DegreesToRadians(HalfAngle));
 	const float DebugLife = 1.f;   // 디버그 표시 시간
@@ -149,12 +145,12 @@ void UKDGameplayAbility_ShotBlast::GatherTargets(const FVector& Origin, const FV
 	{
 		if (HalfAngle >= 90.f)
 		{
-			DrawDebugSphere(World, Origin, ShotRange, 24, FColor::Yellow, false, DebugLife);
+			DrawDebugSphere(World, Origin, AutoAimFilter.Radius, 24, FColor::Yellow, false, DebugLife);
 		}
 		else
 		{
 			const float ConeRad = FMath::DegreesToRadians(HalfAngle);
-			DrawDebugCone(World, Origin, ShotDir, ShotRange, ConeRad, ConeRad,
+			DrawDebugCone(World, Origin, ShotDir, AutoAimFilter.Radius, ConeRad, ConeRad,
 			16, FColor::Yellow, false, DebugLife);
 		}
 		

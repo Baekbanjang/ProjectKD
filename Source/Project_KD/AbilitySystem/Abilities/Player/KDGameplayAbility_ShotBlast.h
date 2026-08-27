@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystem/Abilities/KDGameplayAbility.h"
+#include "Combat/Data/KDTargetFilter.h"
 #include "KDGameplayAbility_ShotBlast.generated.h"
 
 class UKDHitConfirmProfile;
@@ -29,10 +30,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot")
 	FName WeaponTag = TEXT("Gun");
 	
-	// 사거리
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "100.0", ClampMax = "3000.0"))
-	float ShotRange = 500.f;
-	
 	// 총알 확산 반(Half)각 — 총구 정면 기준
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "1.0", ClampMax = "89.0"))
 	float ShotHalfAngle = 20.f;
@@ -48,10 +45,10 @@ protected:
 	float DefaultShotKnockbackMultiplier = 1.5f;
 	
 	float ShotKnockbackMultiplier = 1.5f;
-
-	// 자동 조준 범위 각도 — 180 = 정면 좌우 90도
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "30.0", ClampMax = "360.0"))
-	float AutoAimConeAngle = 180.f;
+	
+	// 조준 대상 탐색 조건 — 반지름 = 히트스캔 후보 수집 반경 겸용
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot")
+	FKDTargetFilter AutoAimFilter;
 	
 	// 몸 정면 기준 조준 한계각
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Shot", meta = (ClampMin = "0.0", ClampMax = "180.0"))
