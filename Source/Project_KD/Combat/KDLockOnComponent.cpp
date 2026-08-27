@@ -11,6 +11,9 @@
 #include "KDGameplayTags.h"
 #include "Engine/OverlapResult.h"
 #include "Curves/CurveFloat.h"
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 UKDLockOnComponent::UKDLockOnComponent()
@@ -355,41 +358,54 @@ void UKDLockOnComponent::DrawFilterDebug(const FKDTargetFilter& Filter, const FV
 	const UWorld* World = GetWorld();
 	const AActor* Owner = GetOwner();
 	if (!World || !Owner) return;
-	constexpr float Duration = 1.0f;
-	const FVector Foot = Owner->GetActorLocation() + FVector(0.f, 0.f, Filter.HeightOffset);
-	const FVector Top = Foot + FVector(0.f, 0.f, Filter.Height);
-	
-	// 원기둥 = 전방위 통짜 | 부채꼴 = 위아래 호 + 경계선
+	constexpr float Duration = 4.0f;
+	const FVector OwnerLoc = Owner->GetActorLocation();
+
+	// 지면 높이 = 캡슐 아래 — 원점이 캡슐 중심이라 그냥 그리면 땅에 묻힌다
+	float CapsuleHalf = 0.f;
+	if (const ACharacter* OwnerChar = Cast<ACharacter>(Owner))
+	{
+		CapsuleHalf = OwnerChar->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	}
+	const FVector Ground = OwnerLoc - FVector(0.f, 0.f, CapsuleHalf - 5.f);
+
+	// 원기둥 = 전방위 원 | 부채꼴 = 호 + 좌우 경계선
 	if (Filter.ShapeType == EKDTargetShapeType::Cylinder)
 	{
-		DrawDebugCylinder(World, Foot, Top, Filter.Radius, 24, FColor::Cyan, false, Duration);
+		DrawDebugCircle(World, Ground, Filter.Radius, 48, FColor::Cyan, false, Duration, 0, 3.f,
+			FVector::ForwardVector, FVector::RightVector, false);
 	}
 	else
 	{
-		constexpr int32 Segments = 16;
+		constexpr int32 Segments = 24;
 		const float Step = (Filter.HalfAngle * 2.f) / Segments;
-		for (const FVector& Level : { Foot, Top })
+
+		// 호 — 세그먼트를 이어 그린다
+		FVector Prev = Ground + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius;
+		for (int32 i = 1; i <= Segments; ++i)
 		{
-			// 호 — 세그먼트를 이어 그린다
-			FVector Prev = Level + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius;
-			for (int32 i = 1; i <= Segments; ++i)
-			{
-				const FVector Cur = Level + Basis.RotateAngleAxis(-Filter.HalfAngle + Step * i, FVector::UpVector) * Filter.Radius;
-				DrawDebugLine(World, Prev, Cur, FColor::Cyan, false, Duration, 0, 2.f);
-				Prev = Cur;
-			}
-			// 좌우 경계선
-			DrawDebugLine(World, Level,
-				Level + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
-				FColor::Cyan, false, Duration, 0, 2.f);
-			DrawDebugLine(World, Level,
-				Level + Basis.RotateAngleAxis(Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
-				FColor::Cyan, false, Duration, 0, 2.f);
+			const FVector Cur = Ground + Basis.RotateAngleAxis(-Filter.HalfAngle + Step * i, FVector::UpVector) * Filter.Radius;
+			DrawDebugLine(World, Prev, Cur, FColor::Cyan, false, Duration, 0, 3.f);
+			Prev = Cur;
 		}
+
+		// 좌우 경계선
+		DrawDebugLine(World, Ground,
+			Ground + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
+			FColor::Cyan, false, Duration, 0, 3.f);
+		DrawDebugLine(World, Ground,
+			Ground + Basis.RotateAngleAxis(Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
+			FColor::Cyan, false, Duration, 0, 3.f);
 	}
-	
+
 	// 기준 벡터
-	DrawDebugLine(World, Foot, Foot + Basis * Filter.Radius, FColor::White, false, Duration, 0, 3.f);
+	DrawDebugLine(World, Ground, Ground + Basis * Filter.Radius, FColor::White, false, Duration, 0, 4.f);
+
+	// 판정 세로 범위
+	const FVector VolBottom = OwnerLoc + FVector(0.f, 0.f, Filter.HeightOffset);
+	DrawDebugLine(World, VolBottom, VolBottom + FVector(0.f, 0.f, Filter.Height),
+		FColor::Yellow, false, Duration, 0, 3.f);
+
 	// 통과 후보 초록 | 최종 선택 빨강
 	for (const AActor* Candidate : Candidates)
 	{

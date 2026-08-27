@@ -157,11 +157,9 @@ FVector AKDEnemyBaseCharacter::GetLockOnPoint_Implementation() const
 
 void AKDEnemyBaseCharacter::OnTargeted_Implementation(bool bIsTargeted)
 {
-	// 기능 : 락온 유무에 따른 상태 바 표시
-	if (StateBarWidget)
-	{
-		StateBarWidget->SetVisibility(bIsTargeted);
-	}
+	// 기능 : 락온 유무 갱신 후 상태 바 반영
+	bStateBarLockedOn = bIsTargeted;
+	RefreshStateBarVisibility();
 }
 
 // AI 거리·공격셋 게터 — 값 = EnemyDefinition
@@ -219,6 +217,22 @@ void AKDEnemyBaseCharacter::ReturnAttackToken()
 	}
 }
 
+void AKDEnemyBaseCharacter::RefreshStateBarVisibility()
+{
+	// 기능 : 표시 이유를 합쳐 반영 — 락온 또는 최근 피격
+	if (StateBarWidget)
+	{
+		StateBarWidget->SetVisibility(bStateBarLockedOn || bStateBarRecentHit);
+	}
+}
+
+void AKDEnemyBaseCharacter::ClearStateBarHitFlag()
+{
+	// 기능 : 피격 해제 후 상태 바 반영
+	bStateBarRecentHit = false;
+	RefreshStateBarVisibility();
+}
+
 void AKDEnemyBaseCharacter::OnHealthChanged(const FOnAttributeChangeData& Data)
 {
 	if (!bIsDead && Data.NewValue <= 0.0f)
@@ -230,6 +244,12 @@ void AKDEnemyBaseCharacter::OnHealthChanged(const FOnAttributeChangeData& Data)
 void AKDEnemyBaseCharacter::HandleDeath()
 {
 	bIsDead = true;
+
+	// 사망 시 상태바 관련 전부 해제
+	bStateBarLockedOn = false;
+	bStateBarRecentHit = false;
+	GetWorldTimerManager().ClearTimer(StateBarHitTimer);
+	RefreshStateBarVisibility();
 
 	// AbortForDeath 전에 캡처 — 처형 중 사망은 죽음 몽타주 스킵
 	const bool bExecutionDeath = ExecutionComp && ExecutionComp->IsExecutionDeath();
@@ -429,6 +449,12 @@ void AKDEnemyBaseCharacter::OnHitReceived(const FGameplayEventData* Payload)
 	{
 		return;
 	}
+
+	// 피격시 - 지속 시간 동안 상태 바 노출
+	bStateBarRecentHit = true;
+	RefreshStateBarVisibility();
+	GetWorldTimerManager().SetTimer(StateBarHitTimer, this,
+		&AKDEnemyBaseCharacter::ClearStateBarHitFlag, StateBarHitDuration, false);
 
 	ReportHitToPerception(Payload);
 

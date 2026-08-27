@@ -159,6 +159,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn")
 	FName LockOnSocketName = TEXT("spine_03");
 
+	// 상태 바 피격 표시 지속 시간
+	UPROPERTY(EditDefaultsOnly, Category = "UI", meta = (ClampMin = "0.5", ClampMax = "10.0"))
+	float StateBarHitDuration = 4.f;
+
 	// HomeLocation 캐시 + 상태 바 대상 전달
 	virtual void BeginPlay() override;
 
@@ -226,4 +230,19 @@ private:
 
 	// 패트롤 기준점 — BeginPlay 캐시
 	FVector HomeLocation = FVector::ZeroVector;
+
+	// 상태 바 표시 갱신 — 락온 유무 또는 최근 피격 유무
+	void RefreshStateBarVisibility();
+	
+	// 최근 피격 표시 해제
+	void ClearStateBarHitFlag();
+	
+	// 락온 유무
+	bool bStateBarLockedOn = false;
+	
+	// 최근 피격 유무
+	bool bStateBarRecentHit = false;
+	
+	// 최근 피격 해제 타이머
+	FTimerHandle StateBarHitTimer;
 };
