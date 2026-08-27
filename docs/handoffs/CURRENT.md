@@ -46,6 +46,18 @@ dev-log = `2026-08-27-dataasset-load-failure.md`
 ```
 노드 위치 = `EventGraph` `x1538 y1204` `Min (Float)` -> 오른쪽 `float * float` -> `Set Width Override`
 
+### ✅ 실행 완료 (2026-08-27) — Content `2982fea` · PIE 통과
+
+```
+Min (Float)     A <- Get MaxPoiseCache   B  10 -> 20     칸 개수 상한
+float * float   A <- Min 출력             B  10 유지       칸당 픽셀
+=> 폭 = Min(MaxPoise x 10, 200)
+   궁수 100 / 밴딧·패리밴딧·경직더미 150 / 엘리트 200 / 불멸더미 200(상한)
+```
+⚠️ **핀을 헷갈리기 쉽다** — 두 노드 다 B 핀에 10 이 들어 있었다. 구분 = `A` 핀에 무엇이 꽂혔나.
+`Min` 은 `Get MaxPoiseCache` 가 직접 / 곱셈은 `Min` 의 출력이 꽂힌다. 처음에 곱셈 쪽을 고쳐
+전부 200 으로 붙었다(고치기 전보다 나빴다). **상한을 안 올리고 칸당 픽셀만 2배 하면 전부 상한에 걸린다.**
+
 ### ✅ 결정 (2026-08-27 승환) — **C안: 지금은 폭만 막고, 점(Dot) 방식은 적 밸런싱 때**
 
 SB 덤프 실측 결과 **SB 는 격파 게이지를 바가 아니라 점 나열로 그린다.** 그리고 그 UI 는
