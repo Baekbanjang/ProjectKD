@@ -4,6 +4,7 @@
 #include "Abilities/GameplayAbility.h"
 #include "KDGameplayAbility.generated.h"
 
+struct FKDTargetFilter;
 class UKDLockOnComponent;
 class UKDComboComponent;
 
@@ -48,7 +49,7 @@ protected:
 	UKDComboComponent* GetComboComponentFromActorInfo() const;
 
 	// 자동 조준 대상 — 락온 중이면 고정 타겟 / 그 외 범위 안 각도 최소 적
-	AActor* FindAutoAimTarget(float Range, float ConeAngle) const;
+	AActor* FindAutoAimTarget(const FKDTargetFilter& Filter) const;
 
 private:
 	void OnSafetyTimeout();

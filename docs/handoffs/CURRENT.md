@@ -11,7 +11,31 @@
 
 ---
 
-## 🔴 2026-08-26 — 클래스 개명 68개. **에디터 검증이 남았다. 새 세션은 여기부터**
+## 🟢 2026-08-27 — 대상 탐색 필터 구조 + 자동 조준 결함 6건 해소 **(새 세션은 여기부터)**
+
+dev-log = `2026-08-27-target-filter-autoaim.md`
+
+```
+신규        Combat/Data/KDTargetFilter.h — Arc|Cylinder · 반각 · 높이 · 기준벡터 · 정렬 · bDrawDebug
+분리        FindBestTarget(락온) / FindTargetByFilter(공용) / GatherCandidates / GetFilterBasis
+해결 6건     등뒤 스냅 · 콘360 무효화 · 멀어도 중앙이면 뽑힘 · 카메라 기준 · 위아래 안 잘림 · 함수 공용
+검증        빌드 Succeeded(에러 0) · PIE 통과(승환)
+```
+
+### 다음 (순서)
+```
+1  적 상태 바        락온 OR 최근피격 타이머로 OR 합치기
+2  워프 체감 확인     MaxApproachRange 700 -> 300 실험. 자동 조준이 바뀌어 워프도 같이 좋아졌을 수 있다
+3  ShotBlast 이관    지금은 임시 필터를 매번 생성 — 멤버로 올리면 에디터 조절 가능
+4  적 상태 바 칸 폭   엘리트 Poise 25 = 250px > 바 폭 198
+5  캔슬 윈도우 02_02  20타 중 유일한 이상치(73%)
+```
+
+🟡 **미해결로 남긴 것** — `UKDLockOnComponent` 가 400줄대로 늘어 §1 Component 300줄 선 초과. 분리 검토 대상.
+
+---
+
+## ✅ 2026-08-26 — 클래스 개명 68개 (종결)
 
 dev-log = `2026-08-26-class-naming-convention.md` · `2026-08-26-poise-context-channel.md`
 

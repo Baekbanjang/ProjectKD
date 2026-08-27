@@ -124,15 +124,16 @@ void UKDGameplayAbility_PlayerMelee::OnActivated()
 	// 지난 공격 좌표 제거 — 타겟 없는 경로에서 옛 좌표로 끌려감 방지
 	if (Warp) Warp->RemoveWarpTarget(ApproachWarpName);
 	
-	AActor* Target = FindAutoAimTarget(AutoAimRange, AutoAimConeAngle);
+	AActor* Target = FindAutoAimTarget(AutoAimFilter);
 	if (!Target) return;
 	
 	// 락온 자동 조준 
 	const FVector ToTarget = (Target->GetActorLocation() - Attacker->GetActorLocation()).GetSafeNormal2D();
 	if (ToTarget.IsNearlyZero()) return;
 
-	// 뒤쪽 135도 초과는 제외
+	/// 뒤쪽 회전 제외 - 등 뒤 회전 방지
 	const float DeltaYaw = FMath::FindDeltaAngleDegrees(Attacker->GetActorRotation().Yaw, ToTarget.Rotation().Yaw);
+	if (FMath::Abs(DeltaYaw) > MaxAutoAimTurnAngle) return;
 	Attacker->SetActorRotation(FRotator(0.f, ToTarget.Rotation().Yaw, 0.f));
 
 	if (!Warp) return;

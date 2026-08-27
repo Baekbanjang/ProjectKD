@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "KDLockOnComponent.generated.h"
 
+struct FKDTargetFilter;
 class UWidgetComponent;
 class UKDLockOnConfig;
 
@@ -33,9 +34,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "LockOn")
 	AActor* GetLockedTarget() const { return LockedTarget.Get(); }
 
-	// 후보 적 검색 — Sphere Trace + 시야 콘(Dot) + LoS + IKDTargetable 모두 통과 중 각도 최소
-	// Radius / ConeAngle 음수 = Config 값
-	AActor* FindBestTarget(float OverrideRadius = -1.f, float OverrideConeAngle = -1.f) const;
+	// 락온 대상 검색
+	AActor* FindBestTarget() const;
+	
+	// 필터 조건으로 대상 1명 선택
+	AActor* FindTargetByFilter(const FKDTargetFilter& Filter) const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn")
@@ -55,6 +58,18 @@ private:
 	// 현재 타겟 유효성 — 사망/거리 초과/시야 잃음 검사.
 	bool IsTargetStillValid() const;
 
+	// 필터 범위 안의 자격 있는 후보 수집 — 중복 제거, 인터페이스, LoS 통과분
+	void GatherCandidates(const FKDTargetFilter& Filter, TArray<AActor*>& OutCandidates) const;
+
+	// 반각 기준 벡터
+	FVector GetFilterBasis(const FKDTargetFilter& Filter) const;
+
+#if !UE_BUILD_SHIPPING
+	// 필터 범위 디버그 표시 — 도형 · 후보 · 선택 대상
+	void DrawFilterDebug(const FKDTargetFilter& Filter, const FVector& Basis,
+		const TArray<AActor*>& Candidates, const AActor* Chosen) const;
+#endif
+	
 	// 시야 판정 — 나 -> 대상 직선을 월드 지오메트리가 막는지. 후보 검색과 락온 유지가 공용
 	bool HasLineOfSightTo(const AActor* Target) const;
 

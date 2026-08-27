@@ -129,75 +129,49 @@ void UKDLockOnComponent::ToggleLockOn()
 	}
 }
 
-AActor* UKDLockOnComponent::FindBestTarget(float OverrideRadius, float OverrideConeAngle) const
+AActor* UKDLockOnComponent::FindBestTarget() const
 {
-	if (!Config) return nullptr;
-	APawn* Owner = Cast<APawn>(GetOwner());
-	if (!Owner) return nullptr;
-	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
-	if (!PC) return nullptr;
+	// 기능 : 락온 대상 검색
+	return Config ? FindTargetByFilter(Config->TargetFilter) : nullptr;
+}
 
-	const FVector OwnerLoc = Owner->GetActorLocation();
-
-	// 인자 없으면 기본값 -1, 있으면  Config(>0.f는 기본값 -1.f라서)
-	const float SearchRadius = (OverrideRadius > 0.f) ? OverrideRadius : Config->LockOnRadius;
-	const float SearchConeAngle = (OverrideConeAngle > 0.f) ? OverrideConeAngle : Config->ViewConeAngle;
-
-	// 카메라 forward — 시야 콘 기준점
-	FVector CamLoc;
-	FRotator CamRot;
-	PC->GetPlayerViewPoint(CamLoc, CamRot);
-	const FVector CamForward = CamRot.Vector();
-
-	// SearchRadius 반경 Pawn 후보 모두 수집
-	TArray<FOverlapResult> Overlaps;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Owner);
-	GetWorld()->OverlapMultiByObjectType(
-		Overlaps,
-		OwnerLoc,
-		FQuat::Identity,
-		FCollisionObjectQueryParams(ECC_Pawn),
-		FCollisionShape::MakeSphere(SearchRadius),
-		Params);
+AActor* UKDLockOnComponent::FindTargetByFilter(const FKDTargetFilter& Filter) const
+{
+	// 기능 : 필터 조건으로 대상 1명 선택
+	TArray<AActor*> Candidates;
+	GatherCandidates(Filter, Candidates);
+	if (Candidates.Num() == 0) return nullptr;
 	
-	// 시야 콘 임계값 — ViewConeAngle=90이면 ±45도 → cos(45)≈0.707.
-	const float HalfAngleRad = FMath::DegreesToRadians(SearchConeAngle * 0.5f);
-	const float CosThreshold = FMath::Cos(HalfAngleRad);
-
-	AActor* BestTarget = nullptr;
-	float BestDot = -1.f; // 각도 최소 = 내적 최대 (마주보면 +1)
-	TSet<AActor*> Seen;
-
-	for (const FOverlapResult& Overlap : Overlaps)
+	const FVector OwnerLoc = GetOwner()->GetActorLocation();
+	const FVector Basis = GetFilterBasis(Filter);
+	AActor* Best = nullptr;
+	float BestScore = TNumericLimits<float>::Lowest();
+	for (AActor* Candidate : Candidates)
 	{
-		// null / 자기 자신 / 중복 액터(여러 콜리전 보유) 제거.
-		AActor* Candidate = Overlap.GetActor();
-		if (!Candidate || Candidate == Owner || Seen.Contains(Candidate)) continue;
-		Seen.Add(Candidate);
-
-		// IKDTargetable 인터페이스 + CanBeTargeted — Cast 회피, 적이 락온 자격 자가 판단.
-		if (!Candidate->Implements<UKDTargetableInterface>()) continue; // 락온 받을 자격 있는지
-		if (!IKDTargetableInterface::Execute_CanBeTargeted(Candidate)) continue; // 락온 가능한 상태인지
-
-		// 시야 콘 — 카메라 forward와 (Owner→Candidate) 방향 Dot product.
-		// 내적을 통해 시야 방향인지 확인
-		const FVector ToCand = (Candidate->GetActorLocation() - OwnerLoc).GetSafeNormal();
-		const float Dot = FVector::DotProduct(CamForward, ToCand);
-		if (Dot < CosThreshold) continue;
-
-		// LoS — 나 -> 적 직선에 벽이 있으면 제외 (장애물 뒤 적 불가)
-		if (!HasLineOfSightTo(Candidate)) continue;
-
-		// 콘 중심선에 가장 가까운 적 우선 — 내적이 클수록 각도가 작음
-		if (Dot > BestDot)
+		const FVector CandLoc = Candidate->GetActorLocation();
+		
+		// 각도순 = 내적 최대 | 최단거리 = 거리 부호 반전 후 최대
+		float Score;
+		if (Filter.SortType == EKDTargetSortType::SmallestAngle)
 		{
-			BestDot = Dot;
-			BestTarget = Candidate;
+			Score = FVector::DotProduct(Basis, (CandLoc - OwnerLoc).GetSafeNormal2D());
+		}
+		else
+		{
+			Score = -FVector::DistSquared2D(OwnerLoc, CandLoc);
+		}
+
+		// 점수가 최고점수보다 높으면 교체
+		if (Score > BestScore)
+		{
+			BestScore = Score;
+			Best = Candidate;
 		}
 	}
-	
-	return BestTarget;
+#if !UE_BUILD_SHIPPING
+	if (Filter.bDrawDebug) DrawFilterDebug(Filter, Basis, Candidates, Best);
+#endif
+	return Best;
 }
 
 void UKDLockOnComponent::EngageLockOn(AActor* NewTarget)
@@ -273,23 +247,158 @@ bool UKDLockOnComponent::IsTargetStillValid() const
 	AActor* Target = LockedTarget.Get();
 	if (!IsValid(Target)) return false;
 
-	// 사망/무적 등 → CanBeTargeted false.
+	// 사망/무적 등 → CanBeTargeted false
 	if (Target->Implements<UKDTargetableInterface>())
 	{
 		if (!IKDTargetableInterface::Execute_CanBeTargeted(Target)) return false;
 	}
 
-	// 거리 초과 → 해제 
+	// 거리 초과 -> 해제 
 	APawn* Owner = Cast<APawn>(GetOwner());
 	if (!Owner) return false;
 	const float DistSq = FVector::DistSquared(Owner->GetActorLocation(), Target->GetActorLocation());
-	if (DistSq > Config->LockOnRadius * Config->LockOnRadius) return false;
 
-	// LoS 잃음 → 해제 (장애물 뒤).
+	// 필터 반지름보다 높으면 해제
+	if (DistSq > FMath::Square(Config->TargetFilter.Radius)) return false;
+
+	// LoS 잃음 → 해제 (장애물 뒤)
 	if (!HasLineOfSightTo(Target)) return false;
 
 	return true;
 }
+
+void UKDLockOnComponent::GatherCandidates(const FKDTargetFilter& Filter, TArray<AActor*>& OutCandidates) const
+{
+	// 기능 : 필터 범위 안의 자격 있는 후보 수집
+	OutCandidates.Reset();
+	const APawn* Owner = Cast<APawn>(GetOwner());
+	if (!Owner) return;
+	
+	const FVector OwnerLoc = Owner->GetActorLocation();
+	// 세로 중심 = 발밑 오프셋 + 높이 절반
+	const float HalfHeight = Filter.Height * 0.5f;
+	const FVector QueryCenter = OwnerLoc + FVector(0.f, 0.f, Filter.HeightOffset + HalfHeight);
+	
+	// 박스로 넓게 줍고 아래에서 가로 거리로 원기둥 생성 
+	TArray<FOverlapResult> Overlaps;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Owner);
+	GetWorld()->OverlapMultiByObjectType(
+		Overlaps,
+		QueryCenter,
+		FQuat::Identity,
+		FCollisionObjectQueryParams(ECC_Pawn),
+		FCollisionShape::MakeBox(FVector(Filter.Radius, Filter.Radius, HalfHeight)),
+		Params);
+	
+	// 부채꼴만 반각 적용 — 원기둥은 전방위
+	const bool bUseAngle = (Filter.ShapeType == EKDTargetShapeType::Arc);
+	const float CosThreshold = bUseAngle ? FMath::Cos(FMath::DegreesToRadians(Filter.HalfAngle)) : -1.f;
+	const FVector Basis = GetFilterBasis(Filter);
+	const float RadiusSq = FMath::Square(Filter.Radius);
+	TSet<AActor*> Seen;
+	for (const FOverlapResult& Overlap : Overlaps)
+	{
+		// null / 자기 자신 / 중복 액터(여러 콜리전 보유) 제거
+		AActor* Candidate = Overlap.GetActor();
+		if (!Candidate || Candidate == Owner || Seen.Contains(Candidate)) continue;
+		Seen.Add(Candidate);
+		
+		// 박스 모서리 제거 — 가로 거리로 원기둥 완성
+		const FVector CandLoc = Candidate->GetActorLocation();
+		if (FVector::DistSquared2D(OwnerLoc, CandLoc) > RadiusSq) continue;
+		
+		// 락온 받을 자격 + 락온 가능한 상태
+		if (!Candidate->Implements<UKDTargetableInterface>()) continue;
+		if (!IKDTargetableInterface::Execute_CanBeTargeted(Candidate)) continue;
+		
+		// 부채꼴 반각 — 기준 벡터와 (나 -> 후보) 방향의 내적
+		if (bUseAngle)
+		{
+			const FVector ToCand = (CandLoc - OwnerLoc).GetSafeNormal2D();
+			if (FVector::DotProduct(Basis, ToCand) < CosThreshold) continue;
+		}
+		
+		// 장애물 뒤 적 제외
+		if (!HasLineOfSightTo(Candidate)) continue;
+		OutCandidates.Add(Candidate);
+	}
+}
+
+FVector UKDLockOnComponent::GetFilterBasis(const FKDTargetFilter& Filter) const
+{
+	// 기능 : 반각 기준 벡터
+	const APawn* Owner = Cast<APawn>(GetOwner());
+	if (!Owner) return FVector::ForwardVector;
+
+	// 플레이어 카메라 기준
+	if (Filter.Basis == EKDTargetBasisType::Camera)
+	{
+		if (const APlayerController* PC = Cast<APlayerController>(Owner->GetController()))
+		{
+			FVector CamLoc;
+			FRotator CamRot;
+			PC->GetPlayerViewPoint(CamLoc, CamRot);
+			return CamRot.Vector().GetSafeNormal2D();
+		}
+	}
+
+	// 캐릭터 정면
+	return Owner->GetActorForwardVector().GetSafeNormal2D();
+}
+
+#if !UE_BUILD_SHIPPING
+void UKDLockOnComponent::DrawFilterDebug(const FKDTargetFilter& Filter, const FVector& Basis,
+	const TArray<AActor*>& Candidates, const AActor* Chosen) const
+{
+	// 기능 : 필터 범위  후보  선택 대상 표시
+	const UWorld* World = GetWorld();
+	const AActor* Owner = GetOwner();
+	if (!World || !Owner) return;
+	constexpr float Duration = 1.0f;
+	const FVector Foot = Owner->GetActorLocation() + FVector(0.f, 0.f, Filter.HeightOffset);
+	const FVector Top = Foot + FVector(0.f, 0.f, Filter.Height);
+	
+	// 원기둥 = 전방위 통짜 | 부채꼴 = 위아래 호 + 경계선
+	if (Filter.ShapeType == EKDTargetShapeType::Cylinder)
+	{
+		DrawDebugCylinder(World, Foot, Top, Filter.Radius, 24, FColor::Cyan, false, Duration);
+	}
+	else
+	{
+		constexpr int32 Segments = 16;
+		const float Step = (Filter.HalfAngle * 2.f) / Segments;
+		for (const FVector& Level : { Foot, Top })
+		{
+			// 호 — 세그먼트를 이어 그린다
+			FVector Prev = Level + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius;
+			for (int32 i = 1; i <= Segments; ++i)
+			{
+				const FVector Cur = Level + Basis.RotateAngleAxis(-Filter.HalfAngle + Step * i, FVector::UpVector) * Filter.Radius;
+				DrawDebugLine(World, Prev, Cur, FColor::Cyan, false, Duration, 0, 2.f);
+				Prev = Cur;
+			}
+			// 좌우 경계선
+			DrawDebugLine(World, Level,
+				Level + Basis.RotateAngleAxis(-Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
+				FColor::Cyan, false, Duration, 0, 2.f);
+			DrawDebugLine(World, Level,
+				Level + Basis.RotateAngleAxis(Filter.HalfAngle, FVector::UpVector) * Filter.Radius,
+				FColor::Cyan, false, Duration, 0, 2.f);
+		}
+	}
+	
+	// 기준 벡터
+	DrawDebugLine(World, Foot, Foot + Basis * Filter.Radius, FColor::White, false, Duration, 0, 3.f);
+	// 통과 후보 초록 | 최종 선택 빨강
+	for (const AActor* Candidate : Candidates)
+	{
+		const bool bChosen = (Candidate == Chosen);
+		DrawDebugSphere(World, Candidate->GetActorLocation(), bChosen ? 60.f : 40.f, 12,
+			bChosen ? FColor::Red : FColor::Green, false, Duration);
+	}
+}
+#endif
 
 bool UKDLockOnComponent::HasLineOfSightTo(const AActor* Target) const
 {

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystem/Abilities/KDGameplayAbility_MeleeTrace.h"
+#include "Combat/Data/KDTargetFilter.h"
 #include "KDGameplayAbility_PlayerMelee.generated.h"
 
 class UKDHitConfirmProfile;
@@ -32,14 +33,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
 	TObjectPtr<UKDHitConfirmProfile> HitConfirmProfile;
 
-	// 일반 자동 조준 사거리
-	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "0.0", ClampMax = "2000.0"))
-	float AutoAimRange = 500.f;
+	// 자동 조준 탐색 조건 
+	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim")
+	FKDTargetFilter AutoAimFilter;
 	
-	// 자동 조준 부채꼴 각도 — 180 = 카메라 정면 좌우 90도
-	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "30.0", ClampMax = "360.0"))
-	float AutoAimConeAngle = 180.f;
-
+	// 자동 조준 최대 회전 각도 
+	UPROPERTY(EditDefaultsOnly, Category = "Action|AutoAim", meta = (ClampMin = "45.0", ClampMax = "180.0"))
+	float MaxAutoAimTurnAngle = 135.f;
+	
 	// 몽타주의 Motion Warping 노티 접근점 이름
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Approach")
 	FName ApproachWarpName;

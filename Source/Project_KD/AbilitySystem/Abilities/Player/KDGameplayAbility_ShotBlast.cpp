@@ -9,6 +9,7 @@
 #include "AbilitySystem/Attributes/KDCombatAttributeSet.h"
 #include "AbilitySystem/Library/KDAbilityStatics.h"
 #include "Combat/Data/KDHitConfirmProfile.h"
+#include "Combat/Data/KDTargetFilter.h"
 #include "Engine/OverlapResult.h"
 #include "GameFramework/Character.h"
 
@@ -59,6 +60,16 @@ void UKDGameplayAbility_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHan
 	const float BodyAimLimit = (Notify && Notify->BodyAimLimitAngleOverride > 0.f)
 		? Notify->BodyAimLimitAngleOverride : BodyAimLimitAngle;
 
+	// 총격 자동 조준 
+	FKDTargetFilter ShotFilter;
+	ShotFilter.ShapeType = EKDTargetShapeType::Arc;
+	ShotFilter.Radius = ShotRange;
+	ShotFilter.HalfAngle = FMath::Clamp(AimConeAngle * 0.5f, 5.f, 135.f);
+	ShotFilter.Height = 500.f;
+	ShotFilter.HeightOffset = -150.f;
+	ShotFilter.Basis = EKDTargetBasisType::Camera;
+	ShotFilter.SortType = EKDTargetSortType::SmallestAngle;
+
 	// 발사 방향 = 총구 | 락온 타겟 | 폴백 = 액터 전방
 	FVector ShotDir = Avatar->GetActorForwardVector();
 	if (Notify && Notify->bUseMuzzleDirection)
@@ -66,7 +77,7 @@ void UKDGameplayAbility_ShotBlast::ActivateAbility(const FGameplayAbilitySpecHan
 		// 회전 연사 — 소켓 X축 = 총열
 		ShotDir = MuzzleXf.GetUnitAxis(EAxis::X);
 	}
-	else if (const AActor* Target = FindAutoAimTarget(ShotRange, AimConeAngle))
+	else if (const AActor* Target = FindAutoAimTarget(ShotFilter))
 	{
 		const FVector ToTarget = (Target->GetActorLocation() - ConeOrigin).GetSafeNormal();
 		if (!ToTarget.IsNearlyZero())

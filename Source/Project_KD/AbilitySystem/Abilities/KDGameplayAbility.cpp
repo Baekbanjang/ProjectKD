@@ -4,6 +4,7 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "AbilitySystem/Combo/KDComboComponent.h"
+#include "Combat/Data/KDTargetFilter.h"
 #include "Combat/KDLockOnComponent.h"
 
 UKDGameplayAbility::UKDGameplayAbility()
@@ -82,11 +83,11 @@ UKDComboComponent* UKDGameplayAbility::GetComboComponentFromActorInfo() const
 	return IsValid(Avatar) ? Avatar->FindComponentByClass<UKDComboComponent>() : nullptr;
 }
 
-AActor* UKDGameplayAbility::FindAutoAimTarget(float Range, float ConeAngle) const
+AActor* UKDGameplayAbility::FindAutoAimTarget(const FKDTargetFilter& Filter) const
 {
 	// 기능 : 자동 조준 대상 1명 반환
 	UKDLockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
 	if (!LockOn) return nullptr;
 	
-	return LockOn->IsLockedOn() ? LockOn->GetLockedTarget() : LockOn->FindBestTarget(Range, ConeAngle);
+	return LockOn->IsLockedOn() ? LockOn->GetLockedTarget() : LockOn->FindTargetByFilter(Filter);
 }

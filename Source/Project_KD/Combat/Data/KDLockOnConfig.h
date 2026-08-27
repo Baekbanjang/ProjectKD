@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "KDTargetFilter.h"
 #include "Engine/DataAsset.h"
 #include "KDLockOnConfig.generated.h"
 
@@ -18,14 +19,10 @@ class PROJECT_KD_API UKDLockOnConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	// 락온 후보 적 검색 최대 거리 (cm). 자동 해제 거리
-	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target", meta = (ClampMin = "100.0", ClampMax = "5000.0"))
-	float LockOnRadius = 1000.f;
-
-	// 카메라 forward 기준 시야 콘 각도(degree). 90 = ±45도
-	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target", meta = (ClampMin = "30.0", ClampMax = "180.0"))
-	float ViewConeAngle = 90.f;
-
+	// 락온 대상 탐색 조건 — 기준 벡터는 카메라
+	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target")
+	FKDTargetFilter TargetFilter;
+	
 	// 적까지 거리(cm)별 카메라 상하 각도
 	UPROPERTY(EditDefaultsOnly, Category = "LockOn|Target")
 	TObjectPtr<UCurveFloat> LockOnPitchCurve;
