@@ -142,6 +142,35 @@ LCS_PerfectParry   Duration 0.2 · BlendOut 0.1 유지 / FOV 진폭 3 -> 15~20 �
      SB 반격기 = TargetSpeed 1.0 · MaxDistance 300 · 0.35초 (평시 19)
 ```
 
+> ### 🔵 4단계 ① 진행 중 (2026-08-28) — 코드 완료 · **빌드 대기**
+> ```
+> 어트리뷰트 3개     Defense 삭제
+>                   DamageReductionRate      비율 (0~1 클램프)   <- Defense 대체
+>                   ShieldAbsorbRate         평소 실드 흡수율 0.4
+>                   BlockShieldAbsorbRate    정면 방어 중 0.8
+> 계산              Damage - Defense   ->   Damage x (1 - DamageReductionRate)
+>                   흡수율을 bBlocked 로 고른다 (방향 판정 유지 — 등 뒤는 막기 무효)
+> DA 필드           KDEnemyDefinitionDataAsset.Defense -> DamageReductionRate (ClampMax 1.0)
+> ini               PropertyRedirects 2줄 (임시 — 에셋 3개 재저장 후 삭제)
+> ```
+> **왜 비율로 바꿨나** — SB 에 뺄셈식 방어력이 없다(덤프 실측). `CharacterTable` 의 감소 컬럼이
+> 전부 `~Rate` 다. 그리고 뺄셈은 약한 공격일수록 손해가 커서, 데미지 10짜리를 만들면
+> `Defense 10` 인 엘리트에겐 통째로 0이 된다.
+>
+> 🔴 **빌드 후 반드시 확인할 것**
+> ```
+> DA_Axe_Elite · DA_Parry_Bandit   Defense 10 이 그대로 넘어오면 ClampMax 1.0 에 걸려
+>                                  1.0 = 데미지 완전 무효 = 엘리트 무적이 된다
+>                                  -> 0.25 로 고친 뒤 PIE 를 돌릴 것
+> GE_InitPlayerStats               Modifier 가 DamageReductionRate 를 가리키나
+>                                  ⚠️ 어트리뷰트 PropertyRedirects 가 먹는지는 미확인.
+>                                     빈칸이면 손으로 다시 지정 (값 0이라 잃을 것 없음)
+> 검증                             안 막고 40%/60% · 막고 80%/20% · 실드 0이면 전부 HP
+>                                  · 등 뒤에서 맞으면 막고 있어도 40%
+> ```
+> 📌 곁들여 버그 하나 잡음 — `return FMath::Max(Mitigated - AbsorbRate, ...)` 가
+> `Absorbed` 여야 했다. 그대로 뒀으면 실드만 닳고 HP 는 거의 다 받았을 것이다.
+
 **4단계 — 막기의 대가 ✅확정 (2026-08-28 승환 = "나도 SB 처럼")**
 
 > 🔴 **종전 판의 "조건부 · 비싸다" 는 과대평가였다. 정정한다.**
