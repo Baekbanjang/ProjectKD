@@ -215,6 +215,12 @@ void UKDPlayerAbilityInputComponent::TryHeavyAttack() const
 	UAbilitySystemComponent* ASC = GetASC();
 	if (!ASC) return;
 
+	// 퍼펙트 패링 직후 = 반격(Slash)
+	if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_CounterReady))
+	{
+		if (ActivateByTag(ASC, GameplayTags::Ability_Player_CounterSlash)) return;
+	}
+	
 	const FComboGateState Gate = QueryComboGateState(ASC);
 	if (Gate.bDodging && Gate.bCanCancel)
 	{

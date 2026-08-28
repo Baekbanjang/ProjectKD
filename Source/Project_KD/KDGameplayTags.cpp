@@ -8,6 +8,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Parry, "Ability.Player.Parry")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_SprintAttack, "Ability.Player.SprintAttack")
     UE_DEFINE_GAMEPLAY_TAG(Ability_Player_CounterThrust, "Ability.Player.CounterThrust")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_CounterSlash, "Ability.Player.CounterSlash")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_AirCombo, "Ability.Player.AirCombo")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Execution, "Ability.Player.Execution")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Aim, "Ability.Player.Aim")

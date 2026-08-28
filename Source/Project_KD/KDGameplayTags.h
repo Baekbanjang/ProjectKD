@@ -12,6 +12,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Parry)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_SprintAttack)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_CounterThrust)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_CounterSlash)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_AirCombo)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Execution)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Aim)

@@ -89,6 +89,47 @@ LCS_PerfectParry   Duration 0.2 · BlendOut 0.1 유지 / FOV 진폭 3 -> 15~20 �
 2-3  Poise 차감을 저스트 전용으로   ⚠️ 4단계와 묶여 있다 (아래)
 ```
 
+> ### ✅ 2단계 완료 (2026-08-28) — 사슬이 이어졌다
+> ```
+> 2-1  GE_PerfectParry_Counter 신설(HasDuration 1.0 · State.Combat.CounterReady)
+>      GA_PerfectParryReaction 에 ApplyGameplayEffectToOwner 추가
+>      Send Gameplay Event to Actor -> [여기] -> Execute GameplayCue On Owner
+>      C++ 0줄. PIE 통과
+> 2-2  Ability.Player.CounterSlash 태그 + UKDGameplayAbility_CounterSlash 신설
+>      (부모 = CounterThrust. 생성자에서 AbilityTags.Reset() 후 새 태그만)
+>      TryHeavyAttack() 에 CounterReady 분기 — 캔슬 판정보다 앞
+>      GA_CounterSlash BP = AM_SB_Parry_Counter_Attack_R. PIE 통과
+> ```
+> ⚠️ `AM_SB_Parry_Counter_Attack_R` 은 **노티 0개**다. 재생만 되고 판정이 없다.
+> `_L` 을 참고해 찍어야 한다 — 길이가 95f 로 같아 같은 시각이 대체로 맞는다.
+
+### 🟡 보류 — 패링 반격과 회피 반격을 나눌 것인가 (2026-08-28 승환 제기)
+
+지금은 `State.Combat.CounterReady` 하나를 **패링과 회피가 공유**한다. 좌/우 반격도 공용이다.
+**SB 는 나눠져 있다** — 반격기에 `CheckActiveEffectAliasArray=['P_Eve_JustParry']` 게이트가
+걸려 있어 회피는 그 파생을 못 쓴다.
+
+🔴 **지금 균형이 어긋나 있다.**
+```
+퍼펙트 패링   창 0.15초 — 시간으로 재는 좁은 창
+퍼펙트 회피   적 ANS_EnemyAttackWindow 태그가 켜진 동안 — 공격 모션 길이만큼
+-> 패링이 훨씬 어려운데 보상이 같다
+```
+⚠️ 회피 창이 실제로 몇 프레임인지는 **안 재봤다.** 노티가 방금 살아났으니 이제 잴 수 있다.
+
+**지금 안 나누는 이유 = 애니 재고.** 반격 애니가 `AS_Parry_Counter_Attack_L/R` 둘뿐이고
+이름부터 패링용이다. 패링만 떼어가면 **회피 반격이 사라진다** = 지금보다 나빠진다.
+
+**나누려면 필요한 것**
+```
+① 태그 분리    State.Combat.ParryCounterReady 신설. 오늘 한 것과 같은 모양
+② 회피용 애니   미사용 재고에서 배분 (AS_Skill_02 105f · AS_Skill_04 155f 등)
+               ⚠️ 스킬용으로 찜해둔 것들이라 지금 빼 쓰면 스킬 재고가 준다
+```
+
+📌 **착수 시점 = 4단계 뒤.** 지금 나누면 회피에서 뺏는 모양이라 손해만 본다.
+막기에 대가가 붙어 패링 가치가 올라간 뒤에 나눠야 "패링이 더 좋다" 가 자연스럽다.
+
 **3단계 — 연출 이식 (2단계 뒤에)**
 축하할 사건이 생긴 다음에 붙여야 값어치가 있다. 지금 하면 허공에 터진다.
 ```
