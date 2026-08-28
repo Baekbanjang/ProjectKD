@@ -93,7 +93,7 @@ void AKDEnemyBaseCharacter::PossessedBy(AController* NewController)
 		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetMaxPoiseAttribute(),  EnemyDefinition->MaxPoise);
 		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetPoiseAttribute(),     EnemyDefinition->MaxPoise);
 		AbilitySystemComponent->SetNumericAttributeBase(UKDCombatAttributeSet::GetAttackPowerAttribute(),      EnemyDefinition->AttackPower);
-		AbilitySystemComponent->SetNumericAttributeBase(UKDCombatAttributeSet::GetDefenseAttribute(),          EnemyDefinition->Defense);
+		AbilitySystemComponent->SetNumericAttributeBase(UKDCombatAttributeSet::GetDamageReductionRateAttribute(), EnemyDefinition->DamageReductionRate);
 		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetMaxShieldAttribute(), EnemyDefinition->MaxShield);
 		AbilitySystemComponent->SetNumericAttributeBase(UKDCharacterAttributeSet::GetShieldAttribute(),    EnemyDefinition->MaxShield);
 

@@ -17,20 +17,24 @@ UKDCombatAttributeSet::UKDCombatAttributeSet()
 {
 	// 기능 : 전투 어트리뷰트 초기값
 	InitAttackPower(20.0f);
-	InitDefense(0.0f);
+	InitDamageReductionRate(0.0f);
+	InitShieldAbsorbRate(0.4f);
+	InitBlockShieldAbsorbRate(0.8f);
 }
 
 void UKDCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
 {
-	// 기능 : Defense 하한 0
+	// 기능 : 비율 0~1 | 흡수율 하한 0
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	if (Attribute == GetDefenseAttribute()) { NewValue = FMath::Max(NewValue, 0.0f); }
+	if (Attribute == GetDamageReductionRateAttribute()) { NewValue = FMath::Clamp(NewValue, 0.0f, 1.0f); }
+	if (Attribute == GetShieldAbsorbRateAttribute()) { NewValue = FMath::Max(NewValue, 0.0f); }
+	if (Attribute == GetBlockShieldAbsorbRateAttribute()) { NewValue = FMath::Max(NewValue, 0.0f); }
 }
 
 void UKDCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
-	// 기능 : 들어온 데미지를 패링 | Defense | Shield | Health 순으로 분배
+	// 기능 : 들어온 데미지를 패링 | 비율 경감 | Shield | Health 순으로 분배
 	Super::PostGameplayEffectExecute(Data);
 
 	if (Data.EvaluatedData.Attribute != GetIncomingDamageAttribute()) { return; }
@@ -56,12 +60,11 @@ void UKDCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	// 퍼펙트 | 적 방어형 패링이 삼키면 여기서 끝
 	if (TryInterceptByParry(Data, ASC, bFrontalAttack, bUnblockable, HitAngle)) { return; }
 
-	// 일반 패링 — 50% 감소
+	// 가드 유무(가드한 상태로 맞았는지)
 	const bool bBlockedHit = !bUnblockable && bFrontalAttack && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying);
-	const float FinalDamage = bBlockedHit ? LocalDamage * 0.5f : LocalDamage;
 
-	// Defense 차감 + Shield 흡수 후 체력으로 갈 몫
-	const float ToHealth = ApplyMitigation(ASC, FinalDamage);
+	// 비율 경감 + Shield 흡수 후 체력으로 갈 몫
+	const float ToHealth = ApplyMitigation(ASC, LocalDamage, bBlockedHit);
 
 	// 치명 선판정 — 히트리액션보다 먼저
 	const float NewHealth = ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetHealthAttribute()) - ToHealth;
@@ -140,22 +143,21 @@ bool UKDCombatAttributeSet::TryInterceptByParry(const FGameplayEffectModCallback
 	return false;
 }
 
-float UKDCombatAttributeSet::ApplyMitigation(UAbilitySystemComponent* ASC, float Damage) const
+float UKDCombatAttributeSet::ApplyMitigation(UAbilitySystemComponent* ASC, float Damage, bool bBlocked) const
 {
-	// 기능 : Defense 차감 후 Shield 흡수 — 반환 = 체력으로 갈 몫
-	// Defense 경감 — 하한 0
-	const float Mitigated = FMath::Max(Damage - GetDefense(), 0.0f);
+	// 기능 : 비율 경감 후 Shield 흡수 — 반환 = 체력으로 갈 몫
+	// 비율 경감 — 1 이면 무효. 클램프 = 비율이 1 초과면 데미지가 음수(회복)가 된다
+	const float Mitigated = Damage * FMath::Clamp(1.0f - GetDamageReductionRate(), 0.0f, 1.0f);
 
-	// 실드 경감 — 피해의 이 비율만큼 실드가 대신 받음
-	constexpr float ShieldDamageReduction = 0.4f;
-
+	// 실드 흡수 비율 — 정면 방어 중이면 실드가 더 받는다
+	const float AbsorbRate = bBlocked ? GetBlockShieldAbsorbRate() : GetShieldAbsorbRate();
 	const float Shield = ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetShieldAttribute());
 	if (Shield <= 0.0f || Mitigated <= 0.0f) { return Mitigated; }
 
-	// 실드가 받는 양 = 피해 x 0.4 | 남은 실드 중 작은 쪽
-	const float Absorbed = FMath::Min(Shield, Mitigated * ShieldDamageReduction);
+	// 실드가 받는 양 = 피해 x 흡수율 | 남은 실드 중 작은 쪽
+	const float Absorbed = FMath::Min(Shield, Mitigated * AbsorbRate);
 	ASC->SetNumericAttributeBase(UKDCharacterAttributeSet::GetShieldAttribute(), Shield - Absorbed);
-	return Mitigated - Absorbed;
+	return FMath::Max(Mitigated - Absorbed, 0.0f);
 }
 
 void UKDCombatAttributeSet::SendHitReact(const FGameplayEffectModCallbackData& Data, UAbilitySystemComponent* ASC, bool bBlockedHit) const

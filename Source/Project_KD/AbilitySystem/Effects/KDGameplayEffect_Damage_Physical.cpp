@@ -9,7 +9,7 @@ UKDGameplayEffect_Damage_Physical::UKDGameplayEffect_Damage_Physical()
 	DurationPolicy = EGameplayEffectDurationType::Instant;
 
 	// Route through the IncomingDamage gateway (AS_Combat::PostGameplayEffectExecute drains it,
-	// applies Defense mitigation, then subtracts from Health). Positive magnitude = damage dealt.
+	// applies rate mitigation, then subtracts from Health). Positive magnitude = damage dealt.
 	FGameplayModifierInfo DamageMod;
 	DamageMod.Attribute = UKDCombatAttributeSet::GetIncomingDamageAttribute();
 	DamageMod.ModifierOp = EGameplayModOp::Additive;
