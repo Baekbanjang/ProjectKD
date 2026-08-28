@@ -142,6 +142,19 @@ LCS_PerfectParry   Duration 0.2 · BlendOut 0.1 유지 / FOV 진폭 3 -> 15~20 �
      SB 반격기 = TargetSpeed 1.0 · MaxDistance 300 · 0.35초 (평시 19)
 ```
 
+> ### ✅ 4단계 ① 완료 (2026-08-28) — 빌드·PIE 통과 · dev-log `2026-08-28-parry-redesign.md`
+> ```
+> 커밋        코드 11db1ff · 에셋 9276fac
+> 실드 리젠    GE_ShieldRegen_InCombat 신규 (Require InCombat · 초당 0.4)
+>             기존 GE_ShieldRegen 은 Ignore InCombat · 초당 3.0 유지 = SB 8배 비율
+> 리다이렉트   PropertyRedirects 2줄 걸고 -> 강제 저장 -> 바이너리 0건 확인 -> 삭제 완료
+> 잡은 버그    ① return 이 Absorbed 대신 AbsorbRate  ② DA 에 옛 값 10 이 넘어와 데미지 음수
+> ```
+> **다음 = 4단계 ② 가드 붕괴.** 실드 0 이면 지금은 "막아도 데미지가 다 들어옴" 까지만 된다.
+> ⚠️ 감지 위치가 함정 — `PostGameplayEffectExecute` 는 "사후 로직 금지" 주석이 붙은 자리다.
+>
+> <details><summary>착수 시점 기록 (접힘)</summary>
+>
 > ### 🔵 4단계 ① 진행 중 (2026-08-28) — 코드 완료 · **빌드 대기**
 > ```
 > 어트리뷰트 3개     Defense 삭제
@@ -170,6 +183,8 @@ LCS_PerfectParry   Duration 0.2 · BlendOut 0.1 유지 / FOV 진폭 3 -> 15~20 �
 > ```
 > 📌 곁들여 버그 하나 잡음 — `return FMath::Max(Mitigated - AbsorbRate, ...)` 가
 > `Absorbed` 여야 했다. 그대로 뒀으면 실드만 닳고 HP 는 거의 다 받았을 것이다.
+>
+> </details>
 
 **4단계 — 막기의 대가 ✅확정 (2026-08-28 승환 = "나도 SB 처럼")**
 
