@@ -119,12 +119,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Motion")
 	TObjectPtr<UMotionWarpingComponent> MotionWarping;
 
-	// 락온 중 최고 이동속도
+	// 락온, 가드 중 최고 이동속도
 	UPROPERTY(EditAnywhere, Category = "LockOn", meta = (ClampMin = "50.0", ClampMax = "800.0"))
 	float LockOnMoveSpeed = 280.f;
 
 	UPROPERTY(EditAnywhere, Category = "Aim", meta = (ClampMin = "50.0", ClampMax = "800.0"))
 	float AimMoveSpeed = 167.f;
+
+	UPROPERTY(EditAnywhere, Category = "Block", meta = (ClampMin = "50.0", ClampMax = "800.0"))
+	float BlockMoveSpeed = 167.f;
 
 	UPROPERTY(EditAnywhere, Category = "Aim", meta = (ClampMin = "0.05", ClampMax = "1.0"))
 	float AimPitchScale = 0.33f;

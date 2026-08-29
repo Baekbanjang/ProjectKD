@@ -61,6 +61,8 @@ void UKDPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsInBattleStance = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_InCombat);
 
 		bIsAiming = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming);
+
+		bIsBlocking = ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying);
 	}
 }
 

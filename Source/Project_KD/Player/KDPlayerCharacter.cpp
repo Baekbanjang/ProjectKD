@@ -246,7 +246,7 @@ bool AKDPlayerCharacter::IsFullSprinting() const
 
 void AKDPlayerCharacter::RefreshMaxWalkSpeed()
 {
-	// 기능 : 락온 | 조준 감속을 반영해서 MaxWalkSpeed 갱신
+	// 기능 : 락온 | 조준  | 가드 감속을 반영해서 MaxWalkSpeed 갱신
 
 	UCharacterMovementComponent* Move = GetCharacterMovement();
 	if (!Move) return;
@@ -264,6 +264,10 @@ void AKDPlayerCharacter::RefreshMaxWalkSpeed()
 		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming))
 		{
 			Speed = FMath::Min(Speed, AimMoveSpeed);
+		}
+		if (ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying))
+		{
+			Speed = FMath::Min(Speed, BlockMoveSpeed);
 		}
 	}
 

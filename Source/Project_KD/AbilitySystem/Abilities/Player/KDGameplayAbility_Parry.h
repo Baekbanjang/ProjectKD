@@ -10,8 +10,8 @@
  * 
  */
 
-// 가드 GA. Hold 입력 패턴: 시작 시점에 Perfect Parry 윈도우(0.15s) 부여,
-// 그 사이 적 공격 들어오면 Perfect 분기. 떼는 순간 캔슬 → Block End 모션 후 종료
+// 가드 GA — 홀드 입력
+// 활성화 시점 = 퍼펙트 패링 창 0.15s | 홀드 중 자세 = 가드 로코 PSD | 버튼 해제 = GA 캔슬
 UCLASS()
 class PROJECT_KD_API UKDGameplayAbility_Parry : public UKDGameplayAbility
 {
@@ -21,50 +21,42 @@ public:
 	UKDGameplayAbility_Parry();
 
 protected:
-	void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	virtual void OnCleanup(bool bWasCancelled) override;
 
+	// 가드 진입 모션
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
 	TObjectPtr<UAnimMontage> BlockStartMontage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
-	TObjectPtr<UAnimMontage> BlockLoopMontage;
-
+	// 가드 해제 모션 — 재생 X
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
 	TObjectPtr<UAnimMontage> BlockEndMontage;
 
+	// 막힌 히트 플린치 모션
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage")
 	TObjectPtr<UAnimMontage> BlockHitMontage;
 
-	// Perfect Parry 윈도우 GE
+	// 퍼펙트 패링 창 GE — State.Combat.PerfectParryReady 부여
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Parry")
 	TSubclassOf<UGameplayEffect> PerfectParryWindowGE;
 
-	// 홀드 방어 GE(Infinite) — State.Combat.Parrying 부여(50% 감소)
+	// 홀드 방어 GE — State.Combat.Parrying 부여
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Parry")
 	TSubclassOf<UGameplayEffect> BlockGE;
-	
-	// Montage 재생 속도.
+
+	// 몽타주 재생 속도
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Montage", meta = (ClampMin = "0.1", ClampMax = "3.0"))
 	float MontagePlayRate = 1.0f;
 
 
 private:
 	UFUNCTION()
-	void OnBlockStartCompleted();
-
-	UFUNCTION()
 	void OnBlockStartInterrupted();
 
 	UFUNCTION()
 	void OnBlockHitReceived(FGameplayEventData Payload);
-
-	UFUNCTION()
-	void OnBlockHitMontageEnded();
-
-	void PlayBlockLoop();
-
+	
 	FActiveGameplayEffectHandle ActivePerfectWindowHandle;
 	FActiveGameplayEffectHandle ActiveBlockHandle;
 };

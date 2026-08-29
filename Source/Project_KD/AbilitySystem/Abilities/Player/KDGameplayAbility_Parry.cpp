@@ -17,13 +17,14 @@ UKDGameplayAbility_Parry::UKDGameplayAbility_Parry()
 void UKDGameplayAbility_Parry::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                 const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	// 기능 : 방어 GE 2개 부여 후 가드 진입 모션 재생
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
-	// InstancedPerActor 잔류 방지 — 매 활성화 시 명시 리셋.
+	// InstancedPerActor 잔류 방지 — 활성화마다 핸들 리셋
 	ActivePerfectWindowHandle = FActiveGameplayEffectHandle();
 	ActiveBlockHandle = FActiveGameplayEffectHandle();
 
@@ -34,36 +35,29 @@ void UKDGameplayAbility_Parry::ActivateAbility(const FGameplayAbilitySpecHandle 
 		return;
 	}
 
-	// 홀드 방어 GE 적용 (Infinite, 버튼 누르는 동안 50% 감소). OnCleanup에서 제거.
+	// 홀드 방어 GE — Infinite | 제거 = OnCleanup
 	ActiveBlockHandle = ApplySelfEffect(BlockGE);
 
-	// Perfect Parry 윈도우 GE 적용 (0.15s 후 자동 종료, State.Combat.PerfectParryReady 부여).
+	// 퍼펙트 패링 창 GE — 0.15s 후 자동 종료
 	ActivePerfectWindowHandle = ApplySelfEffect(PerfectParryWindowGE);
 
-	// 홀드 동안 막힌 히트를 계속 받기 위해 OnlyTriggerOnce=false. GA 캔슬 시 자동 정리.
+	// 막힌 히트 수신 — 홀드 중 반복 수신이라 OnlyTriggerOnce = false
 	UAbilityTask_WaitGameplayEvent* HitListener = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this, GameplayTags::Event_Combat_HitReact, nullptr, false, true);
 	HitListener->EventReceived.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockHitReceived);
 	HitListener->ReadyForActivation();
 
-	// BlockStart 재생 -> 콜백에서 Loop로 전환.
+	// 가드 진입 모션 — 종료 후 자세 = 가드 로코 PSD
 	if (BlockStartMontage)
 	{
 		UAbilityTask_PlayMontageAndWait* StartTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 			this, NAME_None, BlockStartMontage, MontagePlayRate, NAME_None, true, 1.0f);
 		if (StartTask)
 		{
-			StartTask->OnCompleted.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockStartCompleted);
-			StartTask->OnBlendOut.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockStartCompleted);
 			StartTask->OnInterrupted.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockStartInterrupted);
 			StartTask->OnCancelled.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockStartInterrupted);
 			StartTask->ReadyForActivation();
 		}
-	}
-	else
-	{
-		// BlockStart 없으면 바로 Loop로.
-		OnBlockStartCompleted();
 	}
 
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
@@ -71,9 +65,10 @@ void UKDGameplayAbility_Parry::ActivateAbility(const FGameplayAbilitySpecHandle 
 
 void UKDGameplayAbility_Parry::OnCleanup(bool bWasCancelled)
 {
+	// 기능 : 활성 방어 GE 2개 제거
 	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
 
-	// 퍼펙트 윈도우 GE 제거
+	// 퍼펙트 패링 창 GE 제거
 	if (ActivePerfectWindowHandle.IsValid())
 	{
 		if (ASC)
@@ -83,7 +78,7 @@ void UKDGameplayAbility_Parry::OnCleanup(bool bWasCancelled)
 		ActivePerfectWindowHandle = FActiveGameplayEffectHandle();
 	}
 
-	// 홀드 방어 GE(Infinite) 제거 
+	// 홀드 방어 GE 제거
 	if (ActiveBlockHandle.IsValid())
 	{
 		if (ASC)
@@ -92,22 +87,19 @@ void UKDGameplayAbility_Parry::OnCleanup(bool bWasCancelled)
 		}
 		ActiveBlockHandle = FActiveGameplayEffectHandle();
 	}
-	// BlockEndMontage는 캔슬 시점에 GA가 즉시 종료라 재생 X. M2에 별도 처리 검토
-}
-
-void UKDGameplayAbility_Parry::OnBlockStartCompleted()
-{
-	PlayBlockLoop();
+	// BlockEndMontage 재생 X — 캔슬 시점에 GA 즉시 종료
 }
 
 void UKDGameplayAbility_Parry::OnBlockStartInterrupted()
 {
+	// 기능 : 가드 진입 모션 중단 시 GA 종료
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
 void UKDGameplayAbility_Parry::OnBlockHitReceived(FGameplayEventData Payload)
 {
-	// 무방비(뒤/옆, magnitude 0.0)는 GA_HitReact가 처리 -> 블록 주인은 막힌 히트만 반응.
+	// 기능 : 막힌 히트에만 플린치 모션 재생 — 종료 후 복귀 = 가드 로코 PSD
+	// 무방비 = magnitude 0.0 — GA_HitReact 담당
 	if (Payload.EventMagnitude < 0.5f) return;
 	if (!BlockHitMontage) return;
 
@@ -115,28 +107,7 @@ void UKDGameplayAbility_Parry::OnBlockHitReceived(FGameplayEventData Payload)
 		this, NAME_None, BlockHitMontage, MontagePlayRate, NAME_None, true, 1.0f);
 	if (HitTask)
 	{
-		// Completed/BlendOut만 -> 루프 복귀. Interrupted는 다음 플린치가 담당(이중 복귀 방지).
-		HitTask->OnCompleted.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockHitMontageEnded);
-		HitTask->OnBlendOut.AddDynamic(this, &UKDGameplayAbility_Parry::OnBlockHitMontageEnded);
 		HitTask->ReadyForActivation();
 	}
 }
 
-void UKDGameplayAbility_Parry::OnBlockHitMontageEnded()
-{
-	PlayBlockLoop();
-}
-
-void UKDGameplayAbility_Parry::PlayBlockLoop()
-{
-	// BlockStart 종료 시 BlockLoop로 전환.
-	if (!BlockLoopMontage) return;
-
-	UAbilityTask_PlayMontageAndWait* LoopTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-		this, NAME_None, BlockLoopMontage, MontagePlayRate, NAME_None, true, 1.0f);
-	if (LoopTask)
-	{
-		// BlockLoop는 Montage 자체가 Loop=true라 종료 X. GA 캔슬 시 자동 정리.
-		LoopTask->ReadyForActivation();
-	}
-}

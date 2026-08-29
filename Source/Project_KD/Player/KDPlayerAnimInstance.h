@@ -61,6 +61,10 @@ public:
 	// 조준 여부 - AimOffset 전환
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsAiming = false;
+	
+	// 가드 여부 - 가드 로코 전환
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsBlocking = false;
 
 	// 조준 상하  아래 -1 | 정면 0 | 위 +1  조준 X 0
 	UPROPERTY(BlueprintReadOnly, Category = "State")
