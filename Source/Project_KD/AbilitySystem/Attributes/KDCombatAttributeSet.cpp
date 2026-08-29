@@ -52,7 +52,7 @@ void UKDCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	float HitAngle = 0.f;
 	const bool bFrontalAttack = IsFrontalAttack(Data, ASC, HitAngle);
 
-	// 언블록 유무 — Ability.Combat.Unblockable 이면 아래 패링 분기 전부 스킵
+	// 언블록 유무 
 	FGameplayTagContainer SpecAssetTags;
 	Data.EffectSpec.GetAllAssetTags(SpecAssetTags);
 	const bool bUnblockable = SpecAssetTags.HasTag(GameplayTags::Ability_Combat_Unblockable);
@@ -60,19 +60,34 @@ void UKDCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	// 퍼펙트 | 적 방어형 패링이 삼키면 여기서 끝
 	if (TryInterceptByParry(Data, ASC, bFrontalAttack, bUnblockable, HitAngle)) { return; }
 
-	// 가드 유무(가드한 상태로 맞았는지)
+	// 가드 유무(가드한 상태로 맞았는지) -(가드상태, 전방 공격, 패리중)
 	const bool bBlockedHit = !bUnblockable && bFrontalAttack && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Parrying);
-
+	
+	// 실드 잔여량 
+	const float ShieldBefore = ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetShieldAttribute());
+	
 	// 비율 경감 + Shield 흡수 후 체력으로 갈 몫
 	const float ToHealth = ApplyMitigation(ASC, LocalDamage, bBlockedHit);
 
+	// 가드 붕괴 - 실드 0에 떨어진 공격
+	const float ShieldAfter = ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetShieldAttribute());
+	const bool bShieldDepleted = ShieldBefore > 0.f && ShieldAfter <= 0.f;
+	const bool bGuardBroken = bBlockedHit && bShieldDepleted; // 실드 전 후 비교
+	
 	// 치명 선판정 — 히트리액션보다 먼저
 	const float NewHealth = ASC->GetNumericAttribute(UKDCharacterAttributeSet::GetHealthAttribute()) - ToHealth;
-	const bool bLethal = ToHealth > 0.0f && NewHealth <= 0.0f;
+	const bool bLethal = ToHealth > 0.0f && NewHealth <= 0.0f; // 해당 공격으로 죽는지
 
-	// 히트리액션 신호 — 치명타는 스킵
-	if (!bLethal) { SendHitReact(Data, ASC, bBlockedHit); }
+	if (!bLethal)
+	{
+		// 가드가 붕괴되면 발생
+		if (bGuardBroken) SendGuardBreak(Data, ASC);
+		else SendHitReact(Data, ASC, bBlockedHit);
+	}
 
+	// 실드 소진 신호 — 가드 여부 무관. 리젠 차단 담당
+	if (bShieldDepleted) { SendShieldDepleted(ASC); }
+	
 	if (ToHealth <= 0.0f) { return; } // 실드가 전부 받았거나 경감 후 0
 
 	// 개발용 데미지 표시 — 값 = 실드·방어 경감 후 체력에 들어간 최종량
@@ -171,5 +186,24 @@ void UKDCombatAttributeSet::SendHitReact(const FGameplayEffectModCallbackData& D
 	HitReactData.Target = ASC->GetAvatarActor();
 	HitReactData.EventMagnitude = bBlockedHit ? 1.0f : 0.0f; // 1 = 방어 중 피격 | 0 = 무방비 피격
 	ASC->HandleGameplayEvent(HitReactData.EventTag, &HitReactData);
+}
+
+void UKDCombatAttributeSet::SendGuardBreak(const FGameplayEffectModCallbackData& Data,
+	UAbilitySystemComponent* ASC) const
+{
+	FGameplayEventData BreakData;
+	BreakData.EventTag = GameplayTags::Event_Combat_GuardBreak;
+	BreakData.Instigator = Data.EffectSpec.GetContext().GetEffectCauser();
+	BreakData.ContextHandle = Data.EffectSpec.GetContext();
+	BreakData.Target = ASC->GetAvatarActor();
+	ASC->HandleGameplayEvent(BreakData.EventTag, &BreakData);
+}
+
+void UKDCombatAttributeSet::SendShieldDepleted(UAbilitySystemComponent* ASC) const
+{
+	FGameplayEventData DepletedData;
+	DepletedData.EventTag = GameplayTags::Event_Combat_ShieldDepleted;
+	DepletedData.Target = ASC->GetAvatarActor();
+	ASC->HandleGameplayEvent(DepletedData.EventTag, &DepletedData);
 }
  

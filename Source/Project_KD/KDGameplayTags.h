@@ -63,6 +63,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_MovementCanCancel)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_Parrying)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_PerfectParryReady)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_GuardBroken)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_EnemyAttackHitWindow)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_CounterReady)
@@ -83,6 +84,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Stamina_RegenBlocked)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Gun_Reloading)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Gun_RegenBlocked)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Shield_RegenBlocked)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Character_LockOn)
 
@@ -111,6 +113,8 @@ namespace GameplayTags
 	// OnWeaponHit이 피격자에게 전송하는 제네릭 히트 이벤트. InstigatorTags에 공격 태그 운반.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_Hit)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_HitReact)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_GuardBreak)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_ShieldDepleted)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_WeaponToggle)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_ExecutionStarted)
 

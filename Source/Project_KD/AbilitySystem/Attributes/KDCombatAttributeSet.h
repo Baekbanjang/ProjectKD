@@ -59,4 +59,10 @@ private:
 
 	// 히트리액션 신호 — bBlockedHit = 방어 중 피격 유무
 	void SendHitReact(const FGameplayEffectModCallbackData& Data, UAbilitySystemComponent* ASC, bool bBlockedHit) const;
+
+	// 가드 붕괴 신호 — 가드 중 실드 소진
+	void SendGuardBreak(const FGameplayEffectModCallbackData& Data, UAbilitySystemComponent* ASC) const;
+
+	// 실드 소진 신호 — 리젠 차단
+	void SendShieldDepleted(UAbilitySystemComponent* ASC) const;
 };

@@ -54,6 +54,9 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_MovementCanCancel, "State.Combat.MovementCanCancel")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Parrying, "State.Combat.Parrying")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_PerfectParryReady, "State.Combat.PerfectParryReady")
+	UE_DEFINE_GAMEPLAY_TAG(State_Combat_GuardBroken, "State.Combat.GuardBroken")
+
+
 	
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_Staggered, "State.Combat.Staggered")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_SuperArmor, "State.Combat.SuperArmor")
@@ -61,6 +64,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Stamina_RegenBlocked, "State.Stamina.RegenBlocked")
 	UE_DEFINE_GAMEPLAY_TAG(State_Gun_Reloading, "State.Gun.Reloading")
 	UE_DEFINE_GAMEPLAY_TAG(State_Gun_RegenBlocked, "State.Gun.RegenBlocked")
+	UE_DEFINE_GAMEPLAY_TAG(State_Shield_RegenBlocked, "State.Shield.RegenBlocked")
 	
 	UE_DEFINE_GAMEPLAY_TAG(State_Character_LockOn, "State.Character.LockOn")
 
@@ -88,6 +92,8 @@ namespace GameplayTags
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_Hit, "Event.Combat.Hit")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_HitReact, "Event.Combat.HitReact")
+	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_GuardBreak, "Event.Combat.GuardBreak")
+	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_ShieldDepleted, "Event.Combat.ShieldDepleted")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_WeaponToggle, "Event.Combat.WeaponToggle")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_ExecutionStarted, "Event.Combat.ExecutionStarted")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_HitStop, "Event.Combat.HitStop")
