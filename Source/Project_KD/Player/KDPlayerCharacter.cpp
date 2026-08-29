@@ -102,6 +102,14 @@ void AKDPlayerCharacter::ToggleWalk()
 void AKDPlayerCharacter::ToggleLockOn()
 {
 	if (!LockOnComponent) return;
+
+	if (!LockOnComponent->IsLockedOn())
+	{
+		// 락온 상태가 아니고 조준 상태면 락온 상태 활성화 X
+		const UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+		if (ASC && ASC->HasMatchingGameplayTag(GameplayTags::State_Combat_Aiming)) return;
+	}
+	
 	LockOnComponent->ToggleLockOn();
 
     // 락온 상태에 맞춰 캐릭터 회전 모드 토글
