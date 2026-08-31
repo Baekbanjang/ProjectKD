@@ -137,6 +137,8 @@ bool UKDCombatAttributeSet::TryInterceptByParry(const FGameplayEffectModCallback
 		EventData.Instigator = Data.EffectSpec.GetContext().GetInstigator();
 		EventData.Target = ASC->GetAvatarActor();
 		EventData.EventMagnitude = HitAngle;
+		// 접촉점 운반 — GCN 이펙트 위치 = HitResult 의 ImpactPoint
+		EventData.ContextHandle = Data.EffectSpec.GetContext();
 		ASC->HandleGameplayEvent(EventData.EventTag, &EventData);
 		return true;
 	}
