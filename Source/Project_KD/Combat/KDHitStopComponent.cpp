@@ -7,6 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "KDGameplayTags.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 UKDHitStopComponent::UKDHitStopComponent()
 {
@@ -30,21 +31,24 @@ void UKDHitStopComponent::RequestHitStop(float Duration)
 	UWorld* World = GetWorld();
 	AActor* Owner = GetOwner();
 	if (!World || !Owner || Duration <= 0.f) { return; }
+
+	// 전역 슬로루모션 중 정지가 길어지는 것 보정
+	const float DilatedDuration = Duration * FMath::Max(UGameplayStatics::GetGlobalTimeDilation(World), KINDA_SMALL_NUMBER);
 	
 	FTimerManager& Timers = World->GetTimerManager();
 	// 이미 정지 되어있으면 그대로 두고 다시 움직일 시간만 미룸 - 짧은 요청이 긴 정지를 자르는 것 방지
 	if (Timers.IsTimerActive(ResumeTimer))
 	{
-		if (Timers.GetTimerRemaining(ResumeTimer) >= Duration) { return; }
+		if (Timers.GetTimerRemaining(ResumeTimer) >= DilatedDuration) { return; }
 		Timers.ClearTimer(ResumeTimer);
-		Timers.SetTimer(ResumeTimer, this, &UKDHitStopComponent::RestoreTime, Duration, false);
+		Timers.SetTimer(ResumeTimer, this, &UKDHitStopComponent::RestoreTime, DilatedDuration, false);
 		return;
 	}
 
 	// 해당 액터(캐릭터)만 시간 정지(몽타주 클래스 큐칙)
 	SavedTimeDilation = Owner->CustomTimeDilation;
 	Owner->CustomTimeDilation = 0.f;
-	Timers.SetTimer(ResumeTimer, this, &UKDHitStopComponent::RestoreTime, Duration, false);
+	Timers.SetTimer(ResumeTimer, this, &UKDHitStopComponent::RestoreTime, DilatedDuration, false);
 }
 
 void UKDHitStopComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)

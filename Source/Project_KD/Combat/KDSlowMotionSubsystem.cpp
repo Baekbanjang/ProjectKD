@@ -62,7 +62,11 @@ void UKDSlowMotionSubsystem::Recalculate()
 	
 	UGameplayStatics::SetGlobalTimeDilation(World, Winner->Scale);
 
+	// 남은 실시간을 현재 배율의 게임 시간으로 환산 — 타이머 = 게임 시계
+	const float RemainReal = FMath::Max(NextExpire - Now, KINDA_SMALL_NUMBER);
+	const float SafeScale = FMath::Max(Winner->Scale, KINDA_SMALL_NUMBER);
+	
 	// 목록에서 제일 먼저 끝나는 요청을 다시 호출
 	Timers.SetTimer(RecalcTimer, this, &UKDSlowMotionSubsystem::Recalculate,
-		FMath::Max(NextExpire - Now, KINDA_SMALL_NUMBER), false);
+		RemainReal * SafeScale, false);
 }
