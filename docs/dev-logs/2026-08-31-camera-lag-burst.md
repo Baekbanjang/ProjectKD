@@ -63,11 +63,26 @@ JustParry_StrongAttack1     5           0           10           5
 발신   AM_..._L 의 PlayerCue 노티에 GameplayCue.Camera.DashTrail 이 이미 박혀 있었다
        몽타주 스캔이 노티 안의 FGameplayTag 값까지는 안 봤다
 
-수신   GCN_CounterTrail 에 OnExecute / OnActive 훅이 하나도 없다
-       로직이 DoDashTrail 이라는 커스텀 이벤트에 매달려 있고 부르는 곳이 없다
+수신   EventGraph 에 OnExecute / OnActive 가 없고
+       로직이 DoDashTrail 커스텀 이벤트에 매달려 있었다
 ```
 
-**안 나온 진짜 이유는 수신 쪽이다.** 태그를 쏴도 받는 데가 없었다.
+⚠️ **이 "수신 훅 없음" 진단은 틀렸을 수 있다 (2026-08-31 저녁 정정).**
+
+같은 날 `GCN_PerfectParry` 를 조사하다 알았다 — `OnExecute` 는 `BlueprintNativeEvent` 라 **EventGraph 가 아니라 함수 그래프로 생긴다.** `get_graph_details` 가 기본으로 EventGraph 만 보므로 안 보인 것이다.
+
+```
+GCN_PerfectParry 실측
+  functions   UserConstructionScript · OnExecute      ← 여기 있었다
+  events      ReceiveBeginPlay(비활성) · RunSlowMo(Character)
+  OnExecute 그래프가 RunSlowMo 를 호출하는 구조
+```
+
+`GCN_CounterTrail` 도 `DoDashTrail` 을 부르는 `OnExecute` 함수 그래프가 있었을 가능성이 높다. **이미 삭제해서 확인 불가.**
+
+📌 교체 자체는 정당하다 — `Cast To KDPlayerCharacter`(§1-3 위반)와 복귀값 `20` 하드코딩은 EventGraph 에서 실측한 것이다. **다만 "안 나온 원인"은 미확인으로 남는다.**
+
+⚠️ **BP 를 조사할 때는 `get_blueprint` 로 `functions` 목록을 먼저 볼 것.** `get_graph_details`(EventGraph)만 보면 함수 그래프를 통째로 놓친다.
 
 그 밖에 두 가지가 더 있었다.
 ```
