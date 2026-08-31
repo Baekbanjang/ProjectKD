@@ -29,6 +29,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.0", ClampMax = "5.0"))
 	float HitConfirmMagnitude = 1.0f;
 	
+	// 공격 맞출 시 슬로우 모션
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.05", ClampMax = "1.0"))
+	float HitSlowMoScale = 1.f;
+	
+	// 슬로우 모션 지속 시간(전역)
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float HitSlowMoDuration = 0.f;
+	
+	// 슬로우 모션 우선순위
+	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
+	int32 HitSlowMoPriority = 10;
+
+	
 	// 무기별 타격감 프로필 — CueParams.SourceObject로 전달, BP GC가 무기별 분기
 	UPROPERTY(EditDefaultsOnly, Category = "Action|HitStop")
 	TObjectPtr<UKDHitConfirmProfile> HitConfirmProfile;

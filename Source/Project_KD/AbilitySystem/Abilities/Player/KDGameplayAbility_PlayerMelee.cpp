@@ -13,6 +13,7 @@
 #include "AbilitySystem/AnimNotifies/KDAnimNotifyState_MeleeTrace.h"
 #include "AbilitySystem/Combo/KDComboComponent.h"
 #include "AbilitySystem/Combo/KDComboTreeDataAsset.h"
+#include "Combat/KDSlowMotionSubsystem.h"
 #include "Combat/Data/KDHitConfirmProfile.h"
 
 #if !UE_BUILD_SHIPPING
@@ -48,6 +49,15 @@ void UKDGameplayAbility_PlayerMelee::OnTargetHit(AActor* HitActor, UAbilitySyste
 	CueParams.SourceObject = HitConfirmProfile;
 	
 	AttackerASC->ExecuteGameplayCue(GameplayTags::GameplayCue_Combat_PlayerHitConfirm, CueParams);
+
+	// 카운터, 또는 특수 공격만 슬로우 모션 발동
+	if (HitSlowMoScale < 1.f && HitSlowMoDuration > 0.f)
+	{
+		if (UKDSlowMotionSubsystem* SlowMo = GetWorld()->GetSubsystem<UKDSlowMotionSubsystem>())
+		{
+			SlowMo->RequestSlowMo(HitSlowMoScale, HitSlowMoDuration, HitSlowMoPriority);
+		}
+	}
 
 	// 히트스탑 윈도우 확보 - bIgnoreHitStop 확인 후 생략 가능
 	const UKDAnimNotifyState_MeleeTrace* Window = GetActiveWindow();
