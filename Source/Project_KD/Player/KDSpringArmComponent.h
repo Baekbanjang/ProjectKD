@@ -64,6 +64,8 @@ public:
 	// 골반 소켓
 	UPROPERTY(EditAnywhere, Category = "Dolly|Elevate")
 	FName PelvisSocketName = TEXT("pelvis");
+
+	virtual void BeginPlay() override;
 	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
@@ -71,6 +73,11 @@ public:
 	
 	// 마우스 상하 각도 0~1 변환값  아래 0 | 정면 0.5 | 위 1
 	float GetRailAlpha() const { return RailAlpha; }
+
+	// 랙 완화
+	UFUNCTION(BlueprintCallable, Category = "Dolly|LagBurst",
+		meta = (ToolTip = "TargetLagSpeed 낮을수록 뒤처짐 | Duration 초 | BlendSpeed 값 전환 속도"))
+	void RequestLagBurst(float TargetLagSpeed, float TargetMaxDistance, float Duration, float BlendSpeed = 4.f);
 private:
 	void UpdateAimAlpha(float DeltaTime);   // 조준 태그 -> AimAlpha
 	FVector SampleRail(const USplineComponent* Rail, float Alpha) const;   // 스플라인 위 점
@@ -89,4 +96,16 @@ private:
 
 	void UpdateElevateOffset(float DeltaTime);   // 골반 높이 -> ElevateOffset
 	float ElevateOffset = 0.f;   // 카메라 상승량 — 카메라 위치 | LookAt 둘 다 가산
+
+		
+	void UpdateLagBurst(float DeltaTime);   // 랙 값 보간 + 만료 복귀
+	
+	float DefaultLagSpeed = 0.f;       
+	float DefaultLagMaxDistance = 0.f;
+	float LagBurstSpeed = 0.f;          
+	float LagBurstMaxDistance = 0.f;	
+	float LagBurstBlendSpeed = 4.f;		// 블렌드 속도
+	float LagBurstRemaining = 0.f;		// 복귀 구간
+	bool bLagBurstActive = false;       
+
 };

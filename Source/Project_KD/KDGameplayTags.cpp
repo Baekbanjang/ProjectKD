@@ -124,7 +124,7 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_ShootRecoil, "GameplayCue.Camera.ShootRecoil")
 
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_CounterThrust, "GameplayCue.Combat.CounterThrust")
-	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_DashTrail, "GameplayCue.Camera.DashTrail")
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Camera_LagBurst, "GameplayCue.Camera.LagBurst")
 
 	
 	UE_DEFINE_GAMEPLAY_TAG(Input_Action_Light, "Input.Action.Light")

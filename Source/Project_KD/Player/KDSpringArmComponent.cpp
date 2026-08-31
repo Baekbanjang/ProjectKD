@@ -16,13 +16,22 @@ UKDSpringArmComponent::UKDSpringArmComponent()
 	bInheritPitch = false;  // 피치(상하)는 제외
 }
 
+void UKDSpringArmComponent::BeginPlay()
+{
+	// 기능 : 랙 원본값 확보 
+	Super::BeginPlay();
+	DefaultLagSpeed = CameraLagSpeed;
+	DefaultLagMaxDistance = CameraLagMaxDistance;
+}
+
 void UKDSpringArmComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                          FActorComponentTickFunction* ThisTickFunction)
 {
 	UpdateAimAlpha(DeltaTime);
 	RecenterPitchOnAimExit(DeltaTime);
 	UpdateElevateOffset(DeltaTime);   // 골반 높이 -> 카메라 상승량
 	ApplyRailPosition();   // 레일에서 프레임마다 위치 확보
+	UpdateLagBurst(DeltaTime);   // 랙 값 갱신
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);   // 랙 | 충돌 | 소켓 갱신
 	UpdateLookRotation(); // 회전 업데이트
 	UpdateChildTransforms();   // 카메라에 회전 반영 - GetSocketTransform(KD) 호출
@@ -60,6 +69,18 @@ FTransform UKDSpringArmComponent::GetSocketTransform(FName InSocketName,
 	}
 
 	return RelativeTransform;
+}
+
+void UKDSpringArmComponent::RequestLagBurst(float TargetLagSpeed, float TargetMaxDistance, float Duration,
+	float BlendSpeed)
+{
+	if (Duration <= 0.f) { return; }
+	
+	LagBurstSpeed = TargetLagSpeed;
+	LagBurstMaxDistance = TargetMaxDistance;
+	LagBurstBlendSpeed = FMath::Max(BlendSpeed, KINDA_SMALL_NUMBER);
+	LagBurstRemaining = Duration;
+	bLagBurstActive = true;
 }
 
 void UKDSpringArmComponent::UpdateAimAlpha(float DeltaTime)
@@ -184,4 +205,28 @@ void UKDSpringArmComponent::UpdateElevateOffset(float DeltaTime)
 		}
 	}
 	ElevateOffset = FMath::FInterpTo(ElevateOffset, Target, DeltaTime, ElevateBlendSpeed);
+}
+
+void UKDSpringArmComponent::UpdateLagBurst(float DeltaTime)
+{
+	// 기능 : 남은 시간 감소 후 목표값으로 보간
+	if (!bLagBurstActive) { return; } // 요청없으면 종료
+	
+	const bool bHolding = LagBurstRemaining > 0.f;
+	if (bHolding) { LagBurstRemaining -= DeltaTime; }
+	
+	// 업데이트 및 복구 
+	const float GoalSpeed = bHolding ? LagBurstSpeed : DefaultLagSpeed;
+	const float GoalMaxDistance = bHolding ? LagBurstMaxDistance : DefaultLagMaxDistance;
+	
+	CameraLagSpeed = FMath::FInterpTo(CameraLagSpeed, GoalSpeed, DeltaTime, LagBurstBlendSpeed);
+	CameraLagMaxDistance = FMath::FInterpTo(CameraLagMaxDistance, GoalMaxDistance, DeltaTime, LagBurstBlendSpeed);
+	
+	// 원본 값일 시 종료
+	if (!bHolding && FMath::IsNearlyEqual(CameraLagSpeed, DefaultLagSpeed, 0.05f))
+	{
+		CameraLagSpeed = DefaultLagSpeed;
+		CameraLagMaxDistance = DefaultLagMaxDistance;
+		bLagBurstActive = false;
+	}
 }

@@ -157,7 +157,8 @@ namespace GameplayTags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_CounterThrust)
 
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_DashTrail)
+	// 일시적 카메라 랙 완화 큐 — GCN_CameraLagBurst 가 KDSpringArmComponent 에 위임
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_LagBurst)
 	// 처형 시네 카메라 큐. C++ 참조 X, 에셋(DA_PlayerExecution·GCN_ExcutionCamera)이 이름으로 참조
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_Execution)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Camera_ShootRecoil);
