@@ -29,6 +29,12 @@ void UKDGameplayAbility_CounterThrust::OnActivated()
 	UKDLockOnComponent* LockOn = GetLockOnComponentFromActorInfo();
 	if (!IsValid(PC) || !LockOn) return;
 
+	UMotionWarpingComponent* Warp = PC->FindComponentByClass<UMotionWarpingComponent>();
+	if (!ensureMsgf(Warp, TEXT("[KD] CounterThrust: 플레이어에 MotionWarpingComponent 없음 — 찌르기만 진행")))
+		return;
+
+	Warp->RemoveWarpTarget(WarpTargetName);
+	
 	// 락온 타겟 우선, 없으면 자동 탐색. 둘 다 없으면 제자리 찌르기.
 	AActor* Target = LockOn->GetLockedTarget();
 	if (!Target) Target = LockOn->FindBestTarget();
@@ -41,11 +47,7 @@ void UKDGameplayAbility_CounterThrust::OnActivated()
 
 	const FVector Dir = ToTarget.GetSafeNormal();
 	if (Dir.IsNearlyZero()) return;
-
-	UMotionWarpingComponent* Warp = PC->FindComponentByClass<UMotionWarpingComponent>();
-	if (!ensureMsgf(Warp, TEXT("[KD] CounterThrust: 플레이어에 MotionWarpingComponent 없음 — 찌르기만 진행")))
-		return;
-
+	
 	// 적 앞 WarpStopDistance 지점까지 애니 이동량을 보정.
 	// Dir = 적 방향, Dist = 적까지 거리. 겹치지 않게 그만큼 덜 가서 정지
 	const FVector WarpLoc = PC->GetActorLocation() + Dir * FMath::Max(Dist - WarpStopDistance, 0.f);

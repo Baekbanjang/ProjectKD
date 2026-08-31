@@ -33,6 +33,9 @@ void UKDGameplayAbility_PlayerExecution::ActivateAbility(const FGameplayAbilityS
 	// InstancedPerActor 잔류 방지 — 매 활성화 시 명시 리셋.
 	ActiveCameraCue = FGameplayTag();
 
+	// 피니셔 몽타주의 Motion Warping 노티 동기점 이름
+	static const FName ExecutionWarpName(TEXT("ExecutionTarget"));
+
 	AActor* Player = GetAvatarActorFromActorInfo();
 	const AActor* Enemy = TriggerEventData ? TriggerEventData->Instigator : nullptr;
 
@@ -59,11 +62,14 @@ void UKDGameplayAbility_PlayerExecution::ActivateAbility(const FGameplayAbilityS
 	}
 
 	// 적 정면으로 워프 후 피니셔 몽타주의 "ExecutionTarget" 워프 노티 사용
-	if (bHasMeeting)
+	if (UMotionWarpingComponent* MW = IsValid(Player) ? Player->FindComponentByClass<UMotionWarpingComponent>() : nullptr)
 	{
-		if (UMotionWarpingComponent* MW = Player->FindComponentByClass<UMotionWarpingComponent>())
+		// 직전 발동 좌표 제거
+		MW->RemoveWarpTarget(ExecutionWarpName);
+
+		if (bHasMeeting)
 		{
-			MW->AddOrUpdateWarpTargetFromLocationAndRotation(TEXT("ExecutionTarget"), MeetingLoc, MeetingRot);
+			MW->AddOrUpdateWarpTargetFromLocationAndRotation(ExecutionWarpName, MeetingLoc, MeetingRot);
 		}
 	}
 
