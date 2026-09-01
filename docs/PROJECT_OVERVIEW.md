@@ -144,7 +144,7 @@ UGA_PlayerTurn / UGA_PlayerExecution / UGA_EnemyHitReact / UGA_EnemyParry / UGA_
 ### 2-5. ★코드 주의/함정 (문서화된 설계 결정)
 - **데미지는 ExecCalc가 아님** — SetByCaller + 메타어트리뷰트(`IncomingDamage`) 게이트웨이 방식. CLAUDE.md §1-2 원문만 보면 ExecCalc가 기본으로 읽히나, 실제는 "단순케이스 SetByCaller 예외"를 데미지 전체로 확장한 구조. **새 데미지 로직은 `AS_Combat::PostGameplayEffectExecute`에 붙는다**.
 - **InstancedPerActor GA 멤버 잔류** — `GA_Dodge`/`GA_Parry`의 핸들, `GA_PlayerAttackBase`의 `DamageEffectClass` 등은 매 `ActivateAbility` 시작부에서 명시 리셋 필수. 새 GA 작성 시 놓치기 쉬움.
-- **히트스탑 = `Montage_Pause`** (SetPlayRate(0) 아님) — 겹친 2타가 rate=0 물어 영구정지하는 문제 회피.
+- **히트스탑 = `CustomTimeDilation = 0`** (`KDHitStopComponent.cpp:49`) — 2026-09-02 실측 정정. 종전 이 줄은 "`Montage_Pause` 방식"이라고 적혀 있었으나 08-04에 컴포넌트로 옮기며 방식이 바뀌었다(`SetPlayRate(0)` → `Montage_Pause` → 현행 `CustomTimeDilation`). **`Montage_Pause`는 소스 전체에서 `UKDGameplayAbility_SkillCharge`가 유일 사용처**(차지 중 정지)라 서로 안 부딪힌다 — 히트스탑을 몽타주 정지 방식으로 되돌리면 차지가 깨진다.
 - **처형 데미지 = 코드강제** — `FinishExecution`이 데스블로시 `SetNumericAttributeBase(Health,0)`. GE 밸런스 무관하게 항상 죽는 특수경로.
 - **팀 이분법** — `Team.Enemy` 유무로만 아군방지. 팀 3개↑(소환수 등) 확장시 깨짐.
 - **`PostGameplayEffectExecute` 사후로직 금지** — Health 0시 `HandleDeath`가 동기완료되므로 그 뒤 코드 추가 금지(주석 경고).
