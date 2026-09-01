@@ -74,6 +74,18 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
 	TObjectPtr<UInputAction> IA_Aim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
+	TObjectPtr<UInputAction> IA_Skill_1;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
+	TObjectPtr<UInputAction> IA_Skill_2;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
+	TObjectPtr<UInputAction> IA_Skill_3;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input|Combat")
+	TObjectPtr<UInputAction> IA_Skill_4;
 private:
 	void Handle_Move(const FInputActionValue& Value);
 	void Handle_Look(const FInputActionValue& Value);
@@ -92,4 +104,12 @@ private:
 
 	void Handle_AimStart();
 	void Handle_AimStop();
+
+	void Handle_Skill1();
+	void Handle_Skill2();
+	void Handle_Skill3();
+	void Handle_Skill4();
+	void Handle_SkillHoldStop();
+	
+	void TrySkillByIndex(int32 SkillIndex);
 };

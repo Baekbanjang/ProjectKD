@@ -84,6 +84,26 @@ void AKDPlayerController::SetupInputComponent()
 		EIC->BindAction(IA_Aim, ETriggerEvent::Started, this, &AKDPlayerController::Handle_AimStart);
 		EIC->BindAction(IA_Aim, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_AimStop);
 	}
+	if (IA_Skill_1)
+	{
+		EIC->BindAction(IA_Skill_1, ETriggerEvent::Started, this, &AKDPlayerController::Handle_Skill1);
+		EIC->BindAction(IA_Skill_1, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_SkillHoldStop);
+	}
+	if (IA_Skill_2)
+	{
+		EIC->BindAction(IA_Skill_2, ETriggerEvent::Started, this, &AKDPlayerController::Handle_Skill2);
+		EIC->BindAction(IA_Skill_2, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_SkillHoldStop);
+	}
+	if (IA_Skill_3)
+	{
+		EIC->BindAction(IA_Skill_3, ETriggerEvent::Started, this, &AKDPlayerController::Handle_Skill3);
+		EIC->BindAction(IA_Skill_3, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_SkillHoldStop);
+	}
+	if (IA_Skill_4)
+	{
+		EIC->BindAction(IA_Skill_4, ETriggerEvent::Started, this, &AKDPlayerController::Handle_Skill4);
+		EIC->BindAction(IA_Skill_4, ETriggerEvent::Completed, this, &AKDPlayerController::Handle_SkillHoldStop);
+	}
 }
 
 void AKDPlayerController::Handle_Move(const FInputActionValue& Value)
@@ -220,4 +240,38 @@ void AKDPlayerController::Handle_AimStop()
 {
 	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
 	if (PC) PC->TryAimStop();
+}
+
+void AKDPlayerController::Handle_Skill1()
+{
+	TrySkillByIndex(1);
+}
+
+void AKDPlayerController::Handle_Skill2()
+{
+	TrySkillByIndex(2);
+}
+
+void AKDPlayerController::Handle_Skill3()
+{
+	TrySkillByIndex(3);
+}
+
+void AKDPlayerController::Handle_Skill4()
+{
+	TrySkillByIndex(4);
+}
+
+void AKDPlayerController::Handle_SkillHoldStop()
+{
+	// 기능 : 차지 스킬 키 릴리즈
+	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
+	if (PC) PC->TrySkillHoldStop();
+}
+
+void AKDPlayerController::TrySkillByIndex(int32 SkillIndex)
+{
+	// 기능 : 스킬 발동 위임
+	AKDPlayerCharacter* PC = Cast<AKDPlayerCharacter>(GetPawn());
+	if (PC) PC->TrySkill(SkillIndex);
 }

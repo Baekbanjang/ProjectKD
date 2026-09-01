@@ -33,6 +33,8 @@ public:
 	void TryAimStart() const;
 	void TryAimStop() const;
 	void TryMovementCancel() const;
+	void TrySkill(int32 SkillIndex) const;
+	void TrySkillHoldStop() const;
 
 protected:
 	virtual void BeginPlay() override;

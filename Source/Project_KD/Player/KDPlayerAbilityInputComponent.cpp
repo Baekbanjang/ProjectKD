@@ -338,8 +338,46 @@ void UKDPlayerAbilityInputComponent::TryMovementCancel() const
 	}
 }
 
+void UKDPlayerAbilityInputComponent::TrySkill(int32 SkillIndex) const
+{
+	// 기능 : 숫자키 스킬 발동
+	UAbilitySystemComponent* ASC = GetASC();
+	if (!ASC)
+	{
+		return;
+	}
+	
+	FGameplayTag SkillTag;
+	switch (SkillIndex)
+	{
+		case 1: SkillTag = GameplayTags::Ability_Player_Skill1; break;
+		case 2: SkillTag = GameplayTags::Ability_Player_Skill2; break;
+		case 3: SkillTag = GameplayTags::Ability_Player_Skill3; break;
+		case 4: SkillTag = GameplayTags::Ability_Player_Skill4; break;
+		default: return;
+	}
+	ActivateByTag(ASC, SkillTag);
+}
+
+void UKDPlayerAbilityInputComponent::TrySkillHoldStop() const
+{
+	// 기능 : 차지 스킬 키 릴리즈 통지
+	AActor* Owner = GetOwner();
+	if (!Owner)
+	{
+		return;
+	}
+	
+	FGameplayEventData Payload;
+	Payload.EventTag = GameplayTags::Event_Skill_HoldRelease;
+	Payload.Instigator = Owner;
+	Payload.Target = Owner;
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+		Owner, GameplayTags::Event_Skill_HoldRelease, Payload);
+}
+
 void UKDPlayerAbilityInputComponent::TryConsumeAndActivate(UAbilitySystemComponent* ASC, bool bCanCancel,
-	const FGameplayTag& InputTag, const FGameplayTag& AbilityTag) const
+                                                           const FGameplayTag& InputTag, const FGameplayTag& AbilityTag) const
 {
 	// 기능 : 버퍼에 있으면 꺼내 어빌리티 발동
 	if (!InputBuffer || !ASC) return;

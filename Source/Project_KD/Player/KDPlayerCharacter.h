@@ -61,6 +61,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TryAimStop() const;
 
+	// 숫자키 스킬 발동 — 1~4
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TrySkill(int32 SkillIndex) const;
+
+	// 차지 스킬 키 릴리즈 통지
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TrySkillHoldStop() const;
+
 	void StartSprint();
 	void StopSprint();
 

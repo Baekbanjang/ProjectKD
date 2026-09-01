@@ -191,6 +191,16 @@ void AKDPlayerCharacter::TryDodge() const
 	if (AbilityInputComp) AbilityInputComp->TryDodge();
 }
 
+void AKDPlayerCharacter::TrySkill(int32 SkillIndex) const
+{
+	if (AbilityInputComp) AbilityInputComp->TrySkill(SkillIndex);
+}
+
+void AKDPlayerCharacter::TrySkillHoldStop() const
+{
+	if (AbilityInputComp) AbilityInputComp->TrySkillHoldStop();
+}
+
 void AKDPlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
