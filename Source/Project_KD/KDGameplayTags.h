@@ -19,6 +19,12 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Shoot)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_ShotBlast)
 
+	// 캐릭터 스킬 4종 — BP GA 가 각자 AbilityTags 로 보유
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill1)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill2)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill3)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill4)
+
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Movement_Turn)
 
 	// 적 공격 (BP GA child가 ability identity 태그로 설정)
@@ -50,6 +56,9 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Enemy_Elite_Basic)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Enemy_Elite_Sweep)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Enemy_Elite_Rush)
+
+	// 스킬 4종 공유 쿨다운 — GE_SkillCooldown 이 부여
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Cooldown_Player_Skill)
 
 	// Character states
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Combat_InCombat)
@@ -126,6 +135,9 @@ namespace GameplayTags
 
 	// 패링 성공 시 AS_Combat이 패리어 ASC로 발화. ContextHandle에 HitResult 운반 → 클래시 큐 위치 결정.
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Combat_ParrySuccess)
+
+	// 차지 스킬 키 릴리즈 — 입력 컴포넌트가 발신, GA_SkillCharge 가 수신
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Skill_HoldRelease)
 
 	// SetByCaller magnitude tags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(SetByCaller_AttackPower)

@@ -14,7 +14,12 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Aim, "Ability.Player.Aim")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Shoot, "Ability.Player.Shoot")
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_ShotBlast, "Ability.Player.ShotBlast")
-	
+
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Skill1, "Ability.Player.Skill1")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Skill2, "Ability.Player.Skill2")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Skill3, "Ability.Player.Skill3")
+	UE_DEFINE_GAMEPLAY_TAG(Ability_Player_Skill4, "Ability.Player.Skill4")
+
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Movement_Turn, "Ability.Movement.Turn")
 	
 	UE_DEFINE_GAMEPLAY_TAG(Ability_Enemy_Grunt_Attack_Basic, "Ability.Enemy.Grunt.Attack.Basic")
@@ -43,6 +48,8 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(Cooldown_Enemy_Elite_Basic, "Cooldown.Enemy.Elite.Basic")
 	UE_DEFINE_GAMEPLAY_TAG(Cooldown_Enemy_Elite_Sweep, "Cooldown.Enemy.Elite.Sweep")
 	UE_DEFINE_GAMEPLAY_TAG(Cooldown_Enemy_Elite_Rush, "Cooldown.Enemy.Elite.Rush")
+
+	UE_DEFINE_GAMEPLAY_TAG(Cooldown_Player_Skill, "Cooldown.Player.Skill")
 
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_InCombat, "State.Combat.InCombat")
 	UE_DEFINE_GAMEPLAY_TAG(State_Combat_InAction, "State.Combat.InAction")
@@ -101,6 +108,8 @@ namespace GameplayTags
 	
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_PerfectParryTriggered, "Event.Combat.PerfectParryTriggered")
 	UE_DEFINE_GAMEPLAY_TAG(Event_Combat_ParrySuccess, "Event.Combat.ParrySuccess")
+
+	UE_DEFINE_GAMEPLAY_TAG(Event_Skill_HoldRelease, "Event.Skill.HoldRelease")
 
 	UE_DEFINE_GAMEPLAY_TAG(SetByCaller_AttackPower, "SetByCaller.AttackPower")
 	
