@@ -124,6 +124,7 @@ player-locomotion  → 볼트 02_플레이어            (08-24 먼저 삭제됨
 
 | 날짜 | 문서 | 내용 |
 | --- | --- | --- |
+| 2026-09-01 | [skill-anim-notify](dev-logs/2026-09-01-skill-anim-notify.md) | ★스킬 애니 실측 + 노티 19개 — 총열 = 소켓 -X축(캘리브레이션), 기존 "총 스파이크"는 발사가 아니라 반동, 총 발사는 검출 X 리듬 제안 O(오차 6ms), StaminaCost GE가 Cost로 작동 안 하는 이유, `save_asset` 이 조용히 안 쓰는 함정 |
 | 2026-08-08 | [aim-offset](dev-logs/2026-08-08-aim-offset.md) | ★조준 상체 오프셋 — 레일 진행도를 -1~+1로 정규화(SB 실측), Mesh Space 판단 근거, 감도 배율이 필요했던 이유(134도 대 42도) |
 | 2026-08-08 | [gun-fire-crosshair](dev-logs/2026-08-08-gun-fire-crosshair.md) | ★총 2단계 — 사격 GA(상속 대신 태그 조건표), 해제 몽타주는 태스크로 못 켠다, 첫 화면 HUD, `Set Visibility(self)`가 Tick을 죽인 함정, SB 발사 확산 커브 실측 |
 | 2026-08-05 | [lockon-pitch-curve](dev-logs/2026-08-05-lockon-pitch-curve.md) | ★락온 시점 고정 버그 — 레일 눈금이 된 피치에 락온이 시선각도를 넣어 한 점으로 수렴. SB식 거리별 피치 커브 + 각도별 좌우 속도 커브 + 사거리 1700 |
