@@ -11,7 +11,61 @@
 
 ---
 
-## 🔵 2026-08-28 — 플레이어 폴리싱: 패링 재설계 **(새 세션은 여기부터)**
+## 🟢 2026-09-02 — 캐릭터 스킬 4종 구현 완료 **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-02-skill-charge-ga.md` (직전 = `2026-09-01-skill-anim-notify.md`)
+
+**스킬 1·2·3·4 가 키 입력으로 돌아간다. PIE 전반 통과(승환).**
+
+```
+신규 클래스   UKDGameplayAbility_Skill        단발 (스킬 1·2·4)
+             UKDGameplayAbility_SkillCharge  차지 (스킬 3)
+태그 6개      Ability.Player.Skill1~4 · Cooldown.Player.Skill · Event.Skill.HoldRelease
+입력          숫자키 1~4 + 차지 키 뗌.  Controller → Character → AbilityInputComponent
+에셋          GA BP 4개 · GE_SkillCooldown · IA 4개 · AM_SB_Skill_03 통합(섹션 5개)
+             + GA 폴더 재편 15개 이동 (Attack/Guard_and_Parry/Move/Shot/Skill)
+커밋          코드 b90beb5·1e2ca7b·1af29e5 (푸시) / Content 3b2a424·13038aa·d799c85
+```
+
+### 확정 사양
+
+```
+캔슬 없음 · Stamina 20 소모 · 쿨다운 1초(4개 공유 태그) · 상단 숫자열 1~4
+차지 3단계 = 0.4초 / 0.8초 기준.  이동 706 / 806 / 979cm
+```
+
+### 🔴 다음 할 일 (순서)
+
+```
+1  스킬2 땅 찍기 AoE      1.417초 노티 자리를 비워뒀다. GA_ShotBlast 와 같은 층위의
+                        독립 GA 로. 판정 도형은 FKDTargetFilter 의 Cylinder 재사용
+                        (즉발 권장 — 확산은 AbilityTask 가 필요하고 반경 300 은 체감 차이 X)
+2  스킬 연출              스킬 전용 HitConfirmProfile · 슬로모
+3  우하단 스킬 UI          SB식 슬롯
+```
+
+### 🟡 눈으로 보면 끝나는 것 2건
+
+```
+Charge1 (몽타주 f24.35) 점프 지점    포즈차 59도로 실측된 자리. 튀면 f35 근처로 옮긴다
+                                    (f35 = 21.6도. 노티 안 걸리는 구간 중 최선)
+첫 Shot (0.1731초)                  정지 시점(0.1667) 6ms 뒤. 차지 시작에 한 발 나갈 수 있다
+                                    어색하면 노티를 0.19 로 민다
+```
+
+### ⚠️ 알아둘 것
+
+```
+PoiseDamageByAttack     적 DA 맵에 Skill1~4 항목이 없다 = 스킬로 경직이 안 걸린다
+                        (CounterSlash 도 같은 상태. 적 밸런싱 때 같이)
+Montage_Pause           SkillCharge 가 프로젝트 유일 사용처.
+                        히트스톱을 몽타주 정지 방식으로 되돌리면 여기가 깨진다
+CapsuleRadius           헤더 기본 3. 새 근접 GA BP 만들 때마다 20 으로 올려야 한다
+```
+
+---
+
+## 🔵 2026-08-28 — 플레이어 폴리싱: 패링 재설계
 
 승환 지시 = **"패링이 구리다. 1부터 100까지 손봐야 한다"** + **"SB 레퍼런스니까 SB 대로 가고 싶다"**.
 SB 덤프 전수 조사 + 우리 현행 전수 실측을 마쳤다. **아직 착수 전 — 이건 계획이다.**
