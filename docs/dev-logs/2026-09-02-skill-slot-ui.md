@@ -263,8 +263,8 @@ RefreshSlots(NewStamina)
 - [x] 아이콘 4장 — 검은 사각형 없이 라인만
 - [x] 쿨다운 원형 스윕 12시 시계방향
 - [x] 스태미나 부족 시 흐려짐
-- [ ] 슬롯 크기 — 조금 작다는 관측. `Render Transform Scale` 로 배율을 먼저 찾고 좌표 재계산
-- [ ] `Skill_04` 아이콘 — 셋과 언어가 다르다(궤적 vs 물건) + 선이 촘촘해 작은 크기에서 뭉갤 수 있다
+- [x] 슬롯 크기 — 승환이 직접 확대 + 좌표 재계산 완료
+- [x] `Skill_04` 아이콘 — **현행 유지 결정(승환).** 셋과 언어가 다르다는 지적은 있었으나 화면에서 문제없음
 
 ## 커밋 (Content)
 
@@ -281,9 +281,42 @@ a088ee6  위젯 완성 + MainHUD 배치
 ## 남은 것
 
 ```
-슬롯 크기 확대       Render Transform Scale 로 배율 확정 후 좌표 재계산
-Skill_04 아이콘      필요하면 재생성 (크레딧 1170 남음)
+✅ 슬롯 크기        승환이 확대 + 좌표 재계산 완료
+✅ Skill_04 아이콘   현행 유지 결정
 스킬 연출            HitConfirmProfile 분리 · 카메라 연출 (슬로모는 승환 판단으로 제외)
-스킬 나이아가라      승환 구상 중
+스킬 나이아가라      아래 §8 재고 실측 완료. 원소 톤 결정 대기
 ST 리젠 제거         명중 시 스태미나 회복으로 전환 — 이 UI 가 그 정보를 보여주게 된다
 ```
+
+---
+
+## 8. 나이아가라 재고 실측 (연출 착수 전 조사)
+
+**살 것이 없다. 다 있다.**
+
+```
+GhostSamurai        18개   NS_Slash_Ground · Fall · Up · XL · SP01 · Stab_01/02
+                           PowerUp_01 · PowerUp_Burst_01 · Trail_01~04
+                           ★ 이름이 스킬 연출용 그대로다
+SlashTrail Hit      32개   NS_Hit_{Basic,Fire,Ice,Lightning,Dark,Scifi,Mystic,Matrix,
+                           Music,Nature,Sand,Water,Wind,CyberPunk,Distortion,LightSaber}
+                           × (Loop / Once).  현재 평타 = NS_Hit_Basic_Once
+SlashTrail Sword    13개   무기에 두르는 오라 (같은 원소 이름 체계)
+SlashTrail AuraFX   16개   캐릭터 오라
+Vefects Shockwave   84개   01/02 × 수평·수직 × Small/기본/Big × 색 12종 + Distortion
+                           ★ 땅 찍기 AoE 용
+```
+
+★ **Hit · Sword · Aura 가 같은 원소 이름 체계다.** 원소 하나를 정하면 임팩트·무기오라·캐릭터오라가 세트로 따라온다.
+
+### 꽂을 수 있는 통로 4개
+
+```
+① HitConfirmProfile.ImpactVFX     명중한 적의 접촉점        DA 만 만들면 코드 0줄
+② ANS_WeaponTrail                 몽타주 구간 · 무기 소켓    노티 배치만
+③ AN_PlayerCue -> GameplayCue     캐릭터 메시 소켓 / 위치    BP GCN 필요
+④ GA 코드에서 직접 스폰            임의 위치·회전            코드 필요 (땅 찍기 충격파가 여기)
+```
+
+📌 **원소 톤을 먼저 정해야 한다** — 게임의 색을 정하는 결정이라 연출 작업의 첫 갈림길이다.
+후보 = `Scifi`(푸른 기계톤, SB에 가장 가깝다) · `Lightning` · `Mystic` · `Dark` · `Fire`.

@@ -26,16 +26,29 @@ dev-log = `docs/dev-logs/2026-09-02-skill-slot-ui.md`
 커밋        Content 6054ede · 2073d4a · 088c899 · eed3fc9 · 4192a94 · a0f9e11 · a088ee6
 ```
 
-### 🔴 다음 할 일
+> ✅ **슬롯 크기 확대 · `Skill_04` 아이콘 — 둘 다 종결 (2026-09-02 승환).** 크기는 직접 재계산, 아이콘은 현행 유지.
+
+### 🔴 다음 할 일 — 스킬 연출 + 나이아가라
 
 ```
-1  슬롯 크기 확대       조금 작다(승환). Render Transform Scale 로 배율 찾고 좌표 재계산
-                     계산식 = 캔버스 C = 슬롯 S × 3.125 · 중앙축 = C/2 − S/2
-2  Skill_04 아이콘     셋과 언어가 다르다(궤적 vs 물건) + 선이 촘촘해 작은 크기에서 뭉갤 수 있다
-                     필요하면 재생성 (크레딧 1170)
-3  스킬 연출           HitConfirmProfile 분리 + 카메라 연출
-                     ⛔ 슬로모는 안 넣는다 (승환 판단 — 내 시간이 느려지는 건 스킬에 안 맞다)
-4  스킬 나이아가라      승환 구상 중
+1  ★ 원소 톤 결정       Hit · Sword · Aura 가 같은 이름 체계라 하나 정하면 세트로 따라온다
+                      후보 = Scifi(푸른 기계톤, SB 에 가장 가깝다) · Lightning · Mystic · Dark · Fire
+                      -> 게임의 색을 정하는 결정. 연출의 첫 갈림길
+2  DA_HitSkillAttack   ImpactVFX 를 평타(NS_Hit_Basic_Once)와 다른 원소로
+                      + CameraShakeClass = LCS_CounterAttack
+                      GA_Skill_01~04 · GA_AreaBlast 의 HitConfirmProfile 교체 + Mag 1.5
+                      ★ DA 하나 만들고 BP 5개 값만 바꾸면 끝. 코드 0줄
+3  땅 찍기 충격파       Vefects 의 VFX_Shockwave_* 를 AreaBlast 판정 위치에 스폰
+                      ⚠️ 반경 300 에 맞는 스케일은 눈으로 봐야 안다
+4  스킬 궤적 차별화     지금 스킬 4개가 전부 평타와 같은 NS_SlashTrail_Basic_Loop
+                      NS_Slash_XL / SP01 등으로 갈라면 노티 값만 바꾸면 된다
+⛔ 슬로모는 안 넣는다   (승환 판단 — 내 시간이 느려지는 건 스킬 성격에 안 맞다)
+```
+
+**나이아가라 재고 = 살 것이 없다.** dev-log `2026-09-02-skill-slot-ui.md §8` 에 전수.
+```
+GhostSamurai 18 (Slash_Ground/Fall/XL/SP01/PowerUp_Burst...) · SlashTrail Hit 32 (원소 16 × Loop/Once)
+Sword 오라 13 · AuraFX 16 · Vefects Shockwave 84 (형태 4 × 크기 3 × 색 12)
 ```
 
 ### 🟡 설계 예정 — ST 리젠 제거
