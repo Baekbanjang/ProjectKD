@@ -223,6 +223,41 @@ AL.remove_animation_notify_events_by_track(m, "Muzzle")
 
 ---
 
+## 7-2. 소리 밀도 정리 — 판정 횟수가 아니라 동작 수에 붙인다
+
+배치 직후 `Skill_03` 이 0.9초에 검격 6 + 총성 6 이 됐다. **MCP 로 사운드 에셋을 실측하니 과했다.**
+
+```
+SC_Sword_Swing        길이 2.000초   volume 0.75   override_concurrency False
+ShotGun_Shot_Sound    길이 1.896초                 override_concurrency False
+```
+
+⚠️ **둘 다 2초짜리 긴 소리다.** `Sound_Swing` 6개는 간격이 0.117~0.250초라 전부 겹친다 — 1.1초 구간에 12초치 오디오가 쌓인다. `override_concurrency = False` 라 사운드 자체에 동시재생 상한도 없다.
+
+**콤보 실측이 답을 줬다.**
+```
+Combo_01_01   len 1.67   Sound_Swing 1   Sound_Shot 1   MeleeTrace 1
+Combo_05_03   len 2.25   Sound_Swing 1   Sound_Shot 5   MeleeTrace 1   <- 길이가 Skill_03 과 같다
+```
+**검 소리는 몽타주당 1개.** 총 5발을 쏘는 클립조차 그렇다.
+
+★ **소리는 "판정 횟수"가 아니라 "휘두르는 동작 수"에 붙는다.** 배치 때 `MeleeTrace 하나당 Sound_Swing 하나`로 기계 적용한 게 어긋난 지점이다.
+
+| 몽타주 | Sound_Swing | Sound_Shot | 간격 |
+|---|---|---|---|
+| `Skill_01` | 3 → **2** | 3 유지 | 0.383 |
+| `Skill_02` | 3 유지 | 0 | 0.30 / 0.383 (이미 충분) |
+| `Skill_03` | 6 → **3** | 6 유지 | 0.316 / 0.567 |
+| `Skill_04` | 1 | 0 | — |
+
+`Sound_Shot` 은 전부 유지했다 — `Combo_05_03` 이 같은 길이에 5발을 이미 돌리고 있어 검증된 밀도다.
+
+📌 **더 줄여야 하면 노티를 지우기 전에 Concurrency 를 본다.** `SC_Sword_Swing` 에 `max_count 2~3` 을 걸면 노티는 그대로 두고 뭉침만 잡힌다. ⚠️ 규칙은 `StopOldest` — `Prevent New` 로 하면 뒷소리가 죽는다(발소리 배선 때 겪은 함정).
+
+커밋 = Content `ada5cd7`.
+
+---
+
 ## 8. MCP 조회법 (재사용)
 
 ```python
@@ -260,7 +295,7 @@ FAnimNotifyEvent.export_text()        ★된다. LinkValue / Duration / TrackInd
 - [x] `GA_ShotBlast` CDO 대조 — 활성 태그 3종 · Cooldown · Cost 전부 비어 있음 (같은 모양)
 - [x] 노티 44개 배치 후 전수 재조회
 - [x] Muzzle 9개 `tag=Gun` / `socket=Muzzle` 콤보와 일치 확인
-- [ ] `Skill_03` 소리 밀도 — 0.9초에 검격 6 + 총성 6. 귀로 판정 남음
+- [x] `Skill_03` 소리 밀도 — **6 → 3 으로 줄임** (아래 §7-2). 귀로 재확인 남음
 - [ ] `Skill_03` 트레일 겹침 — 궤적 6개가 서로 물린다. 하나로 합칠지 눈으로 판정
 - [ ] `bDrawDebug` 끄기 (검증용으로 켜둔 상태)
 
