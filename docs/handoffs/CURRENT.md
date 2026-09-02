@@ -11,7 +11,51 @@
 
 ---
 
-## 🟢 2026-09-02 — 캐릭터 스킬 4종 구현 완료 **(새 세션은 여기부터)**
+## 🟢 2026-09-02 (오후) — 땅 찍기 AoE + 스킬 연출 배선 **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-02-area-blast-ga.md`
+
+**스킬 4종이 판정·궤적·소리를 갖췄고, 스킬2에 땅 찍기 AoE 가 붙었다. 빌드 0/0 · PIE 통과.**
+
+```
+신규 클래스   UKDGameplayAbility_AreaBlast     범위 판정 (원기둥 | 부채꼴)
+태그 2개      Ability.Player.AreaBlast · Event.Montage.AreaBlast
+노티          C++ 신설 X — 범용 BP AN_SendGameplayEvent 가 이미 있었다
+에셋          GA_AreaBlast_GroundSlam · 스킬 몽타주 4개에 연출 노티 44개
+커밋          코드 bcd5a2e · 6ae6d3a   Content 037218b · 68d1b4f · 5bd49df
+```
+
+### 🔴 다음 할 일 (순서)
+
+```
+1  bDrawDebug 끄기       GA_AreaBlast_GroundSlam CDO. 검증용으로 켜둔 상태
+2  스킬 연출              스킬 전용 HitConfirmProfile · 슬로모
+                        ⚠️ AreaBlast 는 PlayerMelee 자식이 아니라 슬로모 칸 3개가 없다
+3  우하단 스킬 UI          SB식 슬롯
+```
+
+### 🟡 눈·귀로 판정할 것 2건
+
+```
+Skill_03 소리 밀도     0.9초에 검격 6 + 총성 6. 뭉개지면 줄인다
+                     ⚠️ Concurrency 의 Prevent New 가 뒷소리를 죽일 수 있다
+Skill_03 트레일 겹침    궤적 6개가 서로 물린다. 하나로 길게 뽑을지
+```
+
+### ⚠️ 알아둘 것
+
+```
+Build.bat        컴파일 에러에도 exit 0. Result: Failed 문자열로 판정할 것
+Muzzle 노티      세 값이 한 세트 — ns · socket · weapon_mesh_component_tag(기본값 Sword)
+                Shot 을 옮겨도 안 따라온다. 트랙 통째 재생성이 해법(멱등)
+새 GA BP         Cooldown / ActivationBlockedTags 를 비울 것
+                스킬이 Cooldown.Player.Skill 과 State.Combat.Attacking 을 이미 들고 있다
+PoiseDamage      적 DA 에 Skill1~4 · CounterSlash · AreaBlast 키가 없다 = 경직 X
+```
+
+---
+
+## ✅ 2026-09-02 (오전) — 캐릭터 스킬 4종 구현 완료
 
 dev-log = `docs/dev-logs/2026-09-02-skill-charge-ga.md` (직전 = `2026-09-01-skill-anim-notify.md`)
 
@@ -34,15 +78,7 @@ dev-log = `docs/dev-logs/2026-09-02-skill-charge-ga.md` (직전 = `2026-09-01-sk
 차지 3단계 = 0.4초 / 0.8초 기준.  이동 706 / 806 / 979cm
 ```
 
-### 🔴 다음 할 일 (순서)
-
-```
-1  스킬2 땅 찍기 AoE      1.417초 노티 자리를 비워뒀다. GA_ShotBlast 와 같은 층위의
-                        독립 GA 로. 판정 도형은 FKDTargetFilter 의 Cylinder 재사용
-                        (즉발 권장 — 확산은 AbilityTask 가 필요하고 반경 300 은 체감 차이 X)
-2  스킬 연출              스킬 전용 HitConfirmProfile · 슬로모
-3  우하단 스킬 UI          SB식 슬롯
-```
+> ✅ **스킬2 땅 찍기 AoE 는 오후에 완료** — 위 절 참조. 노티는 1.417 이 아니라 **1.008 초**에 넣었다(승환 의도).
 
 ### 🟡 눈으로 보면 끝나는 것 2건
 
