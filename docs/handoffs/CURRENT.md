@@ -11,7 +11,50 @@
 
 ---
 
-## 🟢 2026-09-02 (오후) — 땅 찍기 AoE + 스킬 연출 배선 **(새 세션은 여기부터)**
+## 🟢 2026-09-02 (저녁) — 우하단 스킬 슬롯 UI **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-02-skill-slot-ui.md`
+
+**스킬 4종에 UI가 붙었다. 코드 0줄 — 텍스처·머티리얼·위젯만. PIE 통과.**
+
+```
+아이콘 4장   gpt_image_2 라인아트. 배경 순검정 -> Additive 머티리얼로 알파 불필요
+머티리얼     M_UI_SlotRing (텍스처 0장, UV 로 원 계산) · M_UI_SkillIcon
+            인스턴스 3 = MI_SlotRing / MI_KeyBadge / MI_SlotDim  + MI_Icon_Skill01~04
+위젯        WBP_SkillSlots 십자 4칸 + 숫자 배지 4 -> WBP_MainHUD 우하단
+쿨다운      원형 스윕 (Progress 파라미터 · 위젯 애니메이션 머티리얼 트랙)
+커밋        Content 6054ede · 2073d4a · 088c899 · eed3fc9 · 4192a94 · a0f9e11 · a088ee6
+```
+
+### 🔴 다음 할 일
+
+```
+1  슬롯 크기 확대       조금 작다(승환). Render Transform Scale 로 배율 찾고 좌표 재계산
+                     계산식 = 캔버스 C = 슬롯 S × 3.125 · 중앙축 = C/2 − S/2
+2  Skill_04 아이콘     셋과 언어가 다르다(궤적 vs 물건) + 선이 촘촘해 작은 크기에서 뭉갤 수 있다
+                     필요하면 재생성 (크레딧 1170)
+3  스킬 연출           HitConfirmProfile 분리 + 카메라 연출
+                     ⛔ 슬로모는 안 넣는다 (승환 판단 — 내 시간이 느려지는 건 스킬에 안 맞다)
+4  스킬 나이아가라      승환 구상 중
+```
+
+### 🟡 설계 예정 — ST 리젠 제거
+
+승환 방향 = **스태미나 리젠을 없애고 명중 시 회복.** 스태미나가 "시간이 주는 자원"에서 **"때려서 버는 자원"**이 된다. 스킬을 쓰려면 먼저 평타를 맞혀야 하니 공방 리듬이 생긴다.
+📌 방금 만든 스킬 UI가 그 정보를 보여주는 자리가 된다 — 지금도 스태미나 20 미만이면 4칸이 흐려진다.
+
+### ⚠️ 알아둘 것
+
+```
+MCP import      프로젝트 밖 파일 거부(SECURITY_VIOLATION). unreal.AssetImportTask 파이썬으로
+UI 텍스처       Compression UserInterface2D(=TC_EDITOR_ICON) · Group UI · NoMipmaps · MaxSize 256
+Image_Dim       Render Opacity 는 1.0. 안 보이는 건 MI_SlotDim 의 Progress=0 담당
+StaminaCost 20  GA CDO 와 위젯 변수 두 곳에 적혀 있다. 갈리면 UI 가 거짓말한다
+```
+
+---
+
+## ✅ 2026-09-02 (오후) — 땅 찍기 AoE + 스킬 연출 배선
 
 dev-log = `docs/dev-logs/2026-09-02-area-blast-ga.md`
 
