@@ -19,6 +19,9 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Shoot)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_ShotBlast)
 
+	// 범위 판정 — 땅 찍기 등. BP GA 가 AbilityTags 로 보유
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_AreaBlast)
+
 	// 캐릭터 스킬 4종 — BP GA 가 각자 AbilityTags 로 보유
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill1)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Player_Skill2)
@@ -114,6 +117,7 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_TraceBegin)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_Shoot)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_ShotBlast)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_AreaBlast)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Event_Montage_TraceEnd)
 
 	// 돌진 재조준 — 런지 윈도우 시작 시 AN_SendGameplayEvent가 발화, GA_EnemyRushAttack이 현재 위치로 워프 타겟 재계산(stale-overshoot 방지).
