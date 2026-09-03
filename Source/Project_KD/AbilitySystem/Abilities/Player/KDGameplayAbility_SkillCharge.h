@@ -52,8 +52,16 @@ private:
 
 	UFUNCTION()
 	void OnHoldReleased(FGameplayEventData Payload);
+
+	// 차지 단계 도달 - GC 발신
+	void NotifyChargeStep(int32 StepIndex);
+
+	// 단계 타이머 전부 해제
+	void ClearStepTimers();
+
 	FTimerHandle FreezeTimerHandle;
 	FTimerHandle MaxHoldTimerHandle;
+	TArray<FTimerHandle> StepTimerHandles;
 	float ChargeStartTime = 0.f;
 	bool bChargeReleased = false;
 };

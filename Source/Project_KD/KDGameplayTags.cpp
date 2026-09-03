@@ -123,6 +123,8 @@ namespace GameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Enemy_Telegraph_Unblockable, "GameplayCue.Enemy.Telegraph.Unblockable")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Enemy_Telegraph_Lethal, "GameplayCue.Enemy.Telegraph.Lethal")
 
+	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Skill_Charge, "GameplayCue.Skill.Charge")
+
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_Staggered, "GameplayCue.Combat.Staggered")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_ParryClash, "GameplayCue.Combat.ParryClash")
 	UE_DEFINE_GAMEPLAY_TAG(GameplayCue_Combat_Execution, "GameplayCue.Combat.Execution")

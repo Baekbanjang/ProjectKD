@@ -41,6 +41,23 @@ void UKDGameplayAbility_SkillCharge::OnActivated()
 		this, GameplayTags::Event_Skill_HoldRelease, nullptr, true, true);
 	ReleaseTask->EventReceived.AddDynamic(this, &UKDGameplayAbility_SkillCharge::OnHoldReleased);
 	ReleaseTask->ReadyForActivation();
+
+	// 단계 연출 예약 — 홀드 중 몽타주 정지라 노티 X
+	ClearStepTimers();
+	StepTimerHandles.SetNum(ChargeSteps.Num());
+	for (int32 i = 0; i < ChargeSteps.Num(); ++i)
+	{
+		const float Delay = ChargeSteps[i].MinHoldTime;
+		if (Delay <= 0.f)
+		{
+			NotifyChargeStep(i);
+			continue;
+		}
+
+		FTimerDelegate StepDelegate = FTimerDelegate::CreateUObject(
+			this, &UKDGameplayAbility_SkillCharge::NotifyChargeStep, i);
+		World->GetTimerManager().SetTimer(StepTimerHandles[i], StepDelegate, Delay, false);
+	}
 }
 
 void UKDGameplayAbility_SkillCharge::OnCleanup(bool bWasCancelled)
@@ -51,6 +68,7 @@ void UKDGameplayAbility_SkillCharge::OnCleanup(bool bWasCancelled)
 		World->GetTimerManager().ClearTimer(FreezeTimerHandle);
 		World->GetTimerManager().ClearTimer(MaxHoldTimerHandle);
 	}
+	ClearStepTimers();
 	Super::OnCleanup(bWasCancelled);
 }
 
@@ -77,7 +95,8 @@ void UKDGameplayAbility_SkillCharge::ReleaseCharge()
 		return;
 	}
 	bChargeReleased = true;
-	
+	ClearStepTimers();
+
 	UWorld* World = GetWorld();
 	if (World)
 	{
@@ -114,6 +133,34 @@ void UKDGameplayAbility_SkillCharge::ReleaseCharge()
 	
 	// 남은 재생분 기준 안전 타이머 복구
 	StartSafetyTimer(AttackMontage->GetPlayLength(), FMath::Max(GetEffectiveMontagePlayRate(), 0.1f));
+}
+
+void UKDGameplayAbility_SkillCharge::NotifyChargeStep(int32 StepIndex)
+{
+	// 기능 : 차지 단계 도달 - 연출은 GC 위임
+	if (bChargeReleased)
+	{
+		return;
+	}
+
+	// 단계 = RawMagnitude
+	FGameplayCueParameters CueParams;
+	CueParams.RawMagnitude = static_cast<float>(StepIndex);
+	K2_ExecuteGameplayCueWithParams(GameplayTags::GameplayCue_Skill_Charge, CueParams);
+}
+
+void UKDGameplayAbility_SkillCharge::ClearStepTimers()
+{
+	// 기능 : 단계 타이머 해제 - InstancedPerActor 잔류 대비
+	if (UWorld* World = GetWorld())
+	{
+		for (FTimerHandle& Handle : StepTimerHandles)
+		{
+			World->GetTimerManager().ClearTimer(Handle);
+		}
+	}
+
+	StepTimerHandles.Reset();
 }
 
 void UKDGameplayAbility_SkillCharge::OnHoldReleased(FGameplayEventData Payload)

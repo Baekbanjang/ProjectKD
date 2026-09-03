@@ -156,6 +156,9 @@ namespace GameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Enemy_Telegraph_Unblockable)
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Enemy_Telegraph_Lethal)
 
+	// 차지 단계 도달 큐 — 단계 = RawMagnitude
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Skill_Charge)
+
 	// 경직 진입 큐 (BP GC가 스턴 VFX/SFX 재생).
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(GameplayCue_Combat_Staggered)
 
