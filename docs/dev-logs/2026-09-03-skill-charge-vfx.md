@@ -276,24 +276,101 @@ AM_SB_Skill_01  VFX 트랙  t=0.100
 
 ---
 
-## 8. 검증
+## 8. Skill_02 — 땅 찍기 임팩트 3종
+
+같은 날 마무리. **VFX · 슬로우 · 카메라 쉐이크를 같은 프레임에 겹쳤다.**
+
+```
+AM_SB_Skill_02   2.583s / 60fps (AS_Skill_04_Seq 155프레임)
+
+  0.050~0.999   검 3연격        WeaponTrail · MeleeTrace · Sound_Swing
+  0.999 (60f)   VFX             NS_SB_Free_Magic_Circle2 @ soc_fx_root
+  0.999 (60f)   WindupSlow      SlowRate 0.2 -> 1.0 · 1.241 까지
+  0.999 (60f)   CameraShake     AN_CameraShake + CameraShake_SB_XL
+  1.008 (60.5f) GroundBlast     AN_SendGameplayEvent -> Event.Montage.AreaBlast
+```
+
+### NS — `NS_SB_Free_Magic_Circle2`
+
+`/Game/Free_Magic/VFX_Niagara/NS_Free_Magic_Circle2` 복제 (원본은 `Free_Magic_Map` 데모 레벨이 참조).
+
+★ **유저 파라미터 19개** — 에미터 5개 각각에 `Color_*` / `Scale_*` / `Velocity_*` / `Shape_*` + 전체 `Scale_All`. 지금까지 본 NS 중 가장 잘 열려 있다. `NS_SB_Charge_01` 에서 겪은 "에미터 내부 색이 지배해서 색이 안 바뀐다" 문제가 여기선 구조적으로 없다.
+
+승환이 **`Ray` · `Mesh1` 만 켜고 나머지 3개(`Sparks1` `Circle` `Sparks2`)는 껐다.**
+
+⚠️ **수명 파라미터는 노출돼 있지 않다.** `Loop Duration`(Emitter State) · `Lifetime`(Initialize Particle)을 에셋 안에서 고쳐야 한다. **MCP·파이썬으로 못 읽는 값**이라 검증은 PIE 눈으로만 가능하다.
+
+### ★ 슬로우와 나이아가라 길이는 묶여 있다
+
+`UKDAnimNotifyState_WindupSlow` 는 **`Montage_SetPlayRate` 로 몽타주만** 늦춘다(`CustomTimeDilation` 아님). **나이아가라는 실제 시간으로 그냥 흐른다.**
+
+```
+필요 NS 길이(초) = 구간 애니 길이 ÷ SlowRate
+                 = 0.242 ÷ 0.2  =  1.21초   (60fps 73프레임)
+
+SlowRate 0.15 -> 1.61s (97f) / 0.20 -> 1.21s (73f) / 0.30 -> 0.81s (48f) / 0.40 -> 0.61s (36f)
+```
+
+🔴 **`SlowRate` 를 먼저 확정하고 NS 를 자른다.** 반대로 하면 슬로우 세기를 바꿀 때마다 NS 를 다시 손봐야 한다.
+
+📌 **사라지는 시각 = `Loop Duration` + `Lifetime`.** 스폰이 멈춰도 마지막 입자가 `Lifetime` 만큼 더 산다.
+
+### `UKDAnimNotifyState_WindupSlow` 재사용
+
+원래 **적 공격 예고용**으로 만든 클래스인데(주석: 비대칭 전투 — 적만 예고) 플레이어 스킬에 그대로 썼다.
+
+```cpp
+// NotifyBegin :30   Montage_SetPlayRate(Montage, GetEffectiveSlowRate(...))
+// NotifyEnd   :47   현재 재생률이 "내가 건 값"일 때만 RestoreRate 로 복구
+```
+
+★ **`NotifyEnd` 의 재생률 비교(`:47`)가 안전장치다.** 윈드업 중 다른 몽타주로 갈아타면(경직 등) 무조건 복구하는 게 아니라 **남의 재생률을 안 덮는다.**
+
+⚠️ **`SlowRate` 하한이 0.05** — `PlayRate = 0` 이면 몽타주 시간이 안 흘러 `NotifyEnd` 가 영영 안 온다(**자기가 건 정지를 자기가 못 푼다**). 완전 정지는 이 도구로 불가능하고 `UKDHitStopComponent`(`CustomTimeDilation = 0` + `ResumeTimer`)가 담당한다.
+
+⚠️ **플레이어에겐 배수가 안 먹는다.** `GetEffectiveSlowRate :11` 이 `Cast<AKDEnemyBaseCharacter>` 로만 `TelegraphSlowMultiplier`(적 DA)를 곱한다. 플레이어는 캐스팅 실패 → `Multiplier = 1.0` → `SlowRate` 원값 사용. **동작에는 문제 없다.**
+
+⚠️ 헤더 주석의 경고 — **루트모션 전진 구간에 걸치면 이동 거리가 줄어든다.** 마지막 `MeleeTrace` 가 0.916 에 끝나 겹치지 않는다.
+
+### 카메라 쉐이크 — 자산이 이미 있었다
+
+```
+Effect/CameraShake/
+    AN_CameraShake                          애님노티파이 (GhostSamurai 복제본)
+    CameraShake/CameraShake_SB_{SS,S,M,L,XL,SP}
+```
+
+노티 프로퍼티는 `CameraShakeAsset` · `User Play Space Rot` 둘뿐. **노티 꽂고 에셋만 지정하면 끝** — 코드·GC 불필요.
+
+★ **GC 경로도 있었지만 안 썼다.** `UKDAnimNotify_PlayerCue`(`CueTag` 하나로 소유자 ASC 에 큐 발신) + `GAS/GC/CameraShake/LCS_*` 5종이 기존 전투 쉐이크 경로다. 다만 땅 찍기용 태그·GCN 이 없어 **태그 추가 + C++ + BP 생성**이 필요하다. **어떤 세기가 맞는지도 모르는 채 배선부터 늘리지 않으려고** `AN_CameraShake` 로 먼저 갔다. 세기 확정 후 GC 로 옮기는 건 언제든 가능하다.
+
+⚠️ **쉐이크는 실제 시간으로 흔들린다.** 몽타주만 느려지므로 **흔들림이 먼저 끝나고 느린 화면이 이어진다.** 승환 판정 = 이대로 OK.
+
+## 9. 검증
 
 PIE 통과 (승환). 홀드 단계별 색 전환 확인.
 
 ```
-✅ 0 / 3 / 5초 단계 전환
-✅ 조기 릴리즈 시 남은 단계 미발화     ClearStepTimers
-✅ 반복 사용 시 컴포넌트 미누적        bAutoDestroy
-🟡 색 변경 폭 제한                     에미터 내부 색 지배 - 현행 유지
+Skill_03
+  ✅ 0 / 3 / 5초 단계 전환
+  ✅ 조기 릴리즈 시 남은 단계 미발화     ClearStepTimers
+  ✅ 반복 사용 시 컴포넌트 미누적        bAutoDestroy
+  🟡 색 변경 폭 제한                     에미터 내부 색 지배 - 현행 유지
+
+Skill_02
+  ✅ VFX · 슬로우 · 쉐이크 동시 발동     승환 판정 "딱 좋다"
+  ✅ CameraShake_SB_XL 세기 적정
+  ✅ 슬로우 해제와 NS 종료 정렬          73프레임 기준으로 승환이 직접 조정
 ```
 
-## 9. 남은 것
+## 10. 남은 것
 
 - `NS_SB_Charge_02` / `_03` — 유저 파라미터 방식으로 전환하면서 **미사용.** 정리 대상
 - `AM_SB_Skill_03_Start` / `_Loop` / `_End` — 참조자 0 인 고아 3 개
 - `NS_SB_Charge_01` 의 `NE_Chromatic` — 색수차라 `User.LinearColor` 를 안 따를 가능성
-- Skill_02 땅 붕괴 NS — 미정 (후보: `SM_GroundAttackRock_02` 를 쓰는 `NS_AuraFX_Water`)
-- 카메라 연출 — 나이아가라 다음 순서
+- 카메라 연출 — Skill_02 는 `AN_CameraShake` 로 끝냈다. **Skill_01 · 03 · 04 는 아직 없다**
+- 스킬 전용 `HitConfirmProfile` — 현재 `DA_HitLightAttack`(CameraShakeClass = None) 공용
+- 적 DA `PoiseDamageByAttack` — `Skill1~4` · `CounterSlash` · `AreaBlast` 키 누락 (조용히 Poise 0)
 
 ## 커밋
 
@@ -305,4 +382,8 @@ Content b1bdb60  [BP] Skill_01 첫 VFX = NS_SB_Telegraph_Red 로 교체
         00abf0e  [BP] GCN_SkillCharge 생성
         014152f  [BP] 차지 단계 NS 3개 복제 - ChargingBow 기반
         f5aa536  [BP] Skill_03 차지 단계 연출 완성
+        26e7cf4  [BP] NS_SB_Free_Magic_Circle2 복제 - Skill_02 땅 찍기 후보
+        6538955  [BP] Skill_02 땅 찍기 VFX
+        fc3ec11  [Anim] Skill_02 임팩트 슬로우 - WindupSlow
+        6c73630  [Anim] Skill_02 카메라 쉐이크 - CameraShake_SB_XL
 ```

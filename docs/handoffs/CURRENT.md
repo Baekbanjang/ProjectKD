@@ -11,7 +11,71 @@
 
 ---
 
-## 🟢 2026-09-02 (저녁) — 우하단 스킬 슬롯 UI **(새 세션은 여기부터)**
+## 🟢 2026-09-03 — 스킬 나이아가라 연출 (Skill_01·02·03) **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-03-skill-charge-vfx.md`
+
+**스킬 1·2·3 에 연출이 붙었다. PIE 통과. Skill_02 는 VFX·슬로우·쉐이크 3종 완비.**
+
+```
+Skill_01   NS_SB_Telegraph_Red      t=0.100  Z=100      방사형 링
+Skill_02   NS_SB_Free_Magic_Circle2 t=0.999             Ray·Mesh1 만 사용
+           WindupSlow               0.999~1.241  0.2배
+           CameraShake_SB_XL        t=0.999
+Skill_03   GCN_SkillCharge -> NS_SB_Charge_01           홀드 단계별 색
+           C++ 4파일 +61줄 · GameplayCue.Skill.Charge 신설
+           ChargeSteps 0 / 3 / 5 · MaxHoldTime 6
+커밋       코드 7567920 · 8ad0584 / Content b1bdb60 ~ 6c73630 (8개)
+```
+
+### 🔴 홀드 중에는 AnimNotify 가 전부 죽는다
+
+`UKDGameplayAbility_SkillCharge` 가 진입 섹션 끝(0.167s)에서 `Montage_Pause` 를 건다. 홀드 구간엔 몽타주 시간이 안 흘러 **노티가 에러도 로그도 없이 하나도 안 터진다.** 그래서 Skill_03 만 **GA 타이머 → GameplayCue** 경로로 갔다. Skill_01·02·04 는 해당 없음.
+
+### ★ 슬로우와 나이아가라 길이는 묶여 있다
+
+`WindupSlow` 는 `Montage_SetPlayRate` 로 **몽타주만** 늦춘다. 나이아가라·카메라 쉐이크는 **실제 시간**으로 흐른다.
+
+```
+필요 NS 길이 = 구간 애니 길이 ÷ SlowRate = 0.242 ÷ 0.2 = 1.21초 (60fps 73프레임)
+🔴 SlowRate 를 먼저 확정하고 NS 를 자른다
+📌 사라지는 시각 = Loop Duration + Lifetime
+⚠️ SlowRate 하한 0.05 — 0 이면 NotifyEnd 가 영영 안 온다 (완전 정지는 UKDHitStopComponent)
+```
+
+### 🔴 다음 할 일
+
+```
+1  카메라 연출 나머지    Skill_02 만 AN_CameraShake 붙었다. 01 · 03 · 04 는 없음
+                       Effect/CameraShake/CameraShake_SB_{SS,S,M,L,XL,SP} 대기 중
+2  ★ 원소 톤 결정       아직 미결. Hit · Sword · Aura 가 세트로 따라온다
+                       후보 = Scifi · Lightning · Mystic · Dark · Sand
+3  DA_HitSkillAttack   ImpactVFX 를 평타와 다른 원소로 + CameraShakeClass
+                       GA_Skill_01~04 · GA_AreaBlast 의 HitConfirmProfile 교체. 코드 0줄
+4  ST 리젠 제거         설계 예정 (아래 절)
+```
+
+### 🧹 정리 대상
+
+```
+NS_SB_Charge_02 / _03            유저 파라미터 방식으로 바뀌며 미사용
+AM_SB_Skill_03_Start/_Loop/_End  참조자 0 인 고아 3개
+NE_Chromatic (Charge_01)         색수차라 User.LinearColor 를 안 따를 가능성
+```
+
+### ⚠️ 알아둘 것
+
+```
+GC BP 경로       DefaultGame.ini:19-20 스캔 경로 안이어야 한다. 밖이면 조용히 안 잡힌다
+Niagara 노드     Set Niagara Variable "By String" 은 5.3 deprecated. FName 버전 쓸 것
+NS 수명          Loop Duration · Lifetime 은 MCP·파이썬으로 못 읽는다 = PIE 눈 검증만
+Select 노드      출력을 먼저 연결해야 Wildcard 타입이 굳는다
+AuraFX 구분      SwordLength = 검용 / Sphere Radius = 몸용 (이름은 다 같은 "Aura")
+```
+
+---
+
+## ✅ 2026-09-02 (저녁) — 우하단 스킬 슬롯 UI
 
 dev-log = `docs/dev-logs/2026-09-02-skill-slot-ui.md`
 
