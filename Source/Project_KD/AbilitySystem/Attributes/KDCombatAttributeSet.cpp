@@ -5,6 +5,7 @@
 #include "GameplayEffectExtension.h"
 #include "HAL/IConsoleManager.h"
 #include "KDGameplayTags.h"
+#include "KDPlayerAttributeSet.h"
 
 #if !UE_BUILD_SHIPPING
 // 개발용 데미지 표시 스위치 — 콘솔 KD.ShowDamage 1
@@ -12,6 +13,11 @@ static TAutoConsoleVariable<int32> CVarShowDamage(
 	TEXT("KD.ShowDamage"), 0,
 	TEXT("피격 데미지 온스크린 표시 유무"), ECVF_Cheat);
 #endif
+
+// 평타 명중 시 스태미나 회복 비율 
+static TAutoConsoleVariable<float> CVarStaminaGainRate(
+	TEXT("KD.StaminaGainRate"), 0.2f,
+	TEXT("평타 피해량 대비 스태미나 회복 비율"), ECVF_Cheat);
 
 UKDCombatAttributeSet::UKDCombatAttributeSet()
 {
@@ -90,6 +96,8 @@ void UKDCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCa
 	
 	if (ToHealth <= 0.0f) { return; } // 실드가 전부 받았거나 경감 후 0
 
+	GainAttackerStamina(Data, ToHealth);
+	
 	// 개발용 데미지 표시 — 값 = 실드·방어 경감 후 체력에 들어간 최종량
 #if !UE_BUILD_SHIPPING
 	if (GEngine && CVarShowDamage.GetValueOnGameThread() > 0)
@@ -190,8 +198,36 @@ void UKDCombatAttributeSet::SendHitReact(const FGameplayEffectModCallbackData& D
 	ASC->HandleGameplayEvent(HitReactData.EventTag, &HitReactData);
 }
 
+void UKDCombatAttributeSet::GainAttackerStamina(const FGameplayEffectModCallbackData& Data, float DamageToHealth) const
+{
+	// 기능 : 평타 명중 시 공격자 스태미나 회복 - 스킬 제외
+	if (DamageToHealth <= 0.f) { return; }
+	
+	// 기본 공격인지 확인
+	const UGameplayAbility* SourceAbility = Data.EffectSpec.GetContext().GetAbility();
+	if (!SourceAbility) { return; }
+	
+	const FGameplayTagContainer& AbilityTags = SourceAbility->GetAssetTags();
+	if (!AbilityTags.HasTag(GameplayTags::Ability_Player_Light)
+		&& !AbilityTags.HasTag(GameplayTags::Ability_Player_Heavy))
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* AttackerASC = Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent();
+	if (!AttackerASC) { return; }
+
+	const float Gain = DamageToHealth * CVarStaminaGainRate.GetValueOnGameThread();
+	if (Gain <= 0.f) { return; }
+
+	const FGameplayAttribute StaminaAttribute = UKDPlayerAttributeSet::GetStaminaAttribute();
+	const float MaxStamina = AttackerASC->GetNumericAttribute(UKDPlayerAttributeSet::GetMaxStaminaAttribute());
+	const float Current = AttackerASC->GetNumericAttribute(StaminaAttribute);
+	AttackerASC->SetNumericAttributeBase(StaminaAttribute, FMath::Min(Current+Gain, MaxStamina));
+}
+
 void UKDCombatAttributeSet::SendGuardBreak(const FGameplayEffectModCallbackData& Data,
-	UAbilitySystemComponent* ASC) const
+                                           UAbilitySystemComponent* ASC) const
 {
 	FGameplayEventData BreakData;
 	BreakData.EventTag = GameplayTags::Event_Combat_GuardBreak;

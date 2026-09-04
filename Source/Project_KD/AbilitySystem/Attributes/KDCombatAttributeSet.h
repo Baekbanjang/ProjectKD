@@ -59,6 +59,9 @@ private:
 
 	// 히트리액션 신호 — bBlockedHit = 방어 중 피격 유무
 	void SendHitReact(const FGameplayEffectModCallbackData& Data, UAbilitySystemComponent* ASC, bool bBlockedHit) const;
+	
+	// 평타 명중 시 공격자 스태미나 회복
+	void GainAttackerStamina(const FGameplayEffectModCallbackData& Data, float DamageToHealth) const;
 
 	// 가드 붕괴 신호 — 가드 중 실드 소진
 	void SendGuardBreak(const FGameplayEffectModCallbackData& Data, UAbilitySystemComponent* ASC) const;
