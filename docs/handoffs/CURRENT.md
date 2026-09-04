@@ -11,7 +11,67 @@
 
 ---
 
-## 🟢 2026-09-03 — 스킬 나이아가라 연출 (Skill_01·02·03) **(새 세션은 여기부터)**
+## 🟢 2026-09-03 (2) — 스킬 카메라 · 슈퍼아머 · 스태미나 개편 **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-03-skill-camera-superarmor-stamina.md`
+
+**스킬 연출이 끝났고, 스태미나가 "때려서 버는 자원"이 됐다. PIE 통과.**
+
+```
+카메라      Skill_02  CAS_Skill_02_Impact  (VFX·슬로우·쉐이크와 같은 60프레임)
+            Skill_03  CAS_Charge  단계별 줌 + FOV  ·  End 섹션에서 복귀
+            Skill_01 · 04 는 연출 없이 현행 유지 (승환 판단)
+슈퍼아머     GA_HitReact Blocked + 스킬 4개 Owned  =  BP 5개 · 코드 0줄
+스태미나     리젠 제거 → 평타 명중 시 피해 x 0.2 회복
+            스킬 10 소모 · 회피·질주 소모 0
+커밋        코드 a316cae · a2cc24c / Content ea7e294 · 298cf68 · 4073a16 · b873162
+```
+
+### 🔴 이번에 드러난 함정 3개
+
+**① `ASC::MakeEffectContext` 는 `SetAbility` 를 안 한다**
+`UGameplayAbility::MakeEffectContext` 만 `SetAbility(this)` 를 부른다. `KDAbilityStatics.cpp:103` 이 ASC 쪽을 써서 **`GetAbility()` 가 항상 nullptr** 이었다. 리젠이 가려주고 있었을 뿐 **처음부터 스태미나가 안 차고 있었다.**
+
+**② 카메라 애니메이션 FOV 는 절대값이 아니다**
+`ResetDefaultValues` 가 **매 프레임 현재 게임 FOV 에서 기준 초점거리를 역산**한다. 게임 FOV 가 낮으면 같은 값이 **반대로(넓어짐)** 작동한다. 락온 중엔 `DefaultFOV` 75 고정이라 그때 테스트할 것.
+⚠️ **시네카메라 센서폭은 36mm 가 아니라 23.76mm.** 15.5mm 가 75도 기준선.
+
+**③ 슈퍼아머 태그가 반쪽만 깔려 있었다**
+`EnemyHitReact.cpp:21` 이 차단은 하는데 **부여하는 GA 가 17개 중 0건**이었다. 스킬이 끊기던 건 GAS 취소가 아니라 **리액션 몽타주가 같은 슬롯을 덮어서**다.
+
+### 🔴 다음 할 일
+
+```
+1  Vertex Shake         머티리얼 WorldPositionOffset. 코드 0줄
+                        UHitFeedbackComponent 의 Bone Shake 와 짝. SB 후보 1순위
+2  무기 IK 스냅          히트스톱 순간 검을 타격 지점에 붙이기. SB 후보 2순위
+                        SB 히트스톱 0.07초 = 우리 0.08 과 거의 동일
+3  폴리싱
+```
+
+### 🧹 정리 대상
+
+```
+NS_SB_Charge_02 / _03                   유저 파라미터 방식으로 바뀌며 미사용
+AM_SB_Skill_03_Start / _Loop / _End     참조자 0 인 고아 3개
+GE_StaminaCost_Dodge · GE_FullSprintStaminaCost   참조자 0 (회피·질주 소모 없음)
+KDGameplayTags.h:95 주석                UKDStaminaComponent 는 실재하지 않는다
+취소 시 카메라 줌 잔류                    End 섹션을 안 지나는 경로. 재현 확인 후 판단
+```
+
+### ⚠️ 알아둘 것
+
+```
+KD.StaminaGainRate  0.2 확정. PIE 콘솔로 즉시 조정 가능
+KD.ShowDamage 1     피해량 표시 - 회복 계산 검증에 같이 쓴다
+TemplateSequence    플러그인 수동 활성 필요. 에셋 메뉴는 Cinematics 아래
+StopAllCameraAnimationsOf  시퀀스 에셋만으로 정지 = 핸들 저장 불필요
+GetAbility()        복제 X. 멀티 전환 시 GE AssetTag 방식으로 교체
+```
+
+---
+
+## ✅ 2026-09-03 (1) — 스킬 나이아가라 연출 (Skill_01·02·03)
 
 dev-log = `docs/dev-logs/2026-09-03-skill-charge-vfx.md`
 
