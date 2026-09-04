@@ -39,15 +39,21 @@ dev-log = `docs/dev-logs/2026-09-03-skill-camera-superarmor-stamina.md`
 **③ 슈퍼아머 태그가 반쪽만 깔려 있었다**
 `EnemyHitReact.cpp:21` 이 차단은 하는데 **부여하는 GA 가 17개 중 0건**이었다. 스킬이 끊기던 건 GAS 취소가 아니라 **리액션 몽타주가 같은 슬롯을 덮어서**다.
 
-### 🔴 다음 할 일
+### 🔴 다음 할 일 (2026-09-04 승환 지시로 순서 변경)
 
 ```
-1  Vertex Shake         머티리얼 WorldPositionOffset. 코드 0줄
+1  연출 폴리싱          ← 여기부터
+   1-1  총 발사 나이아가라   새로 추가한 것 중 어색한 것 수정
+   1-2  검 공격 나이아가라   수정
+2  무기 IK 스냅          히트스톱 순간 검을 타격 지점에 붙이기
+                        SB 후보 2순위. SB 히트스톱 0.07초 = 우리 0.08 과 거의 동일
+                        ⚠️ 검이 안 닿거나 지나쳐서 멈추는 문제를 IK 로 보완하는 것
+3  Vertex Shake         머티리얼 WorldPositionOffset. 코드 0줄
                         UHitFeedbackComponent 의 Bone Shake 와 짝. SB 후보 1순위
-2  무기 IK 스냅          히트스톱 순간 검을 타격 지점에 붙이기. SB 후보 2순위
-                        SB 히트스톱 0.07초 = 우리 0.08 과 거의 동일
-3  폴리싱
 ```
+
+📌 **폴리싱을 앞으로 뺐다.** 스킬 연출을 막 끝낸 상태라 눈이 맞춰져 있을 때 손보는 게 낫다.
+📌 SB 조사 기준 비용 순서는 `Vertex Shake → IK` 였으나 **승환이 IK 를 먼저**로 정했다.
 
 ### 🧹 정리 대상
 
@@ -68,6 +74,28 @@ TemplateSequence    플러그인 수동 활성 필요. 에셋 메뉴는 Cinemati
 StopAllCameraAnimationsOf  시퀀스 에셋만으로 정지 = 핸들 저장 불필요
 GetAbility()        복제 X. 멀티 전환 시 GE AssetTag 방식으로 교체
 ```
+
+### 🤖 세션 마감 자동화 (2026-09-04 신설)
+
+**Stop 훅이 마감 시점을 감지하면 묻지 말고 `wrap-up` 스킬을 실행한다.** 규칙 = `CLAUDE.md §0` · 스킬 목록 = `§7`.
+
+```
+.claude/hooks/wrapup-nudge.sh      감지 조건 3개 (AND)
+                                     ① 미커밋 변경 있음 (두 repo 합산)
+                                     ② 마지막 커밋 후 25분 경과
+                                     ③ 오늘 날짜 dev-log 없음
+.claude/skills/wrap-up/SKILL.md    마감 6단계 + 하청 경계
+.claude/settings.local.json        Stop 훅 등록
+```
+
+🔴 **`.claude/` 는 gitignore 라 repo 에 없다**(§5-3 로컬 개인 자산). 날아가면 위 3파일을 다시 만들어야 한다.
+
+⚠️ **안 뜨는 게 더 흔한 실패다.** 조건 셋을 다 통과해야 한다. 마감할 때가 됐는데 조용하면 직접 확인:
+```bash
+bash .claude/hooks/wrapup-nudge.sh     # 출력 없으면 조건 미충족
+```
+
+📌 커밋·푸시는 **반드시 승인**받는다. 문서 갱신까지만 무승인.
 
 ---
 
