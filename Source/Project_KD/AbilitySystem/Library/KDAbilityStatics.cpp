@@ -97,12 +97,16 @@ bool UKDAbilityStatics::IsFriendlyFire(const UAbilitySystemComponent* AttackerAS
 
 FGameplayEffectContextHandle UKDAbilityStatics::ApplyDamageEffect(UAbilitySystemComponent* AttackerASC,
 	UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> DamageEffectClass,
-	float FinalAttackPower, float PoiseMultiplier, const FHitResult& Hit, AActor* SourceActor)
+	float FinalAttackPower, float PoiseMultiplier, const FHitResult& Hit, AActor* SourceActor,
+	const UGameplayAbility* SourceAbility)
 {
 	// 기능 : 데미지 GE 적용 — Context 생성 + SetByCaller(AttackPower) + ApplyToTarget
 	FGameplayEffectContextHandle Context = AttackerASC->MakeEffectContext();
 	Context.AddSourceObject(SourceActor);
 	Context.AddHitResult(Hit);
+
+	// 어빌리티 출처
+	Context.SetAbility(SourceAbility);
 
 	// Poise 배수 포함 (KDGameplayEffectContext)
 	if (FKDGameplayEffectContext* KDContext = FKDGameplayEffectContext::GetMutable(Context))

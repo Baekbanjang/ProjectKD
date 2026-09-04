@@ -158,7 +158,8 @@ bool UKDGameplayAbility_AreaBlast::ApplyHit(const FHitResult& Hit)
 	// 데미지 Spec
 	const float AttackPower = AttackerASC->GetNumericAttribute(UKDCombatAttributeSet::GetAttackPowerAttribute()) * DamageMultiplier;
 	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
-		AttackerASC, TargetASC, DamageEffectClass, AttackPower, PoiseMultiplier, Hit, GetAvatarActorFromActorInfo());
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, PoiseMultiplier, Hit,
+		GetAvatarActorFromActorInfo(), this);
 	
 	// 히트 알림
 	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, KnockbackMultiplier);

@@ -11,6 +11,7 @@
 
 class AKDProjectile;
 class UAbilitySystemComponent;
+class UGameplayAbility;
 class UGameplayEffect;
 
 // GAS 공용 static 헬퍼
@@ -40,7 +41,8 @@ public:
 	// 데미지 GE 적용 — Context 생성 + SetByCaller(AttackPower) + Poise 배수+ ApplyToTarget. 반환 = 생성한 Context
 	static FGameplayEffectContextHandle ApplyDamageEffect(UAbilitySystemComponent* AttackerASC,
 		UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> DamageEffectClass,
-		float FinalAttackPower, float PoiseMultiplier, const FHitResult& Hit, AActor* SourceActor);
+		float FinalAttackPower, float PoiseMultiplier, const FHitResult& Hit, AActor* SourceActor,
+		const UGameplayAbility* SourceAbility = nullptr);
 
 	// Event.Combat.Hit 발신 — 5필드 규약 (EventMagnitude = 넉백 배수)
 	static void SendHitEvent(AActor* HitActor, AActor* EventInstigator,

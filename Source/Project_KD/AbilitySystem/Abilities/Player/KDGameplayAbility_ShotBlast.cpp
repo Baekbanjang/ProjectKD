@@ -221,7 +221,8 @@ bool UKDGameplayAbility_ShotBlast::ApplyHit(const FHitResult& Hit)
 
 	// *Poise 추가 Action_Base 멤버 추가 필요*
 	const FGameplayEffectContextHandle Context = UKDAbilityStatics::ApplyDamageEffect(
-		AttackerASC, TargetASC, DamageEffectClass, AttackPower, 1.f , Hit, GetAvatarActorFromActorInfo());
+		AttackerASC, TargetASC, DamageEffectClass, AttackPower, 1.f , Hit,
+		GetAvatarActorFromActorInfo(), this);
 
 	// 히트 알림 — 반응은 맞은 쪽이 선택
 	UKDAbilityStatics::SendHitEvent(HitActor, GetAvatarActorFromActorInfo(), GetAssetTags(), Context, ShotKnockbackMultiplier);
