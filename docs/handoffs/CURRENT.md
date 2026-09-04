@@ -11,7 +11,97 @@
 
 ---
 
-## 🟢 2026-09-03 (2) — 스킬 카메라 · 슈퍼아머 · 스태미나 개편 **(새 세션은 여기부터)**
+## 🟢 2026-09-04 — 검 궤적 리본→소켓 전환 + 총알 NS 교체 **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-04-sword-trail-ns-swap.md`
+
+**검 궤적을 리본에서 소켓 단발 방식으로 갈아탔다. 총알도 데모팩 잔재를 걷어냈다. 승환 확인 = "좋다잉".**
+
+```
+검 궤적 27건   WeaponTrail(리본) -> PlayNiagaraEffect(소켓 단발)
+               NS = NS_SB_Slash_Trail_01 · 소켓 Sword_FXSocket · off (0,0,50)
+               새 트랙 "SlashFX" · 시각은 원래 WeaponTrail 시작 지점 그대로
+               콤보 24(몽타주 21) · 반격 L/R 2 · 질주공격 1
+스킬 13건      리본 유지 (승환 판단) - 09-03 전용 NS 와 겹치면 뭉갠다
+총알           BP_Bullet 의 NS_Laser -> NS_ArrowTrail_Basic
+안 건드림       Gun / Muzzle 36건 (총 머즐)
+커밋           Content 미커밋 32개 - 되돌리기 = git checkout -- . (세이프포인트 b873162)
+```
+
+### 🔴 이번에 드러난 함정 3개
+
+**① 소켓이 어느 메시 것이냐가 방식을 결정한다**
+```
+Sword_Bottom     검 StaticMesh 소켓        엔진 노티로 손댈 수 없다
+Muzzle           총 StaticMesh 소켓        엔진 노티로 손댈 수 없다
+Sword_FXSocket   캐릭터 SKM 소켓 -> hand_r  ✅
+soc_fx_root      캐릭터 SKM 소켓 -> root    ✅
+```
+`AnimNotify_PlayNiagaraEffect` 는 **캐릭터 스켈레탈 메시에만** 붙는다. ★ **그래서 `UKDAnimNotifyState_WeaponTrail` 이 존재한다** — 무기 메시를 `WeaponMeshComponentTag` 로 직접 찾아가려고 만든 클래스다. 09-02 의 *"`Muzzle` 이 `WeaponTrail` 인 이유 = GC 가 총 메시를 못 가리킨다"* 와 같은 뿌리.
+⚠️ **전환 후 궤적은 검이 아니라 손을 따라간다.** 검이 길거나 각지면 칼끝과 어긋난다.
+
+**② `WeaponTrail` 노티는 검 전용이 아니다**
+76건이 **검 40 + 총 머즐 36** 으로 갈린다. 가르는 유일한 기준이 `WeaponMeshComponentTag`(`.h:33`) 인데 **1차 보고에서 클래스 이름만 보고 전부 "검 궤적"이라 뭉갰다.** 승환이 *"총은 머즐 말고 조준 모드일 때의 발사체"* 라 짚어줘서 갈랐다.
+📌 교훈 = **이름이 좁은데 용도가 넓어진 클래스는 일괄 변경의 함정. 기준 필드를 먼저 찾아라.**
+
+**③ BP 컴포넌트 편집 통로 = `SubobjectDataSubsystem`**
+```
+❌ bp.get_editor_property("simple_construction_script")   Blueprint 에 없는 프로퍼티
+❌ MCP inspect set_component_property                     actorName 요구 = 월드 액터 전용
+✅ unreal.SubobjectDataSubsystem
+     k2_gather_subobject_data_for_blueprint -> k2_find_subobject_data_from_handle
+     -> SubobjectDataBlueprintFunctionLibrary.get_object / get_variable_name
+     -> set_editor_property -> compile_blueprint -> save_asset
+```
+
+### 🔴 다음 할 일
+
+```
+1  총알 원소 확정      Basic 이 안 맞으면 Fire / Ice / Holy / Magic / Nature / Water / Basic_02
+                    ⚠️ 속도 4000 이라 꼬리가 짧으면 눈에 안 걸릴 수 있다
+2  무기 IK 스냅       히트스톱 순간 검을 타격 지점에 붙이기
+                    SB 히트스톱 0.07 = 우리 0.08 과 거의 동일
+3  Vertex Shake      머티리얼 WorldPositionOffset. 코드 0줄
+                    UHitFeedbackComponent 의 Bone Shake 와 짝
+```
+
+### ⚠️ 알아둘 것
+
+```
+총 발사체 경로      GA_Shoot -> BP_Bullet (참조자 그것 하나) · 속도 4000 · 중력 0 · 수명 3초
+                  Bullet StaticMeshComponent 는 비어 있다 = 보이는 건 나이아가라뿐
+NS_Laser 컴포넌트   이름은 그대로 두고 내용물만 바꿨다. 개명하면 참조 노드가 끊길 수 있다
+파이썬 API 벽 4개   AnimMontage.Notifies · AnimNotify.export_text · NiagaraSystem 내부
+                  · Mesh.Sockets  전부 protected 또는 부재
+                  -> 노티 시각은 FAnimNotifyEvent.export_text 의 LinkValue
+                  -> 소켓은 find_socket(name) 으로 하나씩 두드린다
+                  -> NS 가 리본인지 단발인지는 PIE 눈 검증만
+일괄 투입 크래시    09-02 기록 때문에 몽타주 하나씩 처리 + 즉시 저장 -> 무사 완주
+```
+
+### 🧹 정리 대상
+
+**이번에 생긴 것**
+```
+빈 WeaponTrail 27건    NS=None 인 껍데기. 동작에 무해하나 타임라인이 지저분하다
+                      ⚠️ 지우면 되돌리기가 어려워지므로 방식이 확정된 뒤에
+파라미터 잔류           그 껍데기에 Lifetime_Trail 0.12 · Trail Width 200 이 남아 있다
+                      NS 가 None 이라 무동작. 껍데기와 같이 정리
+NS_Laser 컴포넌트명     내용물이 NS_ArrowTrail_Basic 인데 이름이 안 맞는다
+```
+
+**이월**
+```
+NS_SB_Charge_02 / _03                            유저 파라미터 방식 전환으로 미사용
+AM_SB_Skill_03_Start / _Loop / _End              참조자 0 인 고아 3개
+GE_StaminaCost_Dodge · GE_FullSprintStaminaCost  참조자 0 (회피·질주 소모 없음)
+KDGameplayTags.h:95 주석                          UKDStaminaComponent 는 실재하지 않는다
+취소 시 카메라 줌 잔류                              End 섹션을 안 지나는 경로. 재현 확인 후 판단
+```
+
+---
+
+## ✅ 2026-09-03 (2) — 스킬 카메라 · 슈퍼아머 · 스태미나 개편
 
 dev-log = `docs/dev-logs/2026-09-03-skill-camera-superarmor-stamina.md`
 
