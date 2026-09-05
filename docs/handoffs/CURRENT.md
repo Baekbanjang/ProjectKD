@@ -11,7 +11,327 @@
 
 ---
 
-## 🟢 2026-09-04 — 검 궤적 리본→소켓 전환 + 총알 NS 교체 **(새 세션은 여기부터)**
+## 🟢 2026-09-05 (2) — 워프 뒤집힘 수정 + 포폴 촬영 11개 **(새 세션은 여기부터)**
+
+dev-log = `docs/dev-logs/2026-09-05-approach-warp-rotation-flip.md`
+
+**적에게 등 돌리는 결함을 코드 1글자로 잡았고, 포폴 클립 11개를 새로 찍었다. 빌드·PIE 통과.**
+
+---
+
+### ✅ 완료 — 코드
+
+```
+저프레임 판정   ArcBulge · TraceSegments 프로퍼티 노출 (GA "Action|Weapon")
+                디버그 점 2색 — 🔴 실제 프레임 / 🟡 보간 위치
+                대각선 히트색 노랑 → 마젠타 (보간점과 겹쳐서)
+                🔴 익명 네임스페이스 상수 2개 삭제 — 안 지우면 멤버를 가린다
+
+워프 뒤집힘     KDGameplayAbility_PlayerMelee.cpp:172  bFollowComponent true → false
+                목표점을 발동 시점 좌표에 고정
+```
+
+**🔴 워프 뒤집힘 = 게이트는 1회, 목표점은 매 프레임**
+
+```
+목표점 = 적 + 140 × (적→나 방향)   →   나→목표점 = (140 − d) × 방향
+d 가 ApproachStopDistance(140) 아래로 내려가면 음수 = 목표점이 내 등 뒤로
+:168 게이트가 정확히 이걸 막는 줄인데 발동 시 1회만 돈다
+엔진 근거 = RootMotionModifier.cpp:400-405 · :74-86 · :127-140 (UE5.6 실측)
+```
+
+🔴 **`CLAUDE.md §1-5` 세 번째다** — 08-20 접근워프 · 08-31 반격워프 · 09-05 이번. 전부 `OnActivated` 워프 블록, 전부 *"발동 시점에 정한 것이 시간이 지나며 틀려진다"*.
+
+⚠️ **틀린 가설 2개** — ①부채꼴 90도 밖으로 나가 다른 적 선택(화면 `dist 298` 이 근거였으나 그 값은 발동 순간 스냅샷) ②루트모션이 통과시킴(추측이었고 원인 아님). 둘 다 엔진 소스를 읽고서야 정정됐다.
+
+### ✅ 완료 — 에셋 (MCP)
+
+```
+bDrawDebug OFF   플레이어 GA 12개 + 적 GA 7개 = 19개
+                 🔴 적 GA 는 BP_ 접두사 + /Game/Blueprints/AbilitySystem/Ability/Enemy/
+                    GA_* 검색으로는 안 잡힌다. DA_EnemyDef 6개의 StartupAbilities 역추적으로 찾음
+GA_CounterSlash  CapsuleRadius 3.0 → 20  (08-28 신설 때 누락 — 반격이 거의 안 맞던 상태)
+AutoAimFilter    LightCombo·HeavyCombo 의 bDrawDebug — 승환이 직접 (USTRUCT 라 파이썬 쓰기 금지)
+Content 세이프포인트  77ac8aa · 24ba88b
+```
+
+### ✅ 완료 — 포폴 촬영 11개
+
+`C:\Users\asdasd\Desktop\PJ_New 포폴영상\`
+
+```
+B1 훅 ver2 (97.4s)                검 궤적 + 스킬 연출 포함
+B8 스킬 1·2·3·4                    신규 절
+B6&B7 퍼펙트 패링 및 처형 Ver2      반격 반경 20 반영
+E 근접 모드 4종                    CapusleSweep · TipLine · AriCapusleSweep · AriTri
+E 프레임보간 30 · 60               ★★ 탑다운 시점 — 이번 촬영 최고 판단
+```
+
+★ **프레임보간 30/60 이 제일 잘 나왔다.** 위에서 내려다보니 궤적 전체가 한눈에 들어온다. 🔴 빨간 사각형(실제 프레임)은 30fps 가 절반인데 초록 궤적 밀도는 같다 = **자막 없이 그림만으로 전달된다.** SB 발표 05:24 와 같은 구조.
+
+⚠️ **`E 근접 CapusleSweep` · `AriTri` 두 클립은 6초 지점에 궤적이 안 보였다.** 한 프레임만 뽑아본 것이라 판정 구간이 아니었을 수 있다 — **승환이 전체 재생해서 확인할 것.**
+
+---
+
+### 🔴 다음 할 일
+
+**1단계 — 촬영 마무리**
+
+```
+□ A1 콤보          옛 클립 5개가 궤적 없음 + 창모드 + 좌상단 디버그 텍스트
+                   ⚠️ 2~3개로 줄여도 된다 (기존 편집본은 4절 사용)
+□ A2 분기 · A3 접근 워프   같은 이유 + 워프 수정 반영
+□ C 계열 7개 확인   창모드·디버그 텍스트 있는지 → 크롭으로 될지 재촬영일지
+□ A4 조준 사격 · E 총격    총알 NS 교체(NS_ArrowTrail_Basic) 반영 여부 판단
+□ B4 퍼펙트 회피    반격 궤적 나오면 재촬영
+```
+
+**2단계 — 프레임 보간 절 보강 (선택)**
+
+지금 30/60 은 **둘 다 After** 다. *"보간을 끄면 이렇게 성기다"* 대조가 없다.
+
+```
+MaxSubSteps 를 GA 프로퍼티로 노출  →  서브스텝 1(OFF) vs 32(ON) 를 촬영 중 전환
+2×2 매트릭스 = (30fps · 60fps) × (보간 OFF · ON)
+🔴 지금 Sweep 은 30fps 에서도 서브스텝이 8까지 늘어 구멍이 안 보인다 → 진짜 Before 는 서브스텝 1
+작업 4곳 = GA .h / 태스크 .h / 태스크 .cpp(상수 2개 삭제) / GA .cpp
+```
+
+**3단계 — 워프 A안 (촬영 뒤)**
+
+```
+몽타주 MotionWarping 노티의 Warp Rotation OFF  (~21개, 파이썬으로 Notifies 못 읽어 수동)
+회전 권한을 워핑에서 떼어 :147 SetActorRotation 스냅에 몰아준다 (GoW 방식)
+A=방향 고정·위치 추적 / B=위치 고정·방향은 워핑 → 겹치지 않고 A+B 가 완성형
+```
+
+---
+
+### ⚠️ 알아둘 것
+
+```
+자동조준 vs 락온 필터가 값이 정반대다 (실측)
+  자동조준  Radius 800  · HalfAngle 90 · CharacterForward · Nearest(거리순)
+  락온      Radius 1000 · HalfAngle 45 · Camera          · SmallestAngle(각도순)
+  → 자동조준은 각도로 후보를 거른 뒤 거리만 본다. 업계 표준은 거리·각도 가중합
+    (KDLockOnComponent.cpp:158-165 의 if/else 를 가중합으로 바꾸는 게 근본)
+
+GA_SprintAttack ApproachStopDistance = 200   다른 GA 는 140. 승환 조정인지 원래값인지 미확인
+GA_LightCombo TraceMode = ArcSweep           촬영 때 ArcTri 로 바꿨다가 되돌린 상태
+GA_LightCombo bDrawDebug = True              촬영용. 본편 클립 찍기 전 꺼야 한다
+CVar 5종   KD.ShowApproach / ShowDodge / ShowDamage / ShowKnock / StaminaGainRate
+           GA 체크박스와 별개. 화면 좌상단 글자는 이쪽이다
+ffmpeg 직접 사용   watch 스킬이 한글 경로에서 cp949 로 죽는다 → ffmpeg -ss -vf fps 로 우회
+```
+
+### 🧹 정리 대상
+
+```
+bOncePerActor       GA 프로퍼티인데 태스크 팩토리 인자에 없다 = 체크박스가 아무 일도 안 한다
+cpp:107 죽은 분기    Activate 가 항상 bHasPrevFrame=true 로 만들어 도달 불가
+TraceSweep/TraceArc  캡슐 스윕 블록이 거의 동일 = 함수 분리 대상
+루프 안 TArray Hits  ArcTri 틱당 224회 힙 할당 → 루프 밖으로 빼고 Reset()
+파일명 오타          E 근접 AriCapusleSweep / AriTri  (Arc Capsule)
+(이월) NS_SB_Charge_02/_03 · AM_SB_Skill_03_Start/_Loop/_End · GE_StaminaCost_Dodge 등
+```
+
+---
+
+## ✅ 2026-09-05 — 저프레임 판정 누락: 진단 + 구현
+
+dev-log = `docs/dev-logs/2026-09-05-melee-trace-lowfps-research.md`
+
+**승환 관측 = "프레임이 내려가면 트레이스가 안 나온다." 원인 셋을 확정하고 코드까지 넣었다. 빌드 통과. PIE 미검증.**
+
+목표 = 포폴에 **"프레임 보간을 구현했다"** 를 넣는 것.
+
+---
+
+### ✅ 완료 — 코드 (빌드 통과)
+
+```
+모드 4종     Sweep · TipLine (기존, 무변경)  +  ArcSweep · ArcTri (신설)
+             ⚠️ enum 은 끝에만 추가. uint8 이라 에셋에 숫자로 저장됨
+
+공통 3건     ① Activate() 에서 Prev 프리필      태스크 :70-72
+             ② TickTask -> TraceOnce() 분리     태스크 :94 · GA :183
+             ③ Arc 서브스텝 상한 32             Sweep 은 8 유지 (대조군)
+
+함수 분리    TraceOnce -> TraceTipLine / TraceSweep / TraceArc
+             + ProcessHits / IsWallBlocking
+             죽은 변수 bAnyHit 제거 · 로컬 StepDist 중복 제거
+
+파일         KDAbilityTask_MeleeTrace.h / .cpp · KDGameplayAbility_MeleeTrace.cpp
+```
+
+🔴 **입력 중 버그 하나 있었다** — `bHasPrevFrame` 을 `false` 로 둬서 첫 틱이 값을 덮어쓰고 `return` 했다. **프리필이 통째로 무효**였다. `true` 로 고쳤다.
+
+📌 `EndSocket` 이름 확정 = **`Sword_Tip`** (`KDGameplayAbility_MeleeTrace.h:57`). 종전 미확인 항목이 닫혔다.
+
+---
+
+### 🔴 새 세션 첫 할 일 — 순서대로
+
+**0단계 — MCP 확인 (30초)**
+```
+에디터를 켠 채로 세션을 시작할 것
+● MCP :3000 확인
+```
+⚠️ **MCP 는 세션 시작 때 한 번만 연결을 시도한다.** 09-05 세션은 에디터가 꺼진 채 시작해서 끝까지 못 붙었다. 포트는 LISTENING 이었는데도 `ConnectionRefused` 였다.
+
+**1단계 — GA 3개에 모드 배정 (에디터)**
+
+경로 = `Content/SB_Style_GameProject/GAS/Abilities/Attack/`
+디테일 패널 → **`Action | Weapon`** → `Trace Mode`
+
+```
+GA_LightCombo     Arc Triangle Lines (SB style)      SB 방식
+GA_HeavyCombo     Arc Capsule Sweep (curved)         캡슐 + 곡선
+GA_SprintAttack   Capsule Sweep (whole shaft)        원본 대조군
+```
+⚠️ `GA_LightCombo` 는 지금 **`Tip LineTrace`** 다(09-04 진단용). 덮어쓸 것.
+📌 `Draw Debug` 는 셋 다 이미 `True`.
+
+**2단계 — PIE 측정**
+```
+t.MaxFPS 10        승환이 검출 실패를 확인한 조건
+KD.ShowDamage 1
+stat fps           안 내려가면 r.VSync 0 먼저
+```
+
+볼 것
+```
+① 판정이 나는가        before = 헛나감 / after = 맞아야 한다
+② 모드마다 그림이 다른가  Sweep 캡슐 직선 / ArcSweep 캡슐 곡선 / ArcTri 선 격자
+③ 창 양끝에 그림이 있나  없으면 ①② 가 안 먹은 것
+```
+
+**3단계 — 프로퍼티 노출 (코드, 미착수)**
+
+승환 판단 = *"ArcBulge 는 에디터에서 조정하는 게 낫지 않나"* → **맞다.** `CLAUDE.md §3` 의 *"수치 변경 빈도 높은 값은 UPROPERTY 노출"* 에 해당한다. 처음엔 상수로 넣었으나 되돌린다.
+
+```
+노출     ArcBulge (0~5) · TraceSegments (1~10)   ->  GA "Action|Weapon"
+상수 유지 StepDist 5.0 · MaxSubStepsSweep 8 · MaxSubStepsArc 32
+```
+
+작업 4곳
+```
+GA .h                프로퍼티 2개 추가 (CapsuleRadius 아래)
+태스크 .h             팩토리 인자 2개 (기본값이라 맨 뒤) + 멤버 2개
+태스크 .cpp           🔴 익명 네임스페이스의 ArcBulge · TraceSegments 상수 삭제
+                     + 팩토리에서 멤버 대입
+GA .cpp :166         MeleeTrace(...) 호출에 인자 2개 전달
+```
+🔴 **상수를 안 지우면 멤버를 가린다.** 컴파일은 되는데 에디터 값이 안 먹는 조용한 버그가 된다.
+
+---
+
+### 결과별 대처
+
+| 증상 | 원인 | 조치 |
+|---|---|---|
+| 여전히 안 맞음 | 틱 0회 | `Activate` 프리필 · `bHasPrevFrame = true` 확인 |
+| `ArcTri` 만 덜 맞음 | 두께 완충 없음 | `TraceSegments` 3 → 5 |
+| 곡선이 과함 | `ArcBulge` 과다 | 1.0 → 0.5 |
+| 그림이 셋 다 같음 | switch 안 탐 | GA 모드 배정 확인 |
+| 선이 많아 느림 | 서브스텝 × 축분할 | `MaxSubStepsArc` 32 → 16 |
+
+```
+① 첫 구간 버림    KDAbilityTask_MeleeTrace.cpp:64-70   Prev 없어서 첫 틱은 위치만 적고 return
+② 끝 구간 버림    OnTraceEndEvent 가 마지막 판정 없이 EndTask()
+③ 직선 보간       :151-154  FMath::Lerp
+
+15fps · 구간 0.167s  ->  판정된 구간 40%.   10fps 면 판정 0회
+```
+
+### 🔴 이번에 드러난 것
+
+**① `CapsuleRadius 20` 이 곡률 오차를 덮고 있었다**
+*"새 근접 GA 는 반지름 20으로 올려라"* 규칙의 정체가 이것이다. 삼각형으로 바꾸면 이 완충이 사라져 **오히려 나빠진다** — 그래서 베지어가 삼각형보다 먼저다.
+
+**② SB 는 판정 방식이 둘이고 우리는 "정확도 낮은 쪽"이다**
+```
+Triangle-Hitbox Intersection   얇은 무기 · 정확       <- SB 의 검
+Hitbox Sweep Trace             큰 무기 · 영역 판정    <- 우리 (발표에 "정확도 낮다" 명시)
+실측 = GA CDO 10개 전부 Sweep · 노티 bOverrideTraceMode 48개 전부 False
+```
+
+**③ 삼각형만으로는 SB 도 부족했다 — 발표 순서가 증거**
+삼각형 소개(04:06) → *"정확도가 떨어지는 두 경우: 빠른 공격 / 낮은 FPS"*(04:3x) → **Transform 보간**(05:00).
+
+**④ UE5.6 에서 애니 원본 읽기가 막혔다**
+```
+❌ UAnimationBlueprintLibrary::GetBonePoseForTime   5.2 deprecated + Editor 모듈 = 런타임 불가
+🟡 UAnimSequence::GetBoneTransform (AnimSequence.h:532)  부모 기준 Transform
+   -> 루트까지 체인을 곱해야 하고 검은 hand_r 부착 StaticMesh 라 한 단계 더
+✅ 우회 = 2차 베지어 (velog @hoi000115)
+```
+
+**⑤ 삼각형을 콜리전 도구로 못 쓴다 (엔진 실측)**
+```
+CollisionShape.h:284~316   MakeBox · MakeSphere · MakeCapsule 3종이 전부
+                           MakeTriangle 없음 = 삼각형을 SweepMulti 에 못 넘긴다
+                           ⚠️ MakeLine 도 없다 (LineTrace 는 별도 함수)
+FMath::SegmentTriangleIntersection  UnrealMathUtility.h:2157
+                           선분 vs 삼각형. 순수 수학이라 월드 콜리전과 무관
+-> 우회 = 삼각형의 변을 LineTrace 로 훑는다. 이게 ArcTri 가 선 다발인 이유
+```
+
+**⑥ 캡슐 스윕은 회전을 보간하지 않는다**
+```
+SweepMultiByObjectType(Hits, Mid0, Mid1, Rot1, ...)   회전 인자 하나뿐
+-> Rot1 자세로 고정된 채 평행이동만. 칼이 크게 돌면 근사가 거칠다
+-> 삼각형은 네 꼭짓점이 실제 소켓 위치라 이 문제가 없다
+```
+📌 세션 중반에 *"삼각형 실익이 작다"* 고 했던 판단을 이걸로 정정했다.
+
+### ⚠️ 알아둘 것
+
+```
+제어점 방향        회전 중심에 두면 안으로 오목.  반대(칼끝 방향)로 밀어야 바깥 볼록
+                  미는 거리 = 이동거리 ÷ 5  ->  저프레임일수록 자동으로 더 휜다
+velog 와 우리      InterpolationStep 5.0f · CeilToInt 나눗셈이 동일
+                  다른 건 상한 8 과 Lerp(직선) 둘뿐
+측정               t.MaxFPS 15 (UnrealEngine.cpp:11745) ⚠️VSync 켜지면 안 먹음 -> r.VSync 0
+                  선/캡슐 개수 = 판정 횟수.  bDrawDebug 9개 이미 True
+CCD                답이 아니다. 직선 발사체용. "켜도 스킵된다" 보고 있음
+SB 2차 함정        IK 후 실제 본 위치 ≠ RawAnimationData.  우리도 모션워핑 써서 해당됨
+```
+
+### 🧹 정리 대상 · 미확인
+
+```
+GA_LightCombo       TipLine 상태. 1단계에서 ArcTri 로 덮으면 해소
+GA_CounterSlash     CapsuleRadius 3.0 -> 20 (별건. 이번 범위 밖)
+검 메쉬 직선 여부     곡도면 축 분할에 중간 소켓이 필요하다. Sword.uasset 눈으로 확인 안 함
+삼각형 면 교차       선 다발로 부족하면 그때. Unreal Fest 04:00~04:30 재판독 선행
+                    Gold Coast 2024 "Melee Hit Detection with No Compromises" 영상 미시청
+ReadyForActivation   같은 프레임에 TickTask 가 도는지 엔진 코드 미확인
+                    ⚠️ 프리필 덕에 설계엔 영향 없음
+```
+
+### 📦 미커밋 상태 (2026-09-05 종료 시점)
+
+```
+코드     KDAbilityTask_MeleeTrace.h / .cpp · KDGameplayAbility_MeleeTrace.cpp
+         docs/INDEX.md · docs/handoffs/CURRENT.md
+         ?? docs/dev-logs/2026-09-05-melee-trace-lowfps-research.md  (신규)
+Content  GA_LightCombo (TipLine 전환, 09-04 진단용)
+         ⚠️ Map/LV0_Test · GA_HeavyCombo · GA_ShotBlast = KD 가 안 건드린 것
+```
+📌 **빌드는 통과했으나 PIE 미검증이라 커밋 안 했다.** 2단계 측정 후 판단할 것.
+
+### 🖼️ 볼트 요청 진행중
+
+```
+다이어그램 13장   D:\tmp\kd_diagrams\   2장 등재 완료 · 11장 요청 중
+                 ⚠️ 볼트가 "원본 지워도 된다"고 했으나 11장 등재 전까진 두라고 회신함
+```
+
+---
+
+## ✅ 2026-09-04 — 검 궤적 리본→소켓 전환 + 총알 NS 교체
 
 dev-log = `docs/dev-logs/2026-09-04-sword-trail-ns-swap.md`
 
