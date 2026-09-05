@@ -164,7 +164,7 @@ void UKDGameplayAbility_MeleeTrace::OnTraceBeginEvent(FGameplayEventData Payload
 	
 	ActiveTraceTask = UKDAbilityTask_MeleeTrace::MeleeTrace(
 		this, TraceMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug,
-		ArcBulge, TraceSegments);
+		ArcBulge, TraceSegments, MaxSubSteps);
 	if (!IsValid(ActiveTraceTask))
 	{
 		return;

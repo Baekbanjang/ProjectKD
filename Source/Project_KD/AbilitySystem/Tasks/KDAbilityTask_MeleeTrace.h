@@ -54,7 +54,8 @@ public:
 		float CapsuleRadius = 3.0f,
 		bool bDrawDebug = true,
 		float ArcBulge = 1.0f,
-		int32 TraceSegments = 3);
+		int32 TraceSegments = 3,
+		int32 MaxSubSteps = 8);
 
 	UPROPERTY(BlueprintAssignable)
 	FWeaponTraceHitDelegate OnHit;
@@ -95,6 +96,7 @@ private:
 	bool bDrawDebug = true;
 	float ArcBulge = 1.0f;
 	int32 TraceSegments = 3;
+	int32 MaxSubSteps = 8;
 
 	bool bHasPrevFrame = false;
 	FVector PrevStart = FVector::ZeroVector;

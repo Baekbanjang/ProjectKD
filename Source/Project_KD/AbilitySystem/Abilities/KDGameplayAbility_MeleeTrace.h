@@ -70,6 +70,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "1", ClampMax = "10"))
 	int32 TraceSegments = 3;
 
+	// 서브스텝 상한 - 1 이면 프레임 사이 미보간. 목표 간격 5cm x 이 값 = 커버 이동거리
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "1", ClampMax = "64"))
+	int32 MaxSubSteps = 8;
+
 	// 판정창 1개당 액터 1히트 - 검이 닿아 있는 동안 매 프레임 반복 타격 차단
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	bool bOncePerActor = true;

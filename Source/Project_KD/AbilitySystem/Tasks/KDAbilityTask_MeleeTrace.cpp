@@ -9,12 +9,6 @@ namespace
 {
 	// 서브스텝 간격 — 칸 하나의 목표 이동거리
 	constexpr float StepDist = 5.0f;
-	
-	// Sweep 서브스텝 상한
-	constexpr int32 MaxSubStepsSweep = 8;
-	
-	// Arc 서브스텝 상한 — 저프레임 대응
-	constexpr int32 MaxSubStepsArc = 32;
 
 	// 2차 베지어 — T=0 이면 P0, T=1 이면 P2 를 정확히 지난다. P1 은 곡선을 당기는 제어점
 	FORCEINLINE FVector Bezier2(const FVector& P0, const FVector& P1, const FVector& P2, float T)
@@ -39,7 +33,8 @@ UKDAbilityTask_MeleeTrace* UKDAbilityTask_MeleeTrace::MeleeTrace(
 	float InCapsuleRadius,
 	bool bInDrawDebug,
 	float InArcBulge,
-	int32 InTraceSegments)
+	int32 InTraceSegments,
+	int32 InMaxSubSteps)
 {
 	UKDAbilityTask_MeleeTrace* Task = NewAbilityTask<UKDAbilityTask_MeleeTrace>(OwningAbility);
 	Task->WeaponMesh = InWeaponMesh;
@@ -50,6 +45,7 @@ UKDAbilityTask_MeleeTrace* UKDAbilityTask_MeleeTrace::MeleeTrace(
 	Task->bDrawDebug = bInDrawDebug;
 	Task->ArcBulge = InArcBulge;
 	Task->TraceSegments = FMath::Max(1, InTraceSegments);
+	Task->MaxSubSteps = FMath::Max(1, InMaxSubSteps);
 	return Task;
 }
 
@@ -170,7 +166,7 @@ void UKDAbilityTask_MeleeTrace::TraceSweep(const FCollisionObjectQueryParams& Ob
 	const FVector PrevMid = (PrevStart + PrevEnd) * 0.5f;
 	const FVector CurMid = (CurStart + CurEnd) * 0.5f;
 	const float TravelDist = (CurMid - PrevMid).Size();
-	const int32 SubSteps = FMath::Clamp(FMath::CeilToInt(TravelDist / StepDist), 1, MaxSubStepsSweep);
+	const int32 SubSteps = FMath::Clamp(FMath::CeilToInt(TravelDist / StepDist), 1, MaxSubSteps);
 	for (int32 Step = 0; Step < SubSteps; ++Step)
 	{
 		const float A0 = static_cast<float>(Step) / SubSteps;
@@ -228,7 +224,7 @@ void UKDAbilityTask_MeleeTrace::TraceArc(const FCollisionObjectQueryParams& Obje
 	const FVector CtrlStart = MidStart + OutDir * (StartTravel / StepDist) * ArcBulge;
 	const FVector CtrlEnd = MidEnd + OutDir * (EndTravel / StepDist) * ArcBulge;
 	const float TravelDist = FMath::Max(StartTravel, EndTravel);
-	const int32 SubSteps = FMath::Clamp(FMath::CeilToInt(TravelDist / StepDist), 1, MaxSubStepsArc);
+	const int32 SubSteps = FMath::Clamp(FMath::CeilToInt(TravelDist / StepDist), 1, MaxSubSteps);
 	for (int32 Step = 0; Step < SubSteps; ++Step)
 	{
 		const float A0 = static_cast<float>(Step) / SubSteps;
