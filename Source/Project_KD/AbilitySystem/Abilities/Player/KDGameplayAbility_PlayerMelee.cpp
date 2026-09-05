@@ -166,10 +166,10 @@ void UKDGameplayAbility_PlayerMelee::OnActivated()
 
 	// 사거리 밖 = 제자리 / 코앞 = 몽타주 원래 이동량 유지
 	if (Dist > MaxApproachRange || Dist <= ApproachStopDistance) return;
-	// 타겟 추적 등록 
+	// 워프 목표점 등록 - 발동 시점 좌표 고정 (bFollowComponent = false)
 	// 오프셋 X = 적에서 나 쪽으로 ApproachStopDistance 만큼
 	Warp->AddOrUpdateWarpTargetFromComponent(
-		ApproachWarpName, TargetRoot, NAME_None, true,
+		ApproachWarpName, TargetRoot, NAME_None, false,
 		EWarpTargetLocationOffsetDirection::VectorFromTargetToOwner,
 		FVector(ApproachStopDistance, 0.f, 0.f), FRotator::ZeroRotator
 	);
