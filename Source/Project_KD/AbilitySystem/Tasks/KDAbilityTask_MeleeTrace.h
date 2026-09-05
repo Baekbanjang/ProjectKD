@@ -5,14 +5,22 @@
 #include "KDAbilityTask_MeleeTrace.generated.h"
 
 class UMeshComponent;
+struct FHitResult;
+struct FCollisionQueryParams;
+struct FCollisionObjectQueryParams;
 
-// Sweep    : capsule prev→cur sweep along whole weapon axis (broad, hits along entire shaft)
-// TipLine  : line trace from prev-tip to cur-tip only (thin weapons; ignores shaft body — SB tone)
+// Sweep    : 무기 축 전체를 캡슐로 prev→cur 스윕 — 넓게 잡힘, 칼몸 어디든 판정
+// TipLine  : 칼끝만 prev -> cur 라인 트레이스 — 얇은 무기용, 칼몸 판정 X
+// ArcSweep : Sweep + 베지어 경로 — 캡슐이 곡선을 따라 이동
+// ArcTri   : 베지어 경로 + 칸마다 선 격자 — 두께 0, SB Triangle-Hitbox 방식
+
 UENUM(BlueprintType)
 enum class ETraceMode : uint8
 {
 	Sweep    UMETA(DisplayName = "Capsule Sweep (whole shaft)"),
-	TipLine  UMETA(DisplayName = "Tip LineTrace (thin weapons)")
+	TipLine  UMETA(DisplayName = "Tip LineTrace (thin weapons)"),
+	ArcSweep  UMETA(DisplayName = "Arc Capsule Sweep (curved)"),
+	ArcTri    UMETA(DisplayName = "Arc Triangle Lines (SB style)")
 };
 
 // 판정 출처
@@ -25,8 +33,8 @@ enum class ETraceMeshSource : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWeaponTraceHitDelegate, const FHitResult&, Hit);
 
-// StartSocket↔EndSocket 축을 따라 prev→cur 프레임 궤적을 캡슐 스윕.
-// SubSteps(1~8) 보간으로 고속 스윙 터널링 방지. 태스크 수명 동안 액터당 OnHit 1회.
+// StartSocket↔EndSocket 축을 따라 prev→cur 구간 판정. 모드 4종
+// 서브스텝 보간으로 고속 스윙 터널링 방지. 태스크 수명 동안 액터당 OnHit 1회
 UCLASS()
 class PROJECT_KD_API UKDAbilityTask_MeleeTrace : public UAbilityTask
 {
@@ -44,10 +52,15 @@ public:
 		FName EndSocket,
 		ETraceMode Mode = ETraceMode::TipLine,
 		float CapsuleRadius = 3.0f,
-		bool bDrawDebug = true);
+		bool bDrawDebug = true,
+		float ArcBulge = 1.0f,
+		int32 TraceSegments = 3);
 
 	UPROPERTY(BlueprintAssignable)
 	FWeaponTraceHitDelegate OnHit;
+
+	// 한 구간에 대한 판정 로직 - TickTask가 매 틱 호출
+	void TraceOnce();
 
 protected:
 	// GAS framework callbacks — base UGameplayTask declares these protected; keep visibility matched.
@@ -56,6 +69,22 @@ protected:
 	virtual void OnDestroy(bool bInOwnerFinished) override;
 
 private:
+	// 모드별 판정
+	void TraceTipLine(const FCollisionObjectQueryParams& ObjectParams, const FCollisionQueryParams& Params,
+		const FVector& CurStart, const FVector& CurEnd);
+	
+	void TraceSweep(const FCollisionObjectQueryParams& ObjectParams, const FCollisionQueryParams& Params,
+		const FVector& CurStart, const FVector& CurEnd);
+	
+	void TraceArc(const FCollisionObjectQueryParams& ObjectParams, const FCollisionQueryParams& Params,
+		const FVector& CurStart, const FVector& CurEnd);
+	
+	// 히트 처리
+	void ProcessHits(const TArray<FHitResult>& Hits, const FCollisionQueryParams& Params);
+	
+	// 벽 차단 유무
+	bool IsWallBlocking(const FVector& End, const FCollisionQueryParams& Params) const;
+	
 	UPROPERTY()
 	TObjectPtr<UMeshComponent> WeaponMesh;
 
@@ -64,6 +93,8 @@ private:
 	ETraceMode Mode = ETraceMode::TipLine;
 	float CapsuleRadius = 3.0f;
 	bool bDrawDebug = true;
+	float ArcBulge = 1.0f;
+	int32 TraceSegments = 3;
 
 	bool bHasPrevFrame = false;
 	FVector PrevStart = FVector::ZeroVector;

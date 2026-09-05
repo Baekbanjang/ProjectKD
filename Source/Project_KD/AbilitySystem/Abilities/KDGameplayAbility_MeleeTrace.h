@@ -62,6 +62,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "0.1"))
 	float CapsuleRadius = 3.0f;
 
+	// 베지어 볼록 배율 - 0 이면 직선. Arc 모드 전용
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "0.0", ClampMax = "5.0"))
+	float ArcBulge = 1.0f;
+
+	// 칼 축 분할 수 - ArcTri 전용. 클수록 촘촘
+	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon", meta = (ClampMin = "1", ClampMax = "10"))
+	int32 TraceSegments = 3;
+
 	// 판정창 1개당 액터 1히트 - 검이 닿아 있는 동안 매 프레임 반복 타격 차단
 	UPROPERTY(EditDefaultsOnly, Category = "Action|Weapon")
 	bool bOncePerActor = true;

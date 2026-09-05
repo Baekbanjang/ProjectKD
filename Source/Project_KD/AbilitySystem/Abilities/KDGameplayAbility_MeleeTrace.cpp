@@ -163,7 +163,8 @@ void UKDGameplayAbility_MeleeTrace::OnTraceBeginEvent(FGameplayEventData Payload
 	}
 	
 	ActiveTraceTask = UKDAbilityTask_MeleeTrace::MeleeTrace(
-		this, TraceMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug);
+		this, TraceMesh, EffStartSocket, EffEndSocket, EffMode, EffRadius, bDrawDebug,
+		ArcBulge, TraceSegments);
 	if (!IsValid(ActiveTraceTask))
 	{
 		return;
@@ -179,6 +180,8 @@ void UKDGameplayAbility_MeleeTrace::OnTraceEndEvent(FGameplayEventData Payload)
 	ActiveWindow = nullptr;
 	if (ActiveTraceTask)
 	{
+		// 마지막 구간 판정
+		ActiveTraceTask->TraceOnce();
 		ActiveTraceTask->EndTask();
 		ActiveTraceTask = nullptr;
 	}
