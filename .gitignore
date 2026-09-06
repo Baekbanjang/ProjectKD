@@ -65,3 +65,12 @@ desktop.ini
 
 # MCP 클라이언트 설정 (capability token 포함 — 커밋 금지)
 .mcp.json
+
+# === 포폴 레포 = Source 만 공개 (2026-09-07) ===
+Plugins/
+docs/
+Config/
+CLAUDE.md
+README.md
+.p4ignore
+*.uproject
