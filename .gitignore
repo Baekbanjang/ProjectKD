@@ -71,6 +71,6 @@ Plugins/
 docs/
 Config/
 CLAUDE.md
-README.md
+!README.md
 .p4ignore
 *.uproject
