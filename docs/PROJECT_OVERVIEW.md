@@ -236,6 +236,11 @@ State 7개   MeleeTrace(판정구간+per-window 오버라이드) · CancelWindow
 - ★ **어빌리티에는 Tick이 없다** — "나중에 이걸 해라"는 타이머나 노티로 예약. 부모의 안전망 타이머를 끄면 **대신할 것을 반드시 걸 것**(필요 없어서 끄는 게 아니라 길이가 안 맞아서 갈아끼우는 것)
 - ★ **모션 워핑 타겟은 조기 return에 살아남는다** — 발동 시작에 `RemoveWarpTarget`을 안 하면 **옛 좌표로 워프**한다(08-20 접근워프 / 08-31 반격 두 번 다 같은 뿌리)
 - **워프 회전 규칙** — 타겟을 `FromComponent`/`FromActor`로 넘기면 `RotationType = Facing`, `FromLocationAndRotation`으로 넘기면 `Default`. 현행 19개 전부 부합
+- 🔴 ★ **그 조합이 근거리에서 목표점을 등 뒤로 뒤집는다** (09-05 반증) — `FromComponent` + `bFollowComponent=true` + `VectorFromTargetToOwner` 오프셋이면 목표점 = `적 + 140 × (적→나)` 라 **거리가 140 아래로 내려가는 순간 부호가 반전**된다. `Facing` 회전이 그걸 바라봐서 **적에게 등을 돌린다.** 게이트(`:168`)는 발동 시 1회인데 목표점은 매 프레임 재계산되는 **주기 불일치**가 뿌리
+  - 조치 = `PlayerMelee.cpp:172` `bFollowComponent` → **`false`**(발동 시점 좌표 고정). 위 규칙과 반대 방향이다
+  - 근거 = `RootMotionModifier.cpp:72-89`(매 프레임 `RecalculateOffset`) · `:126-140`(X만 있는 오프셋은 오너 현재 위치 기준 재계산) · `:399-405`(Facing = 오프셋 적용 **후** 목표점 방향)
+  - ⚠️ **엔진 주석·로그가 코드와 반대다** — `RootMotionModifier.h:175` 주석 *"vector from owner to target"* / `:144` 로그 `VectorFromOwnerToTarget` 인데 **실제 계산은 target → owner**. 주석 보고 부호 잡으면 반대로 간다
+  - 🔵 미적용 = 회전 권한을 워핑에서 떼는 A안(몽타주 노티 `Warp Rotation` OFF ~21개). B안만 적용된 상태라 회전 권한은 아직 워핑에 있다
 - **처형 데미지 = 코드강제** — `FinishExecution`이 데스블로시 `SetNumericAttributeBase(Health,0)`. GE 밸런스 무관
 - **팀 이분법** — `Team.Enemy` 유무로만 아군방지. 팀 3개↑(소환수 등) 확장시 깨짐
 - **`AnimNotify_WeaponAttach` TargetWeaponTag=None = 전무기 동시발검** — 다중무기 몽타주에서 특정무기만 부착하려면 태그 필수
